@@ -1,9 +1,807 @@
 <!DOCTYPE html>
-<html>
+<html lang="ar" dir="rtl">
 <head>
-  <title>MS Store</title>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>متجر MS</title>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap');
+
+    :root{
+      --bg:#f5f7fb;--card:#ffffff;--text:#16213e;--muted:#6b7280;--accent:#2563eb;--accent2:#0ea5e9;
+      --success:#16a34a;--danger:#dc2626;--warning:#f59e0b;--border:#e5e7eb;
+      --shadow:0 10px 25px rgba(0,0,0,0.07);--radius:18px;
+    }
+    body.dark-mode{
+      --bg:#0b1220;--card:#111827;--text:#f8fafc;--muted:#94a3b8;--accent:#60a5fa;--accent2:#22d3ee;
+      --success:#22c55e;--danger:#ef4444;--warning:#fbbf24;--border:#243041;--shadow:0 10px 25px rgba(0,0,0,0.35);
+    }
+
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html{scroll-behavior:smooth}
+    body{margin:0;font-family:'Tajawal',sans-serif;background:linear-gradient(180deg,var(--bg),#eef4ff 180%);color:var(--text)}
+    body.dark-mode{background:linear-gradient(180deg,var(--bg),#09101d 180%)}
+    button,input,textarea,select{font-family:'Tajawal',sans-serif}
+    .hidden{display:none!important}
+
+    #splashScreen{
+      position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;flex-direction:column;
+      background:linear-gradient(135deg,#0f172a,#1d4ed8,#0ea5e9);color:#fff;text-align:center;padding:20px;transition:.6s ease;
+    }
+    #splashScreen .logo{
+      width:110px;height:110px;border-radius:30px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.22);
+      display:flex;align-items:center;justify-content:center;font-size:52px;font-weight:900;box-shadow:0 15px 40px rgba(0,0,0,0.2);
+      margin-bottom:16px;backdrop-filter:blur(8px);
+    }
+    #splashScreen h1{margin:0;font-size:40px;font-weight:900;line-height:1.4}
+    #splashScreen p{margin:14px 0 0;font-size:18px;opacity:.98;line-height:1.95;max-width:360px}
+    #progressBar{width:80%;max-width:260px;height:6px;background:rgba(255,255,255,.2);border-radius:999px;margin-top:22px;overflow:hidden}
+    #progressFill{height:100%;width:0%;background:#fff;border-radius:999px;transition:width 9s linear}
+
+    .header{position:sticky;top:0;z-index:2000;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);padding:10px 12px 8px}
+    body.dark-mode .header{background:rgba(17,24,39,.9)}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .brand{display:flex;align-items:center;gap:10px;min-width:0;cursor:pointer}
+    .brand-badge{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;box-shadow:var(--shadow);flex-shrink:0}
+    .brand-text{min-width:0}
+    .brand-title{font-size:20px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .brand-sub{font-size:11px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .top-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+    .icon-btn{width:40px;height:40px;border-radius:14px;border:1px solid var(--border);background:var(--card);color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:var(--shadow);font-size:16px}
+    .search-wrap{margin-top:10px;display:flex;gap:10px;align-items:center}
+    .search-box{flex:1;display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:0 14px;box-shadow:var(--shadow)}
+    .search-box i{color:var(--muted);font-size:14px}
+    .search-box input{width:100%;border:none;outline:none;background:transparent;padding:13px 0;color:var(--text);font-size:14px}
+    .hero{margin:12px 12px 6px;background:linear-gradient(135deg,#1d4ed8,#0ea5e9);color:#fff;border-radius:20px;padding:20px 18px;box-shadow:0 12px 24px rgba(0,0,0,0.10);position:relative;overflow:hidden}
+    .hero::before{content:"";position:absolute;width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,.08);left:-25px;bottom:-40px}
+    .hero::after{content:"";position:absolute;width:90px;height:90px;border-radius:50%;background:rgba(255,255,255,.06);top:-25px;right:-20px}
+    .hero h2,.hero p{position:relative;z-index:1}
+    .hero h2{margin:0 0 6px;font-size:26px;font-weight:900;line-height:1.5}
+    .hero p{margin:0;font-size:15px;line-height:1.9;opacity:.97;font-weight:500}
+    .section-bar{display:flex;align-items:center;justify-content:space-between;padding:4px 12px 0;gap:10px;flex-wrap:wrap}
+    .section-title{font-size:15px;font-weight:900}
+    .section-note{color:var(--muted);font-size:12px}
+    .category-strip{display:flex;gap:8px;overflow-x:auto;padding:12px;scrollbar-width:none}
+    .category-strip::-webkit-scrollbar{display:none}
+    .cat-btn{border:none;background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:999px;padding:10px 16px;white-space:nowrap;font-size:13px;font-weight:800;cursor:pointer;box-shadow:var(--shadow)}
+    .cat-btn.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent}
+    .filters{display:flex;gap:10px;padding:0 12px 12px;align-items:center}
+    .filters select{flex:1;border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:14px;padding:12px;outline:none;box-shadow:var(--shadow)}
+
+    .products{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:0 12px 20px;align-items:start}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:18px;overflow:hidden;box-shadow:0 8px 18px rgba(0,0,0,0.05);display:flex;flex-direction:column;position:relative;height:auto}
+    .card-top-badges{position:absolute;top:10px;right:10px;z-index:3;display:flex;flex-direction:column;gap:6px}
+    .badge{padding:6px 10px;border-radius:999px;font-size:11px;font-weight:800;color:#fff;box-shadow:0 8px 18px rgba(0,0,0,0.12)}
+    .badge.featured{background:linear-gradient(135deg,#f59e0b,#f97316)}
+    .admin-delete-btn,.admin-edit-btn{position:absolute;z-index:4;width:34px;height:34px;border:none;border-radius:12px;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center}
+    .admin-delete-btn{top:10px;left:10px;background:rgba(220,38,38,.95)}
+    .admin-edit-btn{top:52px;left:10px;background:rgba(37,99,235,.95)}
+    .gallery-wrapper{width:100%;height:210px;background:linear-gradient(180deg,#fff,#f8fafc);position:relative;overflow:hidden}
+    .gallery-main{width:100%;height:150px;position:relative}
+    .gallery-img{width:100%;height:100%;object-fit:cover;background:#fff;cursor:pointer;transition:transform .25s ease}
+    .gallery-img:hover{transform:scale(1.02)}
+    .gallery-thumbs{display:flex;gap:6px;padding:8px;overflow-x:auto;scrollbar-width:none;background:rgba(255,255,255,.96);min-height:60px;align-items:center}
+    .gallery-thumbs::-webkit-scrollbar{display:none}
+    .gallery-thumb{width:50px;height:50px;border-radius:12px;border:2px solid transparent;object-fit:cover;background:#fff;cursor:pointer;flex-shrink:0}
+    .gallery-thumb.active{border-color:var(--accent);box-shadow:0 0 0 2px rgba(37,99,235,.12)}
+    .product-info{padding:10px;display:flex;flex-direction:column;flex:1}
+    .p-name{font-size:15px;font-weight:900;line-height:1.45;margin:0 0 3px}
+    .p-desc{font-size:13.5px;color:var(--muted);margin:0 0 6px;line-height:1.8;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;cursor:pointer;font-weight:500;min-height:49px}
+    .p-desc.short-desc{font-size:17px;font-weight:900;color:var(--text);line-height:1.55}
+    .p-desc.long-desc::after{content:"";position:absolute}
+    .meta-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
+    .stock{font-size:11px;font-weight:800;border-radius:999px;padding:6px 10px}
+    .stock.in{background:rgba(22,163,74,.12);color:var(--success)}
+    .stock.out{background:rgba(220,38,38,.12);color:var(--danger)}
+    .price-tag{color:var(--success);font-size:18px;font-weight:900;margin-bottom:6px}
+    .card-actions{margin-top:auto;display:flex;gap:8px}
+    .btn{border:none;outline:none;cursor:pointer;border-radius:12px;padding:11px 14px;font-weight:900;font-size:13px;transition:.2s}
+    .btn-order{flex:1;background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff}
+    .btn-share{width:46px;background:var(--bg);color:var(--text);border:1px solid var(--border)}
+    .empty-state{margin:20px 12px;background:var(--card);border:1px dashed var(--border);border-radius:22px;padding:35px 18px;text-align:center;color:var(--muted);box-shadow:var(--shadow)}
+    .footer{background:var(--card);border-top:1px solid var(--border);margin-top:10px;padding:20px 16px 28px;text-align:center}
+    .footer .title{font-size:18px;font-weight:900;margin-bottom:8px}
+    .footer .desc{color:var(--muted);font-size:13px;line-height:1.7}
+    .socials{display:flex;justify-content:center;gap:12px;margin-top:14px;flex-wrap:wrap}
+    .social-btn{width:42px;height:42px;border-radius:14px;border:1px solid var(--border);background:var(--bg);color:var(--accent);display:flex;align-items:center;justify-content:center;text-decoration:none;box-shadow:var(--shadow);font-size:16px}
+    .mini-text{font-size:11px;color:var(--muted);margin-top:12px}
+
+    .modal{display:none;position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,.55);align-items:center;justify-content:center;padding:14px}
+    .modal.show{display:flex}
+    .modal-card{width:100%;max-width:760px;max-height:92vh;overflow-y:auto;background:var(--card);border:1px solid var(--border);border-radius:26px;box-shadow:0 30px 60px rgba(0,0,0,.25);padding:18px 18px calc(24px + env(safe-area-inset-bottom, 0px));color:var(--text);overscroll-behavior:contain}
+    .modal-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px}
+    .modal-title{font-size:20px;font-weight:900;margin:0}
+    .close-btn{width:40px;height:40px;border:none;border-radius:14px;background:var(--bg);color:var(--text);cursor:pointer;border:1px solid var(--border)}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .field{margin-bottom:12px}
+    .field label{display:block;font-size:13px;font-weight:800;margin-bottom:8px}
+    .field input,.field textarea,.field select{width:100%;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:14px;padding:13px 14px;outline:none;font-size:16px}
+    .field textarea{resize:none;min-height:95px}
+    .switches{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+    .toggle-box,.ad-toggle-box{background:var(--bg);border:1px solid var(--border);border-radius:16px;padding:12px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .toggle-box span,.ad-toggle-box span{font-size:13px;font-weight:800}
+    .toggle-switch{appearance:none;-webkit-appearance:none;position:relative;cursor:pointer;width:58px !important;height:32px !important;border-radius:999px;background:#cbd5e1;border:1px solid rgba(0,0,0,.08);transition:.25s ease}
+    .toggle-switch:checked{background:linear-gradient(135deg,var(--accent),var(--accent2))}
+    .toggle-switch::before{content:"";position:absolute;top:3px;right:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:.25s ease}
+    .toggle-switch:checked::before{right:29px}
+    .preview-images{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+    .preview-item{position:relative;border:1px solid var(--border);border-radius:14px;overflow:hidden;background:#fff;height:92px}
+    .preview-item img{width:100%;height:100%;object-fit:cover}
+    .preview-item button{position:absolute;top:6px;left:6px;border:none;width:24px;height:24px;border-radius:8px;background:rgba(220,38,38,.95);color:#fff;cursor:pointer;font-size:11px}
+    .row-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+    .btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+    .btn-secondary{background:var(--bg);color:var(--text);border:1px solid var(--border)}
+    .btn-danger{background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff}
+    .btn-success{background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff}
+    .btn-warning{background:linear-gradient(135deg,#f59e0b,#f97316);color:#fff}
+
+    .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:14px}
+    .stat-card{background:var(--bg);border:1px solid var(--border);border-radius:18px;padding:14px;box-shadow:var(--shadow)}
+    .stat-card .icon{width:42px;height:42px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;margin-bottom:10px}
+    .stat-card .num{font-size:24px;font-weight:900}
+    .stat-card .label{font-size:12px;color:var(--muted);margin-top:4px;font-weight:700}
+    .panel-tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-bottom:14px;scrollbar-width:none}
+    .panel-tabs::-webkit-scrollbar{display:none}
+    .tab-btn{border:none;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:999px;padding:10px 14px;font-weight:900;white-space:nowrap;cursor:pointer}
+    .tab-btn.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent}
+    .tab-content{display:none}
+    .tab-content.active{display:block}
+    .admin-list{display:flex;flex-direction:column;gap:10px}
+    .admin-item{background:var(--bg);border:1px solid var(--border);border-radius:18px;padding:12px}
+    .admin-item-top{display:flex;gap:10px;align-items:center}
+    .admin-thumb{width:60px;height:60px;border-radius:14px;background:#fff;border:1px solid var(--border);object-fit:cover;flex-shrink:0}
+    .admin-item-main{min-width:0;flex:1}
+    .admin-item-name{font-size:15px;font-weight:900;margin-bottom:6px;word-break:break-word}
+    .admin-item-meta{font-size:12px;color:var(--muted);display:flex;gap:12px;flex-wrap:wrap}
+    .admin-item-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .admin-small-btn{border:none;border-radius:12px;padding:10px 12px;font-weight:800;cursor:pointer;font-size:12px}
+    .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .chip{padding:9px 12px;border-radius:999px;background:var(--bg);border:1px solid var(--border);font-size:12px;font-weight:800;display:flex;align-items:center;gap:8px}
+    .chip-actions{display:flex;align-items:center;gap:4px}
+    .chip-edit-btn,.chip-delete-btn{border:none;background:none;cursor:pointer;font-size:13px}
+    .chip-edit-btn{color:var(--accent)} .chip-delete-btn{color:var(--danger)}
+    .notice{background:rgba(37,99,235,.09);color:var(--accent);border:1px solid rgba(37,99,235,.15);border-radius:16px;padding:12px 14px;font-size:13px;font-weight:700;margin-bottom:14px;line-height:1.8}
+    .helper-box{background:rgba(22,163,74,.08);color:var(--success);border:1px solid rgba(22,163,74,.16);border-radius:16px;padding:12px 14px;font-size:13px;font-weight:700;line-height:1.8;margin:12px 0}
+    .muted-text{font-size:12px;color:var(--muted);line-height:1.8}
+.status-box{margin-top:12px;padding:12px 14px;border-radius:14px;font-size:13px;font-weight:800;display:none;line-height:1.8}
+.status-box.show{display:block}
+.status-box.success{background:rgba(22,163,74,.12);color:var(--success);border:1px solid rgba(22,163,74,.25)}
+.status-box.error{background:rgba(220,38,38,.12);color:var(--danger);border:1px solid rgba(220,38,38,.25)}
+.file-note{font-size:12px;color:var(--muted);margin-top:8px;font-weight:700}
+    .helper-inline{font-size:12px;color:var(--muted);line-height:1.8;margin-top:6px}
+
+    .section-divider{height:1px;background:var(--border);margin:14px 0}
+    .sub-title{font-size:15px;font-weight:900;margin:6px 0 10px}
+    .image-tools{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+    .image-counter{font-size:12px;color:var(--muted);font-weight:800;margin-top:6px}
+
+    .desc-modal-text{font-size:16px;line-height:2;color:var(--text);white-space:pre-wrap}
+    .back-chip{position:fixed;right:14px;bottom:18px;z-index:2400;min-width:56px;height:56px;border:none;border-radius:20px;background:linear-gradient(135deg,#0f172a,#2563eb);color:#fff;box-shadow:0 18px 30px rgba(15,23,42,.24);font-size:18px;display:none;align-items:center;justify-content:center;cursor:pointer;padding:0 16px;font-weight:900}
+    .back-chip.show{display:flex}
+
+    #zoomOverlay{display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.96);flex-direction:column}
+    #zoomOverlay.show{display:flex}
+    .zoom-top{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;color:#fff;font-weight:900}
+    .zoom-gal{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;height:100%;width:100%;scrollbar-width:none}
+    .zoom-gal::-webkit-scrollbar{display:none}
+    .z-img{flex:0 0 100%;width:100%;height:100%;object-fit:contain;scroll-snap-align:start;background:#000}
+
+    .fab-admin{position:fixed;left:14px;bottom:18px;z-index:2500;width:56px;height:56px;border:none;border-radius:20px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 18px 30px rgba(37,99,235,.28);font-size:20px;display:none;align-items:center;justify-content:center;cursor:pointer}
+    .fab-admin.show{display:flex}
+
+    .ads-wrap{margin:8px 12px 14px;background:var(--card);border:1px solid var(--border);border-radius:18px;overflow:hidden;box-shadow:var(--shadow);display:none;position:sticky;top:86px;z-index:1800}
+    .ads-wrap.show{display:block}
+    .ads-strip{position:relative;min-height:58px;display:flex;align-items:center;overflow:hidden;color:#fff;padding:0 14px}
+    .ads-label{position:relative;z-index:2;display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:999px;font-size:12px;font-weight:900;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.22);flex-shrink:0;margin-left:10px}
+    .ads-marquee{position:relative;z-index:1;overflow:hidden;white-space:nowrap;flex:1;direction:ltr}
+    .ads-track{display:inline-flex;align-items:center;white-space:nowrap;will-change:transform;animation:adsTickerBack 18s linear infinite;font-size:15px;font-weight:800;padding-inline:8px;transform:translateX(-50%)}
+    .ads-track.fast{animation-duration:7s}.ads-track.medium{animation-duration:15s}.ads-track.slow{animation-duration:28s}
+    .ads-item-inline{display:inline-flex;align-items:center;gap:10px;margin-left:56px;direction:rtl;unicode-bidi:plaintext;flex-shrink:0}
+    @keyframes adsTickerBack{0%{transform:translateX(-50%)}100%{transform:translateX(0)}}
+    .maint-overlay{position:fixed;inset:0;z-index:999998;display:none;align-items:center;justify-content:center;background:linear-gradient(135deg,#0b1220,#102552,#0f172a);color:#fff;padding:20px;text-align:center}
+    .maint-overlay.show{display:flex}
+    .maint-card{width:100%;max-width:420px}
+    .maint-wrench{width:88px;height:88px;border-radius:28px;margin:0 auto 18px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:34px;color:#facc15;box-shadow:0 18px 40px rgba(0,0,0,.22);user-select:none}
+    .maint-title{font-size:28px;font-weight:900;margin-bottom:10px}
+    .maint-text{font-size:15px;line-height:1.9;opacity:.96}.maint-note{margin-top:14px;font-size:12px;opacity:.82}
+    .color-speed-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+    .skeleton{background:linear-gradient(90deg,#e5e7eb 25%,#f3f4f6 37%,#e5e7eb 63%);background-size:400% 100%;animation:shimmer 1.3s infinite}
+    body.dark-mode .skeleton{background:linear-gradient(90deg,#1f2937 25%,#334155 37%,#1f2937 63%);background-size:400% 100%}
+    .sk-card{height:290px;border-radius:18px;border:1px solid var(--border);background:var(--card);overflow:hidden}
+    .sk-img{height:170px}.sk-line{height:14px;margin:10px;border-radius:8px}.sk-line.small{width:55%}
+    @keyframes shimmer{0%{background-position:100% 0}100%{background-position:0 0}}
+
+    @media (max-width:640px){
+      .grid-2,.switches,.stats-grid,.color-speed-row{grid-template-columns:1fr}
+      .products{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .gallery-wrapper{height:170px}
+    }
+  </style>
 </head>
 <body>
-  <h1>هلا 👋 هذا موقعك شغال</h1>
-</body>
-</html>
+
+  <div id="splashScreen">
+    <div class="logo">MS</div>
+    <h1 id="splashTitle">متجر MS</h1>
+    <p id="splashSubtitle">
+      ✨ أهلاً بك في متجر MS<br>
+      نوفر لك منتجات مختارة بعناية وتجربة تسوق سهلة وسريعة من داخل المتجر.<br>
+      <span style="font-size:14px;opacity:.92;">بإدارة مصطفى سعدي</span>
+    </p>
+    <div id="progressBar"><div id="progressFill"></div></div>
+  </div>
+
+  <div id="maintenanceOverlay" class="maint-overlay">
+    <div class="maint-card">
+      <div id="maintenanceWrench" class="maint-wrench" title="اضغط عدة مرات للدخول للإدارة"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+      <div class="maint-title">المتجر تحت الصيانة</div>
+      <div class="maint-text" id="maintenanceText">نقوم حاليًا ببعض التحسينات داخل المتجر، يرجى العودة لاحقًا.</div>
+      <div class="maint-note">للدخول إلى الإدارة: اضغط 10 ضغطات على السبانة</div>
+    </div>
+  </div>
+
+  <header class="header">
+    <div class="topbar">
+      <div class="brand" id="brandTapArea" title="اضغط عدة مرات للدخول للإدارة">
+        <div class="brand-badge">MS</div>
+        <div class="brand-text">
+          <div class="brand-title" id="storeTitleTop">متجر MS</div>
+          <div class="brand-sub" id="storeSubTop">متجر أنيق وفخم بإدارة مصطفى سعدي</div>
+        </div>
+      </div>
+      <div class="top-actions">
+        <button class="icon-btn" onclick="openModal('aboutModal')" title="حول المتجر"><i class="fa-solid fa-circle-info"></i></button>
+        <button class="icon-btn" id="themeBtn" onclick="toggleTheme()"><i class="fa-solid fa-moon"></i></button>
+      </div>
+    </div>
+    <div class="search-wrap">
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="searchInput" placeholder="ابحث عن منتج..." oninput="debouncedRenderProducts()" />
+      </div>
+      <button class="icon-btn" onclick="goHome()"><i class="fa-solid fa-house"></i></button>
+    </div>
+  </header>
+
+  <section class="hero">
+    <h2 id="heroTitle">مرحبًا بك في متجر MS، حيث الفخامة تبدأ من أول نظرة</h2>
+    <p id="heroDesc">اكتشف تشكيلة راقية ومنتجات مختارة بعناية، واطلب بسهولة وسرعة عبر واتساب. بإدارة مصطفى سعدي.</p>
+  </section>
+
+  <section id="adsWrap" class="ads-wrap"><div id="adsStrip" class="ads-strip"></div></section>
+
+  <div class="section-bar">
+    <div><div class="section-title">الأقسام</div><div class="section-note">اختر القسم المناسب بسرعة</div></div>
+    <div class="section-note" id="resultCountText">جاري تحميل المنتجات...</div>
+  </div>
+
+  <div class="category-strip" id="categoryFilter"></div>
+
+  <div class="filters">
+    <select id="sortSelect" onchange="renderProducts()">
+      <option value="newest">الأحدث أولاً</option>
+      <option value="featured">المميزة أولاً</option>
+      <option value="priceAsc">السعر: من الأقل للأعلى</option>
+      <option value="priceDesc">السعر: من الأعلى للأقل</option>
+      <option value="nameAsc">الاسم: أ - ي</option>
+    </select>
+  </div>
+
+  <main id="productsContainer" class="products"></main>
+
+  <div id="emptyState" class="empty-state hidden">
+    <i class="fa-solid fa-box-open" style="font-size:34px; margin-bottom:10px;"></i>
+    <div style="font-size:18px; font-weight:900; color:var(--text); margin-bottom:6px;">لا توجد منتجات مطابقة</div>
+    <div style="font-size:13px;">جرّب البحث بكلمة أخرى أو اختر قسمًا مختلفًا.</div>
+  </div>
+
+  <footer class="footer">
+    <div class="title" id="footerStoreTitle">متجر MS</div>
+    <div class="desc" id="footerAboutText">متجر MS يقدم لك تجربة تسوق أنيقة وسهلة، مع منتجات مختارة بعناية وجودة تليق بذوقك، وطلب مباشر وسريع عبر واتساب. بإدارة مصطفى سعدي.</div>
+    <div class="socials">
+      <a class="social-btn" id="whatsappLink" href="https://wa.me/9647712630779" target="_blank"><i class="fab fa-whatsapp"></i></a>
+      <a class="social-btn" id="telegramLink" href="https://t.me/msstore95" target="_blank"><i class="fab fa-telegram"></i></a>
+      <a class="social-btn" id="tiktokLink" href="https://www.tiktok.com/@msah_95" target="_blank"><i class="fab fa-tiktok"></i></a>
+    </div>
+    <div class="mini-text" id="footerVersion">MS Store © 2026 | إصدار MS v1.0</div>
+  </footer>
+
+  <button id="fabAdmin" class="fab-admin" onclick="openAdminPanel()"><i class="fa-solid fa-gear"></i></button>
+
+  <div id="aboutModal" class="modal" onclick="closeModal(event,'aboutModal')">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <div class="modal-head"><h3 class="modal-title">حول المتجر</h3><button class="close-btn" onclick="closeById('aboutModal')"><i class="fa-solid fa-xmark"></i></button></div>
+      <div class="notice" id="aboutModalText">متجر MS يقدم لك تجربة تسوق راقية وسهلة، مع منتجات مختارة بعناية وجودة مميزة وطلب مباشر عبر واتساب. بإدارة مصطفى سعدي.</div>
+      <div class="row-actions"><button class="btn btn-primary" onclick="goHome()">الرئيسية</button><button class="btn btn-secondary" onclick="closeById('aboutModal')">إغلاق</button></div>
+    </div>
+  </div>
+
+  <div id="zoomOverlay" onclick="closeZoom()">
+    <div class="zoom-top">
+      <div>معاينة الصور</div>
+      <button class="close-btn" onclick="closeZoom(); event.stopPropagation();" style="color:#fff; background:rgba(255,255,255,.12); border-color:rgba(255,255,255,.15);"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="zoom-gal" id="zGal" onclick="event.stopPropagation()"></div>
+  </div>
+
+  <div id="adminPanel" class="modal" onclick="closeModal(event,'adminPanel')">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <div class="modal-head"><h3 class="modal-title">لوحة إدارة متجر MS</h3><button class="close-btn" onclick="closeById('adminPanel')"><i class="fa-solid fa-xmark"></i></button></div>
+
+      <div class="notice">هذه النسخة مربوطة مع ImgBB بدل Firebase Storage، حتى ترفع الصور مباشرة بدون اشتراك مدفوع.</div>
+
+      <div class="stats-grid">
+        <div class="stat-card"><div class="icon"><i class="fa-solid fa-box"></i></div><div class="num" id="statProducts">0</div><div class="label">إجمالي المنتجات</div></div>
+        <div class="stat-card"><div class="icon"><i class="fa-solid fa-layer-group"></i></div><div class="num" id="statCategories">0</div><div class="label">عدد الأقسام</div></div>
+        <div class="stat-card"><div class="icon"><i class="fa-solid fa-eye"></i></div><div class="num" id="statVisitors">0</div><div class="label">إجمالي الزوار</div></div>
+        <div class="stat-card"><div class="icon"><i class="fa-solid fa-star"></i></div><div class="num" id="statFeatured">0</div><div class="label">منتجات مميزة</div></div>
+      </div>
+
+      <div class="panel-tabs">
+        <button class="tab-btn active" onclick="switchAdminTab('tabDashboard', this)">الإدارة</button>
+        <button class="tab-btn" onclick="switchAdminTab('tabProducts', this)">المنتجات</button>
+        <button class="tab-btn" onclick="switchAdminTab('tabCategories', this)">الأقسام</button>
+        <button class="tab-btn" onclick="switchAdminTab('tabSettings', this)">الإعدادات</button>
+        <button class="tab-btn" onclick="switchAdminTab('tabAds', this)">إعلان</button>
+        <button class="tab-btn" onclick="switchAdminTab('tabMaintenance', this)">الصيانة</button>
+      </div>
+
+      <div id="tabDashboard" class="tab-content active">
+        <div class="row-actions">
+          <button class="btn btn-primary" onclick="resetProductForm(); openModal('productModal')"><i class="fa-solid fa-plus"></i> إضافة منتج</button>
+          <button class="btn btn-secondary" onclick="openModal('categoryModal')"><i class="fa-solid fa-folder-plus"></i> إدارة الأقسام</button>
+          <button class="btn btn-warning" onclick="openModal('settingsModal')"><i class="fa-solid fa-store"></i> إعدادات المتجر</button>
+          <button class="btn btn-danger" onclick="logoutAdmin()"><i class="fa-solid fa-right-from-bracket"></i> خروج من الإدارة</button>
+        </div>
+        <div class="helper-box">الدخول للإدارة عبر الضغط 8 مرات على اسم المتجر، ثم إدخال رمز الإدارة. والدخول وقت الصيانة يكون عبر 10 ضغطات على السبانة.</div>
+      </div>
+
+      <div id="tabProducts" class="tab-content">
+        <div class="field"><label>بحث داخل المنتجات</label><input type="text" id="adminProductSearch" placeholder="اكتب اسم المنتج..." oninput="renderAdminProducts()" /></div>
+        <div class="row-actions"><button class="btn btn-success" onclick="resetProductForm(); openModal('productModal')">إضافة منتج جديد</button></div>
+        <div id="adminProductsList" class="admin-list" style="margin-top:12px;"></div>
+      </div>
+
+      <div id="tabCategories" class="tab-content">
+        <div class="field"><label>اسم قسم جديد</label><input type="text" id="newCategoryName" placeholder="مثال: أدوات منزلية" /></div>
+        <div class="row-actions"><button class="btn btn-primary" onclick="addCategory(false)">إضافة القسم</button></div>
+        <div class="chips" id="adminCategoriesList"></div>
+      </div>
+
+      <div id="tabSettings" class="tab-content">
+        <div class="row-actions">
+          <button class="btn btn-warning" onclick="openModal('settingsModal')">فتح إعدادات المتجر</button>
+          <button class="btn btn-secondary" onclick="openModal('passwordModal')">تغيير رمز الإدارة</button>
+        </div>
+      </div>
+
+      <div id="tabAds" class="tab-content">
+        <div class="notice">من هنا تقدر تشغل أو توقف الإعلان، وتكتب نص الإعلان، وتتحكم باللون والسرعة، وتحذف الإعلان.</div>
+
+        <div class="ad-toggle-box">
+          <span>تشغيل الإعلان</span>
+          <input type="checkbox" id="adsEnabledToggle" class="toggle-switch" onchange="saveSingleAd()" />
+        </div>
+
+        <div class="field">
+          <label>نص الإعلان</label>
+          <textarea id="adTextInput" placeholder="اكتب نص الإعلان هنا" oninput="previewSingleAd()"></textarea>
+        </div>
+
+        <div class="color-speed-row">
+          <div class="field">
+            <label>لون الإعلان</label>
+            <input type="color" id="adColorInput" style="background:#2563eb;" value="#2563eb" oninput="previewSingleAd(); this.style.background = this.value;" />
+          </div>
+          <div class="field">
+            <label>السرعة</label>
+            <select id="adSpeedInput" onchange="previewSingleAd()">
+              <option value="slow">بطيء</option>
+              <option value="medium" selected>وسط</option>
+              <option value="fast">سريع</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row-actions">
+          <button class="btn btn-primary" onclick="saveSingleAd()">حفظ / تعديل الإعلان</button>
+          <button class="btn btn-danger" onclick="deleteSingleAd()">حذف الإعلان</button>
+        </div>
+      </div>
+
+      <div id="tabMaintenance" class="tab-content">
+        <div class="notice">عند تشغيل الصيانة سيظهر للمستخدمين شاشة صيانة، وللدخول للإدارة اضغط 10 ضغطات على السبانة.</div>
+
+        <div class="ad-toggle-box">
+          <span>تشغيل وضع الصيانة</span>
+          <input type="checkbox" id="maintenanceToggle" class="toggle-switch" onchange="saveMaintenanceSettings()" />
+        </div>
+
+        <div class="field">
+          <label>نص الصيانة</label>
+          <textarea id="maintenanceMessageInput" placeholder="مثال: نعمل الآن على تحديثات مهمة، نرجو العودة لاحقًا."></textarea>
+        </div>
+
+        <div class="row-actions">
+          <button class="btn btn-warning" onclick="saveMaintenanceSettings()">حفظ إعدادات الصيانة</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="productModal" class="modal" onclick="closeModal(event,'productModal')">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <div class="modal-head"><h3 class="modal-title" id="productModalTitle">إضافة منتج</h3><button class="close-btn" onclick="closeById('productModal')"><i class="fa-solid fa-xmark"></i></button></div>
+      <input type="hidden" id="editingProductId" />
+      <div class="grid-2">
+        <div class="field"><label>اسم المنتج</label><input type="text" id="pName" placeholder="اكتب اسم المنتج" /></div>
+        <div class="field"><label>السعر</label><input type="number" id="pPrice" placeholder="مثال: 15000" /></div>
+      </div>
+      <div class="grid-2">
+        <div class="field"><label>القسم</label><select id="categorySelect"></select></div>
+        <div class="field"><label>الكمية أو حالة المخزون</label><select id="pStock"><option value="متوفر">متوفر</option><option value="غير متوفر">غير متوفر</option></select></div>
+      </div>
+      <div class="field"><label>وصف المنتج</label><textarea id="pDesc" placeholder="اكتب وصفًا قصيرًا وواضحًا"></textarea></div>
+      <div class="switches">
+        <div class="toggle-box"><span>منتج مميز</span><input type="checkbox" id="pFeatured" class="toggle-switch" /></div>
+        <div class="toggle-box"><span>إظهار المنتج في المتجر</span><input type="checkbox" id="pActive" class="toggle-switch" checked /></div>
+      </div>
+
+      <div class="section-divider"></div>
+      <div class="sub-title">صور المنتج</div>
+      <div class="field">
+        <label>روابط صور المنتج</label>
+        <textarea id="pImgUrls" placeholder="ضع رابط كل صورة في سطر مستقل"></textarea>
+        <div class="helper-inline">أي رابط تضيفه هنا ينحفظ مباشرة مع المنتج.</div>
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label>رفع صورة من الجهاز</label>
+          <input type="file" id="pImageFile" accept="image/*" multiple onchange="handleImageFileUpload(event)" />
+          <div class="file-note" id="selectedFileName">لم يتم اختيار أي ملف بعد</div>
+          <div class="muted-text">سيتم رفع الصور إلى ImgBB عند الحفظ، وتخزين الروابط فقط داخل قاعدة البيانات.</div>
+        </div>
+        <div class="field">
+          <label>إضافة رابط صورة سريع</label>
+          <input type="text" id="singleImageUrl" placeholder="الصق رابط صورة هنا" />
+          <div class="row-actions">
+            <button class="btn btn-secondary" type="button" onclick="addSingleImageUrl()"><i class="fa-solid fa-image"></i> إضافة صورة</button>
+            <button class="btn btn-primary" type="button" onclick="resetProductForm(); openModal('productModal')"><i class="fa-solid fa-box-open"></i> منتج جديد</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="image-tools">
+        <button class="btn btn-secondary" type="button" onclick="clearAllImages()">مسح كل الصور</button>
+      </div>
+      <div class="image-counter" id="imageCounterText">عدد الصور الحالية: 0</div>
+      <div class="preview-images" id="previewImages"></div>
+      <div id="saveStatusBox" class="status-box"></div><div id="firebaseStateNote" class="file-note"></div>
+      <div class="row-actions">
+        <button class="btn btn-success" onclick="saveProduct()">حفظ المنتج</button>
+        <button class="btn btn-secondary" onclick="resetProductForm()">تفريغ الحقول</button>
+        <button class="btn btn-danger hidden" id="deleteEditingBtn" onclick="deleteEditingProduct()">حذف هذا المنتج</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="categoryModal" class="modal" onclick="closeModal(event,'categoryModal')">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <div class="modal-head"><h3 class="modal-title">إدارة الأقسام</h3><button class="close-btn" onclick="closeById('categoryModal')"><i class="fa-solid fa-xmark"></i></button></div>
+      <div class="field"><label>إضافة قسم جديد</label><input type="text" id="newCategoryNameModal" placeholder="مثال: ألعاب - تخزين - قرطاسية" /></div>
+      <div class="row-actions"><button class="btn btn-primary" onclick="addCategory(true)">إضافة القسم</button></div>
+      <div class="chips" id="adminCategoriesListModal"></div>
+    </div>
+  </div>
+
+  <div id="settingsModal" class="modal" onclick="closeModal(event,'settingsModal')">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <div class="modal-head"><h3 class="modal-title">إعدادات المتجر</h3><button class="close-btn" onclick="closeById('settingsModal')"><i class="fa-solid fa-xmark"></i></button></div>
+      <div class="grid-2">
+        <div class="field"><label>اسم المتجر</label><input type="text" id="setStoreName" /></div>
+        <div class="field"><label>وصف أعلى الصفحة</label><input type="text" id="setStoreSubtitle" /></div>
+      </div>
+      <div class="field"><label>وصف المتجر / حول المتجر</label><textarea id="setStoreAbout"></textarea></div>
+      <div class="grid-2">
+        <div class="field"><label>عنوان البانر الرئيسي</label><input type="text" id="setHeroTitle" /></div>
+        <div class="field"><label>وصف البانر الرئيسي</label><input type="text" id="setHeroDesc" /></div>
+      </div>
+      <div class="grid-2">
+        <div class="field"><label>رقم واتساب الطلبات</label><input type="text" id="setWhatsapp" placeholder="9647xxxxxxxx" /></div>
+        <div class="field"><label>رابط تيليجرام</label><input type="text" id="setTelegram" placeholder="https://t.me/username" /></div>
+      </div>
+      <div class="grid-2">
+        <div class="field"><label>رابط تيك توك</label><input type="text" id="setTiktok" placeholder="https://www.tiktok.com/@username" /></div>
+        <div class="field"><label>نص الشاشة الافتتاحية</label><textarea id="setSplashText" placeholder="اكتب النص كما تريد، عادي بدون أي رموز"></textarea><div class="helper-inline">عادي تكتب نص عادي وتحذف الرموز كلها. إذا تريد سطر جديد اكتب Enter، ويتحوّل تلقائيًا.</div></div>
+      </div>
+      <div class="field"><label>قالب رسالة الطلب في واتساب</label><textarea id="setOrderTemplate" placeholder="مثال: مرحبًا، أريد طلب هذا المنتج: {{name}}"></textarea><div class="helper-inline">استخدم: {{name}} {{price}} {{category}} {{desc}}</div></div>
+      <div class="row-actions"><button class="btn btn-success" onclick="saveStoreSettings()">حفظ الإعدادات</button></div>
+    </div>
+  </div>
+
+  <div id="passwordModal" class="modal" onclick="closeModal(event,'passwordModal')">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <div class="modal-head"><h3 class="modal-title">تغيير رمز الإدارة</h3><button class="close-btn" onclick="closeById('passwordModal')"><i class="fa-solid fa-xmark"></i></button></div>
+      <div class="field"><label>الرمز الحالي</label><input type="password" id="oldPin" /></div>
+      <div class="field"><label>الرمز الجديد</label><input type="password" id="newPin" /></div>
+      <div class="row-actions"><button class="btn btn-primary" onclick="changeAdminPin()">حفظ الرمز الجديد</button></div>
+    </div>
+  </div>
+
+  <div id="descModal" class="modal" onclick="closeModal(event,'descModal')">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <div class="modal-head"><h3 class="modal-title" id="descModalTitle">وصف المنتج</h3><button class="close-btn" onclick="closeById('descModal')"><i class="fa-solid fa-xmark"></i></button></div>
+      <div id="descModalText" class="desc-modal-text"></div>
+    </div>
+  </div>
+
+  <button id="backChip" class="back-chip" onclick="handleBackAction()"><i class="fa-solid fa-arrow-right"></i></button>
+
+<script>
+const firebaseConfig = {
+  databaseURL: "https://msstore-5c5f4-default-rtdb.firebaseio.com/"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const IMGBB_API_KEY = "17ce7ef832ce751d7760244683606c20";
+
+db.ref(".info/connected").on("value", snap => {
+  window.msFirebaseConnected = !!snap.val();
+  const note = document.getElementById("firebaseStateNote");
+  if(note){
+    note.textContent = snap.val() ? "الاتصال بقاعدة البيانات: متصل" : "الاتصال بقاعدة البيانات: غير متصل";
+  }
+});
+
+let isAdmin = false, tapCounter = 0, maintenanceTapCounter = 0;
+let allProducts = [], allCategories = [], storeSettings = {}, visitorsCount = 0, selectedCategory = "الكل";
+let searchDebounce = null;
+let currentEditingImages = [];
+let currentUploadFiles = [];
+let currentAd = null;
+let modalStack = [];
+
+const defaultSettings = {
+  storeName: "متجر MS",
+  storeSubtitle: "متجر أنيق وفخم بإدارة مصطفى سعدي",
+  storeAbout: "متجر MS يقدم لك تجربة تسوق أنيقة وسهلة، مع منتجات مختارة بعناية وجودة تليق بذوقك، وطلب مباشر وسريع عبر واتساب. بإدارة مصطفى سعدي.",
+  heroTitle: "مرحبًا بك في متجر MS، حيث الفخامة تبدأ من أول نظرة",
+  heroDesc: "اكتشف تشكيلة راقية ومنتجات مختارة بعناية، واطلب بسهولة وسرعة عبر واتساب. بإدارة مصطفى سعدي.",
+  whatsapp: "9647712630779",
+  telegram: "https://t.me/msstore95",
+  tiktok: "https://www.tiktok.com/@msah_95",
+  splashText: "✨ أهلاً بك في متجر MS<br>نوفر لك منتجات مختارة بعناية وتجربة تسوق سهلة وسريعة من داخل المتجر.<br><span style='font-size:14px;opacity:.92;'>بإدارة مصطفى سعدي</span>",
+  adminPin: "1",
+  maintenanceMode: false,
+  maintenanceMessage: "نقوم حاليًا ببعض التحسينات داخل المتجر، يرجى العودة لاحقًا.",
+  adsEnabled: true,
+  versionText: "MS Store © 2026 | إصدار MS v1.0",
+  orderMessageTemplate: "مرحبًا ✨\nأريد طلب هذا المنتج:\n📦 {{name}}\n💰 {{price}}\n📂 {{category}}\n📝 {{desc}}"
+};
+
+document.addEventListener("DOMContentLoaded", () => {
+  applySavedTheme();
+  initAdminState();
+  showProductSkeletons();
+  countVisitor();
+  listenStoreSettings();
+  listenCategories();
+  listenProducts();
+  listenAds();
+  initMaintenanceAccess();
+  initKeyboardHelpers();
+  initBackHandler();
+  startSplash();
+});
+
+function startSplash(){
+  const bar = document.getElementById("progressFill");
+  const splash = document.getElementById("splashScreen");
+  if(bar) setTimeout(() => { bar.style.width = "100%"; }, 50);
+  setTimeout(() => {
+    if(!splash) return;
+    splash.style.opacity = "0";
+    splash.style.pointerEvents = "none";
+    setTimeout(() => splash.style.display = "none", 500);
+  }, 3500);
+}
+
+function showProductSkeletons(){
+  const container = document.getElementById("productsContainer");
+  let html = "";
+  for(let i=0;i<6;i++){
+    html += '<div class="sk-card"><div class="sk-img skeleton"></div><div class="sk-line skeleton"></div><div class="sk-line skeleton small"></div><div class="sk-line skeleton"></div></div>';
+  }
+  container.innerHTML = html;
+}
+
+function applySavedTheme(){
+  const mode = localStorage.getItem("msTheme") || "light";
+  if(mode === "dark") document.body.classList.add("dark-mode");
+  updateThemeIcon();
+}
+function toggleTheme(){
+  document.body.classList.toggle("dark-mode");
+  localStorage.setItem("msTheme", document.body.classList.contains("dark-mode") ? "dark" : "light");
+  updateThemeIcon();
+}
+function updateThemeIcon(){
+  const icon = document.querySelector("#themeBtn i");
+  if(icon) icon.className = document.body.classList.contains("dark-mode") ? "fa-solid fa-sun" : "fa-solid fa-moon";
+}
+
+function initAdminState(){
+  isAdmin = localStorage.getItem("msAdmin") === "true";
+  updateAdminUI();
+}
+function updateAdminUI(){
+  document.getElementById("fabAdmin").classList.toggle("show", isAdmin);
+  renderProducts();
+  renderAdminProducts();
+  applyMaintenanceMode();
+}
+
+document.getElementById("brandTapArea").onclick = function(){
+  tapCounter++;
+  if(tapCounter >= 8){
+    tapCounter = 0;
+    const pin = prompt("أدخل رمز الإدارة");
+    if(pin === null) return;
+    const savedPin = storeSettings.adminPin || defaultSettings.adminPin;
+    if(pin === savedPin){
+      isAdmin = true;
+      localStorage.setItem("msAdmin","true");
+      updateAdminUI();
+      openAdminPanel();
+    }else alert("رمز الإدارة غير صحيح");
+  }
+};
+
+function initMaintenanceAccess(){
+  const wrench = document.getElementById("maintenanceWrench");
+  wrench.addEventListener("click", () => {
+    maintenanceTapCounter++;
+    if(maintenanceTapCounter >= 10){
+      maintenanceTapCounter = 0;
+      document.getElementById("maintenanceOverlay").classList.remove("show");
+      document.getElementById("brandTapArea").click();
+    }
+  });
+}
+
+function applyMaintenanceMode(){
+  const overlay = document.getElementById("maintenanceOverlay");
+  const msg = document.getElementById("maintenanceText");
+  if(msg) msg.textContent = storeSettings.maintenanceMessage || defaultSettings.maintenanceMessage;
+  if(storeSettings.maintenanceMode && !isAdmin) overlay.classList.add("show");
+  else overlay.classList.remove("show");
+}
+
+function openAdminPanel(){
+  if(!isAdmin){ alert("يجب تسجيل الدخول كإدارة أولاً"); return; }
+  openModal("adminPanel");
+  renderAdminProducts();
+  renderAdminCategories();
+  fillSettingsForm();
+  fillMaintenanceForm();
+  renderAdminAds();
+  updateStatsCards();
+  document.getElementById("maintenanceOverlay").classList.remove("show");
+}
+function logoutAdmin(){
+  if(!confirm("هل تريد الخروج من وضع الإدارة؟")) return;
+  isAdmin = false;
+  localStorage.setItem("msAdmin","false");
+  closeById("adminPanel");
+  updateAdminUI();
+}
+
+function listenStoreSettings(){
+  db.ref("settings/store").on("value", snap => {
+    storeSettings = Object.assign({}, defaultSettings, snap.val() || {});
+    applyStoreSettings();
+    fillSettingsForm();
+    fillMaintenanceForm();
+  });
+}
+function applyStoreSettings(){
+  document.title = storeSettings.storeName || "متجر MS";
+  setText("storeTitleTop", storeSettings.storeName);
+  setText("storeSubTop", storeSettings.storeSubtitle);
+  setText("heroTitle", storeSettings.heroTitle);
+  setText("heroDesc", storeSettings.heroDesc);
+  setText("footerStoreTitle", storeSettings.storeName);
+  setText("footerAboutText", storeSettings.storeAbout);
+  setText("aboutModalText", storeSettings.storeAbout);
+  setText("splashTitle", storeSettings.storeName);
+  document.getElementById("splashSubtitle").innerHTML = formatDisplayText(storeSettings.splashText || defaultSettings.splashText);
+  document.getElementById("whatsappLink").href = "https://wa.me/" + cleanupNumber(storeSettings.whatsapp);
+  document.getElementById("telegramLink").href = storeSettings.telegram || "https://t.me/";
+  document.getElementById("tiktokLink").href = storeSettings.tiktok || "https://www.tiktok.com/@msah_95";
+  setText("footerVersion", storeSettings.versionText || defaultSettings.versionText);
+  applyMaintenanceMode();
+}
+function fillSettingsForm(){
+  setVal("setStoreName", storeSettings.storeName);
+  setVal("setStoreSubtitle", storeSettings.storeSubtitle);
+  setVal("setStoreAbout", storeSettings.storeAbout);
+  setVal("setHeroTitle", storeSettings.heroTitle);
+  setVal("setHeroDesc", storeSettings.heroDesc);
+  setVal("setWhatsapp", storeSettings.whatsapp);
+  setVal("setTelegram", storeSettings.telegram);
+  setVal("setTiktok", storeSettings.tiktok);
+  setVal("setSplashText", storeSettings.splashText);
+  setVal("setOrderTemplate", storeSettings.orderMessageTemplate || defaultSettings.orderMessageTemplate);
+}
+function fillMaintenanceForm(){
+  const mt = document.getElementById("maintenanceToggle");
+  const mm = document.getElementById("maintenanceMessageInput");
+  const at = document.getElementById("adsEnabledToggle");
+  if(mt) mt.checked = !!storeSettings.maintenanceMode;
+  if(mm) mm.value = storeSettings.maintenanceMessage || defaultSettings.maintenanceMessage;
+  if(at) at.checked = storeSettings.adsEnabled !== false;
+}
+async function saveStoreSettings(){
+  const data = Object.assign({}, storeSettings, {
+    storeName: val("setStoreName") || defaultSettings.storeName,
+    storeSubtitle: val("setStoreSubtitle") || defaultSettings.storeSubtitle,
+    storeAbout: val("setStoreAbout") || defaultSettings.storeAbout,
+    heroTitle: val("setHeroTitle") || defaultSettings.heroTitle,
+    heroDesc: val("setHeroDesc") || defaultSettings.heroDesc,
+    whatsapp: cleanupNumber(val("setWhatsapp") || defaultSettings.whatsapp),
+    telegram: val("setTelegram") || defaultSettings.telegram,
+    tiktok: val("setTiktok") || defaultSettings.tiktok,
+    splashText: val("setSplashText") || defaultSettings.splashText,
+    orderMessageTemplate: val("setOrderTemplate") || defaultSettings.orderMessageTemplate
+  });
+  await db.ref("settings/store").set(data);
+  alert("تم حفظ إعدادات المتجر بنجاح");
+  closeById("settingsModal");
+}
+async function changeAdminPin(){
+  const oldPin = val("oldPin"), newPin = val("newPin");
+  if(oldPin !== (storeSettings.adminPin || defaultSettings.adminPin)){ alert("الرمز الحالي غير صحيح"); return; }
+  if(!newPin){ alert("أدخل رمزًا جديدًا"); return; }
+  await db.ref("settings/store/adminPin").set(newPin);
+  setVal("oldPin",""); setVal("newPin","");
+  alert("تم تغيير رمز الإدارة");
+  closeById("passwordModal");
+}
+
+function countVisitor(){
+  const visited = sessionStorage.getItem("msVisited");
+  if(!visited){
+    db.ref("settings/visitors").transaction(c => (c || 0) + 1);
+    sessionStorage.setItem("msVisited","true");
+  }
+  db.ref("settings/visitors").on("value", s => {
+    visitorsCount = s.val() || 0;
+    updateStatsCards();
+  });
+}
+
+function listenCategories(){
+  db.ref("categories").on("value", snap => {
+    allCategories = [];
+    snap.forEach(child => {
+      const v = child.val();
+      allCategories.push({ id: child.key, name: v.name || v });
+    });
+    if(allCategories.length === 0){ seedDefaultCategories(); return; }
+    renderCategories();
+    fillCategorySelect();
+    renderAdminCategories();
+    updateStatsCards();
+  });
+}
+async function seedDefaultCategories(){
+  const defaults = ["عطور", "اكسسوارات", "أدوات منزلية", "قرطاسية", "ألعاب", "منظمات"];
+  for(const c of defaults) await db.ref("categories").push({
