@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <title>متجر MS</title>
 
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -25,7 +28,7 @@
 
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
     html{scroll-behavior:smooth}
-    body{margin:0;font-family:'Tajawal',sans-serif;background:linear-gradient(180deg,var(--bg),#eef4ff 180%);color:var(--text)}
+    body{margin:0;font-family:'Tajawal',sans-serif;background:linear-gradient(180deg,var(--bg),#eef4ff 180%);color:var(--text);padding-top:0}
     body.dark-mode{background:linear-gradient(180deg,var(--bg),#09101d 180%)}
     button,input,textarea,select{font-family:'Tajawal',sans-serif}
     a{text-decoration:none}
@@ -63,7 +66,7 @@
     .search-box i{color:var(--muted);font-size:14px}
     .search-box input{width:100%;border:none;outline:none;background:transparent;padding:13px 0;color:var(--text);font-size:14px}
 
-    .hero{margin:12px 12px 0;background:linear-gradient(135deg,#1d4ed8,#0ea5e9);color:#fff;border-radius:18px;padding:16px 16px;box-shadow:0 12px 24px rgba(0,0,0,0.10);position:relative;overflow:hidden}
+    .hero{margin:12px 12px 6px;background:linear-gradient(135deg,#1d4ed8,#0ea5e9);color:#fff;border-radius:18px;padding:16px 16px;box-shadow:0 12px 24px rgba(0,0,0,0.10);position:relative;overflow:hidden}
     .hero::before{content:"";position:absolute;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.08);left:-20px;bottom:-30px}
     .hero::after{content:"";position:absolute;width:70px;height:70px;border-radius:50%;background:rgba(255,255,255,.06);top:-20px;right:-15px}
     .hero h2,.hero p{position:relative;z-index:1}
@@ -71,16 +74,19 @@
     .hero p{margin:0;font-size:14px;line-height:1.9;opacity:.97;font-weight:500}
 
     .ads-wrap{
-      margin:8px 12px 0;
+      margin:0 12px;
       background:var(--card);
       border:1px solid var(--border);
       border-radius:16px;
       overflow:hidden;
       box-shadow:var(--shadow);
       display:none;
-      position:sticky;
-      top:82px;
-      z-index:1950;
+      position:fixed;
+      top:74px;
+      left:0;
+      right:0;
+      z-index:2500;
+      min-height:52px;
     }
     .ads-wrap.show{display:block}
     .ads-strip{position:relative;min-height:52px;display:flex;align-items:center;overflow:hidden;color:#fff;padding:0 14px}
@@ -95,25 +101,25 @@
       display:flex;
       align-items:center;
       justify-content:space-between;
-      padding:0 12px 0;
-      gap:6px;
+      padding:4px 12px 0;
+      gap:10px;
       flex-wrap:wrap;
       background:var(--bg);
-      margin-top:0;
-      margin-bottom:0;
+      margin-top:120px;
     }
     .section-title{font-size:15px;font-weight:900}
     .section-note{color:var(--muted);font-size:12px}
     .category-strip{
-      position:sticky;
-      top:134px;
-      z-index:1940;
+      position:fixed;
+      top:132px;
+      left:0;
+      right:0;
+      z-index:2400;
       background:var(--bg);
       display:flex;
       gap:8px;
       overflow-x:auto;
-      padding:0 12px 12px;
-      margin-top:0;
+      padding:12px;
       scrollbar-width:none;
     }
     .category-strip::-webkit-scrollbar{display:none}
@@ -122,7 +128,7 @@
     .filters{
       display:flex;
       gap:10px;
-      padding:0 12px 12px;
+      padding:64px 12px 12px;
       align-items:center;
       background:var(--bg);
     }
