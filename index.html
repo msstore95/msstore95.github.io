@@ -4,49 +4,10 @@
   <meta charset="UTF-8" />
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
   <title>متجر MS</title>
 
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js">
-document.addEventListener("focusin", (e) => {
-  const t = e.target;
-  if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT")) {
-    document.body.classList.add("keyboard-open");
-    setTimeout(() => {
-      try { t.scrollIntoView({behavior:"smooth", block:"center"}); } catch(err) {}
-    }, 250);
-  }
-});
-document.addEventListener("focusout", () => {
-  setTimeout(() => {
-    if (!document.querySelector("input:focus, textarea:focus, select:focus")) {
-      document.body.classList.remove("keyboard-open");
-    }
-  }, 150);
-});
-
-</script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js">
-document.addEventListener("focusin", (e) => {
-  const t = e.target;
-  if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT")) {
-    document.body.classList.add("keyboard-open");
-    setTimeout(() => {
-      try { t.scrollIntoView({behavior:"smooth", block:"center"}); } catch(err) {}
-    }, 250);
-  }
-});
-document.addEventListener("focusout", () => {
-  setTimeout(() => {
-    if (!document.querySelector("input:focus, textarea:focus, select:focus")) {
-      document.body.classList.remove("keyboard-open");
-    }
-  }, 150);
-});
-
-</script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
   <style>
@@ -64,7 +25,7 @@ document.addEventListener("focusout", () => {
 
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
     html{scroll-behavior:smooth}
-    body{margin:0;font-family:'Tajawal',sans-serif;background:linear-gradient(180deg,var(--bg),#eef4ff 180%);color:var(--text);padding-top:0}
+    body{margin:0;font-family:'Tajawal',sans-serif;background:linear-gradient(180deg,var(--bg),#eef4ff 180%);color:var(--text)}
     body.dark-mode{background:linear-gradient(180deg,var(--bg),#09101d 180%)}
     button,input,textarea,select{font-family:'Tajawal',sans-serif}
     a{text-decoration:none}
@@ -109,21 +70,7 @@ document.addEventListener("focusout", () => {
     .hero h2{margin:0 0 6px;font-size:22px;font-weight:900;line-height:1.5}
     .hero p{margin:0;font-size:14px;line-height:1.9;opacity:.97;font-weight:500}
 
-    .ads-wrap{
-      background:var(--card);
-      border:1px solid var(--border);
-      border-radius:16px;
-      overflow:hidden;
-      box-shadow:var(--shadow);
-      display:none;
-      position:fixed;
-      top:74px;
-      left:12px;
-      right:12px;
-      z-index:3200;
-      min-height:52px;
-      margin:0;
-    }
+    .ads-wrap{margin:8px 12px 10px;background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:var(--shadow);display:none;position:sticky;top:82px;z-index:1900}
     .ads-wrap.show{display:block}
     .ads-strip{position:relative;min-height:52px;display:flex;align-items:center;overflow:hidden;color:#fff;padding:0 14px}
     .ads-label{position:relative;z-index:2;display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:999px;font-size:12px;font-weight:900;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.22);flex-shrink:0;margin-left:10px}
@@ -133,66 +80,38 @@ document.addEventListener("focusout", () => {
     .ads-item-inline{display:inline-flex;align-items:center;gap:10px;margin-left:40px;direction:rtl;unicode-bidi:plaintext;flex-shrink:0}
     @keyframes adsTicker{0%{transform:translateX(-50%)}100%{transform:translateX(0)}}
 
-    .section-bar{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding:4px 12px 0;
-      gap:10px;
-      flex-wrap:wrap;
-      background:var(--bg);
-      margin-top:122px;
-    }
+    .section-bar{display:flex;align-items:center;justify-content:space-between;padding:4px 12px 0;gap:10px;flex-wrap:wrap}
     .section-title{font-size:15px;font-weight:900}
     .section-note{color:var(--muted);font-size:12px}
-    .category-strip{
-      position:fixed;
-      top:132px;
-      left:0;
-      right:0;
-      z-index:3100;
-      background:var(--bg);
-      display:flex;
-      gap:8px;
-      overflow-x:auto;
-      padding:8px 12px 12px;
-      scrollbar-width:none;
-      margin:0;
-    }
+    .category-strip{display:flex;gap:8px;overflow-x:auto;padding:12px;scrollbar-width:none}
     .category-strip::-webkit-scrollbar{display:none}
     .cat-btn{border:none;background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:999px;padding:10px 16px;white-space:nowrap;font-size:13px;font-weight:800;cursor:pointer;box-shadow:var(--shadow)}
     .cat-btn.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent}
-    .filters{
-      display:flex;
-      gap:10px;
-      padding:60px 12px 12px;
-      align-items:center;
-      background:var(--bg);
-    }
-    .filters select{flex:1;border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:14px;padding:12px;outline:none;box-shadow:var(--shadow)}
+    .filters{display:flex;gap:10px;padding:0 12px 12px;align-items:center}
+    .filters select{flex:1;border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:14px;padding:12px;outline:none;box-shadow:var(--shadow);min-height:52px}
 
-    .products{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:0 12px 20px;align-items:start}
-    .card{background:var(--card);border:1px solid var(--border);border-radius:18px;overflow:hidden;box-shadow:0 8px 18px rgba(0,0,0,0.05);display:flex;flex-direction:column;position:relative;height:auto}
+    .products{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:0 12px 20px;align-items:stretch}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:18px;overflow:hidden;box-shadow:0 8px 18px rgba(0,0,0,0.05);display:flex;flex-direction:column;position:relative;height:100%;min-height:420px}
     .card-top-badges{position:absolute;top:10px;right:10px;z-index:3;display:flex;flex-direction:column;gap:6px}
     .badge{padding:6px 10px;border-radius:999px;font-size:11px;font-weight:800;color:#fff;box-shadow:0 8px 18px rgba(0,0,0,0.12)}
     .badge.featured{background:linear-gradient(135deg,#f59e0b,#f97316)}
     .admin-delete-btn,.admin-edit-btn{position:absolute;z-index:6;width:34px;height:34px;border:none;border-radius:12px;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center}
     .admin-delete-btn{top:10px;left:10px;background:rgba(220,38,38,.95)}
     .admin-edit-btn{top:52px;left:10px;background:rgba(37,99,235,.95)}
-    .gallery-wrapper{width:100%;height:170px;background:#fff;position:relative}
+    .gallery-wrapper{width:100%;height:170px;background:#fff;position:relative;flex-shrink:0}
     .gallery-img{width:100%;height:100%;object-fit:cover;background:#fff;cursor:zoom-in}
-    .product-info{padding:10px;display:flex;flex-direction:column;flex:1}
-    .p-name{font-size:15px;font-weight:900;line-height:1.45;margin:0 0 3px}
+    .product-info{padding:10px;display:flex;flex-direction:column;flex:1;justify-content:flex-start}
+    .p-name{font-size:15px;font-weight:900;line-height:1.45;margin:0 0 6px;min-height:44px;display:flex;align-items:flex-start}
     .p-desc{margin:0 0 5px;cursor:pointer}
-    .p-desc.long{font-size:11px;color:var(--muted);line-height:1.7;font-weight:600;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
-    .p-desc.short{font-size:24px;color:var(--text);line-height:1.2;font-weight:900}
+    .p-desc.long{font-size:11px;color:var(--muted);line-height:1.7;font-weight:600;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;min-height:76px}
+    .p-desc.short{font-size:24px;color:var(--text);line-height:1.2;font-weight:900;min-height:58px}
     .p-desc.expanded{-webkit-line-clamp:unset}
-    .meta-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px}
+    .meta-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;min-height:32px}
     .stock{font-size:11px;font-weight:800;border-radius:999px;padding:6px 10px}
     .stock.in{background:rgba(22,163,74,.12);color:var(--success)}
     .stock.out{background:rgba(220,38,38,.12);color:var(--danger)}
-    .price-tag{color:var(--success);font-size:18px;font-weight:900;margin-bottom:4px}
-    .card-actions{margin-top:auto;display:flex;gap:8px}
+    .price-tag{color:var(--success);font-size:18px;font-weight:900;margin-bottom:8px;min-height:32px;display:flex;align-items:center}
+    .card-actions{margin-top:auto;display:flex;gap:8px;padding-top:6px}
     .btn{border:none;outline:none;cursor:pointer;border-radius:12px;padding:11px;font-weight:900;font-size:13px;transition:.2s}
     .btn-order{flex:1;background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff}
     .btn-share{width:46px;background:var(--bg);color:var(--text);border:1px solid var(--border)}
@@ -205,39 +124,16 @@ document.addEventListener("focusout", () => {
     .social-btn{width:42px;height:42px;border-radius:14px;border:1px solid var(--border);background:var(--bg);color:var(--accent);display:flex;align-items:center;justify-content:center;text-decoration:none;box-shadow:var(--shadow);font-size:16px}
     .mini-text{font-size:11px;color:var(--muted);margin-top:12px}
 
-    .modal{
-      display:none;
-      position:fixed;
-      inset:0;
-      z-index:5000;
-      background:rgba(0,0,0,.55);
-      align-items:flex-start;
-      justify-content:center;
-      padding:12px;
-      overflow-y:auto;
-    }
+    .modal{display:none;position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,.55);align-items:center;justify-content:center;padding:14px}
     .modal.show{display:flex}
-    .modal-card{
-      width:100%;
-      max-width:760px;
-      max-height:calc(100vh - 24px);
-      overflow-y:auto;
-      background:var(--card);
-      border:1px solid var(--border);
-      border-radius:26px;
-      box-shadow:0 30px 60px rgba(0,0,0,.25);
-      padding:18px;
-      color:var(--text);
-      margin:8px auto 24px;
-      -webkit-overflow-scrolling:touch;
-    }
+    .modal-card{width:100%;max-width:760px;max-height:92vh;overflow-y:auto;background:var(--card);border:1px solid var(--border);border-radius:26px;box-shadow:0 30px 60px rgba(0,0,0,.25);padding:18px;color:var(--text)}
     .modal-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px}
     .modal-title{font-size:20px;font-weight:900;margin:0}
     .close-btn{width:40px;height:40px;border:none;border-radius:14px;background:var(--bg);color:var(--text);cursor:pointer;border:1px solid var(--border)}
     .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     .field{margin-bottom:12px}
     .field label{display:block;font-size:13px;font-weight:800;margin-bottom:8px}
-    .field input,.field textarea,.field select{width:100%;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:14px;padding:13px 14px;outline:none;font-size:14px}
+    .field input,.field textarea,.field select{width:100%;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:14px;padding:13px 14px;outline:none;font-size:14px;min-height:52px}
     .field textarea{resize:none;min-height:95px}
     .switches{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
     .toggle-box,.ad-toggle-box{background:var(--bg);border:1px solid var(--border);border-radius:16px;padding:12px;display:flex;align-items:center;justify-content:space-between;gap:10px}
@@ -308,9 +204,7 @@ document.addEventListener("focusout", () => {
     .sk-img{height:170px}.sk-line{height:14px;margin:10px;border-radius:8px}.sk-line.small{width:55%}
     @keyframes shimmer{0%{background-position:100% 0}100%{background-position:0 0}}
 
-    .keyboard-open .modal-card{padding-bottom:320px;}
-.field input:focus,.field textarea:focus,.field select:focus{scroll-margin-bottom:340px;}
-@media (max-width:640px){
+    @media (max-width:640px){
       .grid-2,.switches,.stats-grid{grid-template-columns:1fr}
       .products{grid-template-columns:repeat(2,minmax(0,1fr))}
       .gallery-wrapper{height:160px}
@@ -492,9 +386,9 @@ document.addEventListener("focusout", () => {
           <div class="field">
             <label>السرعة</label>
             <select id="adSpeedInput" onchange="previewSingleAd()">
-              
-              
-              
+              <option value="slow">بطيء</option>
+              <option value="medium">وسط</option>
+              <option value="fast">سريع</option>
             </select>
           </div>
         </div>
@@ -1403,24 +1297,6 @@ function val(id){
   const el = document.getElementById(id);
   return el ? el.value : "";
 }
-
-document.addEventListener("focusin", (e) => {
-  const t = e.target;
-  if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT")) {
-    document.body.classList.add("keyboard-open");
-    setTimeout(() => {
-      try { t.scrollIntoView({behavior:"smooth", block:"center"}); } catch(err) {}
-    }, 250);
-  }
-});
-document.addEventListener("focusout", () => {
-  setTimeout(() => {
-    if (!document.querySelector("input:focus, textarea:focus, select:focus")) {
-      document.body.classList.remove("keyboard-open");
-    }
-  }, 150);
-});
-
 </script>
 </body>
 </html>
