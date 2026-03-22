@@ -425,12 +425,15 @@
       </div>
       <div class="grid-2">
         <div class="field"><label>القسم</label><select id="categorySelect"></select></div>
-        <div class="field"><label>حالة المخزون</label><select id="pStock"></select></div>
+        <div class="field"><label>حالة المخزون</label><select id="pStock">
+          <option value="متوفر">متوفر</option>
+          <option value="غير متوفر">غير متوفر</option>
+        </select></div>
       </div>
       <div class="field"><label>وصف المنتج</label><textarea id="pDesc" placeholder="اكتب وصفًا قصيرًا وواضحًا"></textarea></div>
       <div class="switches">
-        <div class="toggle-box"><span>منتج مميز</span><input type="checkbox" id="pFeatured" /></div>
-        <div class="toggle-box"><span>إظهار المنتج في المتجر</span><input type="checkbox" id="pActive" checked /></div>
+        <div class="toggle-box"><span>منتج مميز</span><input type="checkbox" id="pFeatured" class="toggle-switch" /></div>
+        <div class="toggle-box"><span>إظهار المنتج في المتجر</span><input type="checkbox" id="pActive" class="toggle-switch" checked /></div>
       </div>
       <div class="field">
         <label>إضافة صور من الاستوديو</label>
@@ -480,19 +483,9 @@
         <div class="field"><label>نص الشاشة الافتتاحية</label><input type="text" id="setSplashText" placeholder="بإدارة مصطفى سعدي ✨" /></div>
       </div>
       <div class="grid-2">
-        <div class="field"><label>نص الحقوق أسفل المتجر</label><textarea id="setFooterRights" style="white-space:pre-line;" placeholder="مثال: "></textarea></div>
+        <div class="field"><label>نص الحقوق أسفل المتجر</label><textarea id="setFooterRights" style="white-space:pre-line;" placeholder="مثال: جميع الحقوق محفوظة لمتجر MS"></textarea></div>
         <div class="field"><label>حجم خط الحقوق</label>
-          <input type="number" id="setFooterRightsSize" min="8" max="50" step="1" placeholder="مثال 14">
-            
-            
-            
-            
-            
-            
-            
-            
-            
-          </select>
+          <input type="number" id="setFooterRightsSize" min="8" max="50" step="1" placeholder="مثال: 14" />
         </div>
       </div>
       <div class="row-actions"><button class="btn btn-success" onclick="saveStoreSettings()">حفظ الإعدادات</button></div>
@@ -1021,6 +1014,7 @@ function renderAdminProducts(){
 function initImagePicker(){
   const input = document.getElementById("pImageFiles");
   if(!input) return;
+  document.getElementById("pImgUrls")?.addEventListener("input", renderPreviewImages);
   input.addEventListener("change", async (event) => {
     const files = Array.from(event.target.files || []);
     if(!files.length) return;
@@ -1071,6 +1065,7 @@ function resetProductForm(){
   setVal("pImgUrls", "");
   document.getElementById("pFeatured").checked = false;
   document.getElementById("pActive").checked = true;
+  if(allCategories.length) document.getElementById("categorySelect").value = allCategories[0].name;
   document.getElementById("pStock").value = "متوفر";
   currentEditingImages = [];
   document.getElementById("pImageFiles").value = "";
