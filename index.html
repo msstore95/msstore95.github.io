@@ -9,8 +9,44 @@
   <meta http-equiv="Expires" content="0" />
   <title>متجر MS</title>
 
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js">
+document.addEventListener("focusin", (e) => {
+  const t = e.target;
+  if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT")) {
+    document.body.classList.add("keyboard-open");
+    setTimeout(() => {
+      try { t.scrollIntoView({behavior:"smooth", block:"center"}); } catch(err) {}
+    }, 250);
+  }
+});
+document.addEventListener("focusout", () => {
+  setTimeout(() => {
+    if (!document.querySelector("input:focus, textarea:focus, select:focus")) {
+      document.body.classList.remove("keyboard-open");
+    }
+  }, 150);
+});
+
+</script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js">
+document.addEventListener("focusin", (e) => {
+  const t = e.target;
+  if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT")) {
+    document.body.classList.add("keyboard-open");
+    setTimeout(() => {
+      try { t.scrollIntoView({behavior:"smooth", block:"center"}); } catch(err) {}
+    }, 250);
+  }
+});
+document.addEventListener("focusout", () => {
+  setTimeout(() => {
+    if (!document.querySelector("input:focus, textarea:focus, select:focus")) {
+      document.body.classList.remove("keyboard-open");
+    }
+  }, 150);
+});
+
+</script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
   <style>
@@ -74,7 +110,6 @@
     .hero p{margin:0;font-size:14px;line-height:1.9;opacity:.97;font-weight:500}
 
     .ads-wrap{
-      margin:0 12px;
       background:var(--card);
       border:1px solid var(--border);
       border-radius:16px;
@@ -83,10 +118,11 @@
       display:none;
       position:fixed;
       top:74px;
-      left:0;
-      right:0;
-      z-index:2500;
+      left:12px;
+      right:12px;
+      z-index:3200;
       min-height:52px;
+      margin:0;
     }
     .ads-wrap.show{display:block}
     .ads-strip{position:relative;min-height:52px;display:flex;align-items:center;overflow:hidden;color:#fff;padding:0 14px}
@@ -105,7 +141,7 @@
       gap:10px;
       flex-wrap:wrap;
       background:var(--bg);
-      margin-top:120px;
+      margin-top:122px;
     }
     .section-title{font-size:15px;font-weight:900}
     .section-note{color:var(--muted);font-size:12px}
@@ -114,13 +150,14 @@
       top:132px;
       left:0;
       right:0;
-      z-index:2400;
+      z-index:3100;
       background:var(--bg);
       display:flex;
       gap:8px;
       overflow-x:auto;
-      padding:12px;
+      padding:8px 12px 12px;
       scrollbar-width:none;
+      margin:0;
     }
     .category-strip::-webkit-scrollbar{display:none}
     .cat-btn{border:none;background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:999px;padding:10px 16px;white-space:nowrap;font-size:13px;font-weight:800;cursor:pointer;box-shadow:var(--shadow)}
@@ -128,7 +165,7 @@
     .filters{
       display:flex;
       gap:10px;
-      padding:64px 12px 12px;
+      padding:60px 12px 12px;
       align-items:center;
       background:var(--bg);
     }
@@ -168,9 +205,32 @@
     .social-btn{width:42px;height:42px;border-radius:14px;border:1px solid var(--border);background:var(--bg);color:var(--accent);display:flex;align-items:center;justify-content:center;text-decoration:none;box-shadow:var(--shadow);font-size:16px}
     .mini-text{font-size:11px;color:var(--muted);margin-top:12px}
 
-    .modal{display:none;position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,.55);align-items:center;justify-content:center;padding:14px}
+    .modal{
+      display:none;
+      position:fixed;
+      inset:0;
+      z-index:5000;
+      background:rgba(0,0,0,.55);
+      align-items:flex-start;
+      justify-content:center;
+      padding:12px;
+      overflow-y:auto;
+    }
     .modal.show{display:flex}
-    .modal-card{width:100%;max-width:760px;max-height:92vh;overflow-y:auto;background:var(--card);border:1px solid var(--border);border-radius:26px;box-shadow:0 30px 60px rgba(0,0,0,.25);padding:18px;color:var(--text)}
+    .modal-card{
+      width:100%;
+      max-width:760px;
+      max-height:calc(100vh - 24px);
+      overflow-y:auto;
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:26px;
+      box-shadow:0 30px 60px rgba(0,0,0,.25);
+      padding:18px;
+      color:var(--text);
+      margin:8px auto 24px;
+      -webkit-overflow-scrolling:touch;
+    }
     .modal-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px}
     .modal-title{font-size:20px;font-weight:900;margin:0}
     .close-btn{width:40px;height:40px;border:none;border-radius:14px;background:var(--bg);color:var(--text);cursor:pointer;border:1px solid var(--border)}
@@ -248,7 +308,9 @@
     .sk-img{height:170px}.sk-line{height:14px;margin:10px;border-radius:8px}.sk-line.small{width:55%}
     @keyframes shimmer{0%{background-position:100% 0}100%{background-position:0 0}}
 
-    @media (max-width:640px){
+    .keyboard-open .modal-card{padding-bottom:320px;}
+.field input:focus,.field textarea:focus,.field select:focus{scroll-margin-bottom:340px;}
+@media (max-width:640px){
       .grid-2,.switches,.stats-grid{grid-template-columns:1fr}
       .products{grid-template-columns:repeat(2,minmax(0,1fr))}
       .gallery-wrapper{height:160px}
@@ -1341,6 +1403,24 @@ function val(id){
   const el = document.getElementById(id);
   return el ? el.value : "";
 }
+
+document.addEventListener("focusin", (e) => {
+  const t = e.target;
+  if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT")) {
+    document.body.classList.add("keyboard-open");
+    setTimeout(() => {
+      try { t.scrollIntoView({behavior:"smooth", block:"center"}); } catch(err) {}
+    }, 250);
+  }
+});
+document.addEventListener("focusout", () => {
+  setTimeout(() => {
+    if (!document.querySelector("input:focus, textarea:focus, select:focus")) {
+      document.body.classList.remove("keyboard-open");
+    }
+  }, 150);
+});
+
 </script>
 </body>
 </html>
