@@ -47,7 +47,7 @@
     #progressBar{width:80%;max-width:260px;height:6px;background:rgba(255,255,255,.2);border-radius:999px;margin-top:22px;overflow:hidden}
     #progressFill{height:100%;width:0%;background:#fff;border-radius:999px;transition:width 2.8s linear}
 
-    .header{position:sticky;top:0;z-index:2000;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);padding:10px 12px 8px}
+    .header{position:sticky;top:0;z-index:2100;background:rgba(255,255,255,.96);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);padding:8px 12px 6px}
     body.dark-mode .header{background:rgba(17,24,39,.9)}
     .topbar{display:flex;align-items:center;justify-content:space-between;gap:10px}
     .brand{display:flex;align-items:center;gap:10px;min-width:0;cursor:pointer}
@@ -57,48 +57,48 @@
     .brand-title{font-size:20px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .brand-sub{font-size:11px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .top-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
-    .icon-btn{width:40px;height:40px;border-radius:14px;border:1px solid var(--border);background:var(--card);color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:var(--shadow);font-size:16px}
+    .icon-btn{width:36px;height:36px;border-radius:12px;border:1px solid var(--border);background:var(--card);color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:var(--shadow);font-size:15px}
     .search-wrap{margin-top:10px;display:flex;gap:10px;align-items:center}
-    .search-box{flex:1;display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:0 14px;box-shadow:var(--shadow)}
-    .search-box i{color:var(--muted);font-size:14px}
-    .search-box input{width:100%;border:none;outline:none;background:transparent;padding:13px 0;color:var(--text);font-size:14px}
+    .search-box{flex:1;display:flex;align-items:center;gap:5px;background:var(--card);border:1px solid var(--border);border-radius:9px;padding:0 8px;box-shadow:var(--shadow);min-height:34px}
+    .search-box i{color:var(--muted);font-size:12px}
+    .search-box input{width:100%;border:none;outline:none;background:transparent;padding:6px 0;color:var(--text);font-size:11px}
 
     .hero{margin:12px 12px 6px;background:linear-gradient(135deg,#1d4ed8,#0ea5e9);color:#fff;border-radius:18px;padding:16px 16px;box-shadow:0 12px 24px rgba(0,0,0,0.10);position:relative;overflow:hidden}
     .hero::before{content:"";position:absolute;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.08);left:-20px;bottom:-30px}
     .hero::after{content:"";position:absolute;width:70px;height:70px;border-radius:50%;background:rgba(255,255,255,.06);top:-20px;right:-15px}
     .hero h2,.hero p{position:relative;z-index:1}
-    .hero h2{margin:0 0 6px;font-size:22px;font-weight:900;line-height:1.5}
-    .hero p{margin:0;font-size:14px;line-height:1.9;opacity:.97;font-weight:500}
+    .hero h2{margin:0 0 3px;font-size:16px;font-weight:900;line-height:1.4}
+    .hero p{margin:0;font-size:11px;line-height:1.55;opacity:.97;font-weight:500}
 
-    .ads-wrap{margin:8px 12px 10px;background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:var(--shadow);display:none;position:sticky;top:82px;z-index:1900}
+    .ads-wrap{margin:4px 12px 6px;background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:var(--shadow);display:none}
     .ads-wrap.show{display:block}
-    .ads-strip{position:relative;min-height:52px;display:flex;align-items:center;overflow:hidden;color:#fff;padding:0 14px}
-    .ads-label{position:relative;z-index:2;display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:999px;font-size:12px;font-weight:900;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.22);flex-shrink:0;margin-left:10px}
-    .ads-marquee{position:relative;z-index:1;overflow:hidden;white-space:nowrap;flex:1;direction:ltr}
-    .ads-track{display:inline-flex;align-items:center;white-space:nowrap;will-change:transform;animation:adsTicker 12s linear infinite;font-size:14px;font-weight:800}
-    .ads-track.fast{animation-duration:6s}.ads-track.medium{animation-duration:12s}.ads-track.slow{animation-duration:20s}
-    .ads-item-inline{display:inline-flex;align-items:center;gap:10px;margin-left:40px;direction:rtl;unicode-bidi:plaintext;flex-shrink:0}
+    .ads-strip{min-height:40px;display:flex;align-items:center;gap:8px;color:#fff;padding:8px 10px;font-size:12px;font-weight:800;line-height:1.5}
+    .ads-label{display:inline-flex;align-items:center;gap:4px;padding:5px 8px;border-radius:999px;font-size:10px;font-weight:900;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.22);flex-shrink:0;margin-left:4px}
+    .ads-marquee{flex:1;white-space:normal;overflow:hidden;direction:rtl}
+    .ads-track{display:block;font-size:12px;font-weight:800;animation:none}
+    .ads-track.fast{}.ads-track.medium{}.ads-track.slow{}
+    .ads-item-inline{display:inline;direction:rtl;unicode-bidi:plaintext}
     @keyframes adsTicker{0%{transform:translateX(-50%)}100%{transform:translateX(0)}}
 
-    .section-bar{display:flex;align-items:center;justify-content:space-between;padding:4px 12px 0;gap:10px;flex-wrap:wrap}
-    .section-title{font-size:15px;font-weight:900}
-    .section-note{color:var(--muted);font-size:12px}
-    .category-strip{display:flex;gap:8px;overflow-x:auto;padding:12px;scrollbar-width:none}
+    .section-bar{display:flex;align-items:center;justify-content:space-between;padding:2px 12px 0;gap:10px;flex-wrap:wrap;background:var(--bg)}
+    .section-title{font-size:12px;font-weight:900}
+    .section-note{color:var(--muted);font-size:10px}
+    .category-strip{display:flex;gap:5px;overflow-x:auto;padding:4px 12px 6px;scrollbar-width:none;background:linear-gradient(180deg,var(--bg),rgba(245,247,251,.98));position:sticky;top:86px;z-index:2040;border-bottom:1px solid rgba(255,255,255,.04)}
     .category-strip::-webkit-scrollbar{display:none}
-    .cat-btn{border:none;background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:999px;padding:10px 16px;white-space:nowrap;font-size:13px;font-weight:800;cursor:pointer;box-shadow:var(--shadow)}
+    .cat-btn{border:none;background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:999px;padding:6px 9px;white-space:nowrap;font-size:10px;font-weight:800;cursor:pointer;box-shadow:var(--shadow)}
     .cat-btn.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent}
     .filters{display:flex;gap:10px;padding:0 12px 12px;align-items:center}
     .filters select{flex:1;border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:14px;padding:12px;outline:none;box-shadow:var(--shadow);min-height:52px}
 
-    .products{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:0 12px 20px;align-items:stretch}
-    .card{background:var(--card);border:1px solid var(--border);border-radius:18px;overflow:hidden;box-shadow:0 8px 18px rgba(0,0,0,0.05);display:flex;flex-direction:column;position:relative;height:100%;min-height:420px}
+    .products{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:8px 12px 20px;align-items:stretch;direction:rtl;justify-items:stretch}
+    .card{width:100%;background:var(--card);border:1px solid var(--border);border-radius:18px;overflow:hidden;box-shadow:0 8px 18px rgba(0,0,0,0.05);display:flex;flex-direction:column;position:relative;height:100%;min-height:420px}
     .card-top-badges{position:absolute;top:10px;right:10px;z-index:3;display:flex;flex-direction:column;gap:6px}
     .badge{padding:6px 10px;border-radius:999px;font-size:11px;font-weight:800;color:#fff;box-shadow:0 8px 18px rgba(0,0,0,0.12)}
     .badge.featured{background:linear-gradient(135deg,#f59e0b,#f97316)}
     .admin-delete-btn,.admin-edit-btn{position:absolute;z-index:6;width:34px;height:34px;border:none;border-radius:12px;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center}
     .admin-delete-btn{top:10px;left:10px;background:rgba(220,38,38,.95)}
     .admin-edit-btn{top:52px;left:10px;background:rgba(37,99,235,.95)}
-    .gallery-wrapper{width:100%;height:170px;background:#fff;position:relative;flex-shrink:0}
+    .gallery-wrapper{width:100%;height:150px;background:#fff;position:relative;flex-shrink:0}
     .gallery-img{width:100%;height:100%;object-fit:cover;background:#fff;cursor:zoom-in}
     .product-info{padding:10px;display:flex;flex-direction:column;flex:1;justify-content:flex-start}
     .p-name{font-size:15px;font-weight:900;line-height:1.45;margin:0 0 6px;min-height:44px;display:flex;align-items:flex-start}
@@ -117,16 +117,22 @@
     .btn-share{width:46px;background:var(--bg);color:var(--text);border:1px solid var(--border)}
     .empty-state{margin:20px 12px;background:var(--card);border:1px dashed var(--border);border-radius:22px;padding:35px 18px;text-align:center;color:var(--muted);box-shadow:var(--shadow)}
 
-    .footer{background:var(--card);border-top:1px solid var(--border);margin-top:10px;padding:20px 16px 28px;text-align:center}
+    .footer{background:var(--card);border-top:1px solid var(--border);margin-top:12px;padding:20px 16px 28px;text-align:center}
     .footer .title{font-size:18px;font-weight:900;margin-bottom:8px}
     .footer .desc{color:var(--muted);font-size:13px;line-height:1.7}
     .socials{display:flex;justify-content:center;gap:12px;margin-top:14px;flex-wrap:wrap}
     .social-btn{width:42px;height:42px;border-radius:14px;border:1px solid var(--border);background:var(--bg);color:var(--accent);display:flex;align-items:center;justify-content:center;text-decoration:none;box-shadow:var(--shadow);font-size:16px}
     .mini-text{font-size:11px;color:var(--muted);margin-top:12px}
 
-    .modal{display:none;position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,.55);align-items:center;justify-content:center;padding:14px}
+    .modal{display:none;position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,.55);align-items:center;justify-content:center;padding:14px;overflow:auto;-webkit-overflow-scrolling:touch}
     .modal.show{display:flex}
-    .modal-card{width:100%;max-width:760px;max-height:92vh;overflow-y:auto;background:var(--card);border:1px solid var(--border);border-radius:26px;box-shadow:0 30px 60px rgba(0,0,0,.25);padding:18px;color:var(--text)}
+    .modal-card{width:100%;max-width:760px;max-height:92vh;overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--card);border:1px solid var(--border);border-radius:26px;box-shadow:0 30px 60px rgba(0,0,0,.25);padding:18px;color:var(--text)}
+    body.keyboard-open .modal{align-items:flex-start;padding-top:10px;padding-bottom:calc(14px + env(safe-area-inset-bottom, 0px))}
+    body.keyboard-open .modal-card{max-height:calc(var(--vvh, 100vh) - 24px);margin-top:0;margin-bottom:0}
+    @media (max-width: 768px){
+      .modal{align-items:flex-start;padding:10px}
+      .modal-card{max-height:calc(var(--vvh, 100vh) - 20px);border-radius:22px}
+    }
     .modal-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px}
     .modal-title{font-size:20px;font-weight:900;margin:0}
     .close-btn{width:40px;height:40px;border:none;border-radius:14px;background:var(--bg);color:var(--text);cursor:pointer;border:1px solid var(--border)}
@@ -188,7 +194,7 @@
     .zoom-gal::-webkit-scrollbar{display:none}
     .z-img{flex:0 0 100%;width:100%;height:100%;object-fit:contain;scroll-snap-align:start;background:#000}
 
-    .fab-admin{position:fixed;left:14px;bottom:18px;z-index:2500;width:56px;height:56px;border:none;border-radius:20px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 18px 30px rgba(37,99,235,.28);font-size:20px;display:none;align-items:center;justify-content:center;cursor:pointer}
+    .fab-admin{position:fixed;left:12px;bottom:16px;z-index:2500;width:48px;height:48px;border:none;border-radius:18px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 14px 24px rgba(37,99,235,.26);font-size:18px;display:none;align-items:center;justify-content:center;cursor:pointer}
     .fab-admin.show{display:flex}
 
     .maint-overlay{position:fixed;inset:0;z-index:999998;display:none;align-items:center;justify-content:center;background:linear-gradient(135deg,#0b1220,#102552,#0f172a);color:#fff;padding:20px;text-align:center}
@@ -206,11 +212,73 @@
 
     @media (max-width:640px){
       .grid-2,.switches,.stats-grid{grid-template-columns:1fr}
-      .products{grid-template-columns:repeat(2,minmax(0,1fr))}
-      .gallery-wrapper{height:160px}
-      .ads-wrap{top:78px}
+      .products{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:8px 12px 18px}
+      .gallery-wrapper{height:136px}
+      .search-sort-row{padding:2px 12px 2px;gap:5px}
+      .search-sort-row .mini-sort{width:76px;flex:0 0 76px;min-height:32px;padding:5px 7px;font-size:10px}
+      .search-box{min-height:32px}
+      .search-box input{padding:5px 0;font-size:10px}
+      .category-strip{top:82px}
     }
-  </style>
+  
+.back-btn, .btn-back, #backBtn{display:none !important;}
+
+    .fixed-top-area{position:sticky;top:0;z-index:2000;background:linear-gradient(180deg,var(--bg),rgba(245,247,251,.96));padding-bottom:2px}
+    body.dark-mode .fixed-top-area{background:linear-gradient(180deg,var(--bg),rgba(11,18,32,.96))}
+    .fixed-sub-top{background:transparent;padding-top:2px;padding-bottom:2px}
+    body.dark-mode .fixed-sub-top{background:transparent}
+    body.dark-mode .category-strip,body.dark-mode .fixed-sub-top .section-bar{padding-top:2px;padding-bottom:0;background:transparent}
+    body.dark-mode .fixed-sub-top .ads-wrap{margin-top:1px;position:relative;z-index:1;display:block;overflow:visible}
+    .hero{margin:6px 12px 4px;padding:10px 12px;border-radius:14px}
+    .fixed-sub-top .section-bar{padding-top:2px;padding-bottom:0;background:transparent}
+    .fixed-sub-top .filters{display:none}
+    .fixed-sub-top .ads-wrap{margin-top:1px;position:relative;z-index:1;display:block;overflow:visible}
+
+
+    .search-sort-row{display:flex;gap:6px;align-items:center;padding:3px 0 1px;background:transparent}
+    .search-sort-row .search-box{flex:1;min-width:0}
+    .search-sort-row .mini-sort{width:82px;flex:0 0 82px;border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:10px;padding:6px 8px;outline:none;box-shadow:var(--shadow);min-height:34px;font-size:11px}
+    .filters{display:none}
+    @media (max-width:640px){
+      .search-sort-row{padding:2px 12px 2px;gap:5px}
+      .search-sort-row .mini-sort{width:76px;flex:0 0 76px;min-height:32px;padding:5px 7px;font-size:10px}
+      .search-box input{padding:5px 0;font-size:10px}
+    }
+
+
+    .toast-wrap{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);z-index:999999;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+    .toast{min-width:180px;max-width:88vw;background:rgba(22,163,74,.96);color:#fff;padding:12px 16px;border-radius:14px;box-shadow:0 12px 30px rgba(0,0,0,.22);font-size:13px;font-weight:800;opacity:0;transform:translateY(10px);transition:.25s ease;text-align:center}
+    .toast.show{opacity:1;transform:translateY(0)}
+
+
+    .sticky-browse-top{position:static !important}
+    body.dark-mode .sticky-browse-top{background:linear-gradient(180deg,var(--bg),rgba(11,18,32,.98))}
+    .sticky-browse-top .ads-wrap{margin-top:2px}
+    .sticky-browse-top .section-bar{padding-top:4px;padding-bottom:0;background:transparent}
+    .sticky-browse-top .category-strip{padding-top:4px;padding-bottom:6px;background:transparent}
+    @media (max-width:640px){
+      .sticky-browse-top{top:64px}
+      .sticky-browse-top .section-bar{padding-top:3px}
+      .sticky-browse-top .category-strip{padding-top:3px;padding-bottom:5px}
+    }
+
+
+    .sticky-top-block{position:static !important}
+    body.dark-mode .sticky-top-block{background:linear-gradient(180deg,var(--bg),rgba(11,18,32,.98))}
+    
+    
+    
+    
+    body{overflow-x:hidden}
+
+
+.sticky-top-block,.sticky-browse-top{position:static !important;top:auto !important}
+
+    html,body{overflow-x:hidden}
+    .header,.category-strip{left:0;right:0}
+    body.dark-mode .category-strip,body.dark-mode .section-bar{background:linear-gradient(180deg,var(--bg),rgba(11,18,32,.98))}
+
+</style>
 </head>
 <body>
 
@@ -234,6 +302,7 @@
     </div>
   </div>
 
+  <div class="fixed-top-area">
   <header class="header">
     <div class="topbar">
       <div class="brand" id="brandTapArea" title="اضغط عدة مرات للدخول للإدارة">
@@ -248,37 +317,33 @@
         <button class="icon-btn" id="themeBtn" onclick="toggleTheme()"><i class="fa-solid fa-moon"></i></button>
       </div>
     </div>
-    <div class="search-wrap">
+    <div class="search-sort-row">
       <div class="search-box">
         <i class="fa-solid fa-magnifying-glass"></i>
-        <input type="text" id="searchInput" placeholder="ابحث عن منتج..." oninput="debouncedRenderProducts()" />
+        <input type="text" id="searchInput" placeholder="ابحث..." oninput="debouncedRenderProducts()" />
       </div>
+      <select id="sortSelect" class="mini-sort" onchange="renderProducts()">
+        <option value="newest">الأحدث</option>
+        <option value="featured">المميزة</option>
+        <option value="priceAsc">الأقل</option>
+        <option value="priceDesc">الأعلى</option>
+        <option value="nameAsc">الاسم</option>
+      </select>
     </div>
   </header>
 
-  <section class="hero">
-    <h2 id="heroTitle">مرحبًا بك في متجر MS</h2>
-    <p id="heroDesc">اكتشف تشكيلة راقية ومنتجات مختارة بعناية، واطلب بسهولة وسرعة عبر واتساب.</p>
-  </section>
+  </div>
 
+<div class="fixed-sub-top">
   <section id="adsWrap" class="ads-wrap"><div id="adsStrip" class="ads-strip"></div></section>
 
   <div class="section-bar">
     <div><div class="section-title">الأقسام</div><div class="section-note">اختر القسم المناسب بسرعة</div></div>
-    <div class="section-note" id="resultCountText">جاري تحميل المنتجات...</div>
+    <div class="section-note" id="resultCountText">جاري التحميل...</div>
   </div>
 
   <div class="category-strip" id="categoryFilter"></div>
-
-  <div class="filters">
-    <select id="sortSelect" onchange="renderProducts()">
-      
-      
-      
-      
-      
-    </select>
-  </div>
+</div>
 
   <main id="productsContainer" class="products"></main>
 
@@ -299,6 +364,8 @@
     
     <div class="mini-text" id="footerRights" style="white-space: pre-line; line-height:1.8;"></div>
   </footer>
+  <div id="toastWrap" class="toast-wrap"></div>
+
 
   <button id="fabAdmin" class="fab-admin" onclick="openAdminPanel()"><i class="fa-solid fa-gear"></i></button>
 
@@ -313,7 +380,7 @@
   <div id="zoomOverlay" onclick="closeZoom()">
     <div class="zoom-top">
       <div>معاينة الصور</div>
-      <button class="close-btn" onclick="closeZoom(); event.stopPropagation();" style="color:#fff; background:rgba(255,255,255,.12); border-color:rgba(255,255,255,.15);"><i class="fa-solid fa-xmark"></i></button>
+      
     </div>
     <div class="zoom-gal" id="zGal" onclick="event.stopPropagation()"></div>
   </div>
@@ -383,14 +450,6 @@
             <label>لون الإعلان</label>
             <input type="color" id="adColorInput" style="background:#2563eb;" value="#2563eb" oninput="previewSingleAd(); this.style.background = this.value;" />
           </div>
-          <div class="field">
-            <label>السرعة</label>
-            <select id="adSpeedInput" onchange="previewSingleAd()">
-              <option value="slow">بطيء</option>
-              <option value="medium">وسط</option>
-              <option value="fast">سريع</option>
-            </select>
-          </div>
         </div>
         <div class="row-actions">
           <button class="btn btn-primary" onclick="saveSingleAd()">حفظ / تعديل الإعلان</button>
@@ -438,7 +497,7 @@
       <div class="field">
         <label>إضافة صور من الاستوديو</label>
         <input type="file" id="pImageFiles" accept="image/*" multiple />
-        <div class="helper">اختر صورًا صغيرة أو متوسطة فقط حتى لا تكبر قاعدة البيانات.</div>
+        <div class="helper">الصور سترفع إلى ImgBB ثم يُحفظ الرابط فقط، وهذا أسرع وأخف.</div>
       </div>
       <div class="field">
         <label>روابط صور مباشرة إضافية (اختياري، كل رابط بسطر)</label>
@@ -512,6 +571,8 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
+const IMGBB_API_URL = "https://api.imgbb.com/1/upload";
+const IMGBB_API_KEY = "17ce7ef832ce751d7760244683606c20";
 
 let isAdmin = false, tapCounter = 0, maintenanceTapCounter = 0;
 let allProducts = [], allCategories = [], storeSettings = {}, visitorsCount = 0, selectedCategory = "الكل";
@@ -520,6 +581,8 @@ let currentEditingImages = [];
 let splashHideTimer = null;
 let splashHidden = false;
 let currentAd = null;
+let productsMap = {};
+let productsFirstPaintDone = false;
 
 const defaultSettings = {
   storeName: "متجر MS",
@@ -539,8 +602,123 @@ const defaultSettings = {
   footerRightsSize: "12"
 };
 
+
+function setupMobileKeyboardFix(){
+  const supportsVV = !!window.visualViewport;
+
+  function setViewportHeight(){
+    const h = supportsVV ? window.visualViewport.height : window.innerHeight;
+    document.documentElement.style.setProperty('--vvh', h + 'px');
+  }
+
+  function onViewportChange(){
+    setViewportHeight();
+
+    const active = document.activeElement;
+    const isField = active && /^(INPUT|TEXTAREA|SELECT)$/.test(active.tagName);
+    const viewportHeight = supportsVV ? window.visualViewport.height : window.innerHeight;
+    const keyboardOpen = !!(isField && (window.innerHeight - viewportHeight > 120));
+
+    document.body.classList.toggle('keyboard-open', keyboardOpen);
+
+    if(keyboardOpen && active){
+      setTimeout(() => {
+        try{
+          active.scrollIntoView({behavior:'smooth', block:'center', inline:'nearest'});
+        }catch(e){}
+      }, 120);
+    }
+  }
+
+  setViewportHeight();
+
+  if(supportsVV){
+    window.visualViewport.addEventListener('resize', onViewportChange);
+    window.visualViewport.addEventListener('scroll', onViewportChange);
+  }else{
+    window.addEventListener('resize', onViewportChange);
+  }
+
+  document.addEventListener('focusin', (e) => {
+    const t = e.target;
+    if(t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)){
+      document.body.classList.add('keyboard-open');
+      setTimeout(() => {
+        try{
+          t.scrollIntoView({behavior:'smooth', block:'center', inline:'nearest'});
+        }catch(e){}
+      }, 180);
+    }
+  });
+
+  document.addEventListener('focusout', () => {
+    setTimeout(() => {
+      const active = document.activeElement;
+      if(!active || !/^(INPUT|TEXTAREA|SELECT)$/.test(active.tagName)){
+        document.body.classList.remove('keyboard-open');
+      }
+    }, 180);
+  });
+}
+
+
+
+function readCache(key, fallback){
+  try{
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  }catch(e){
+    return fallback;
+  }
+}
+function writeCache(key, value){
+  try{
+    localStorage.setItem(key, JSON.stringify(value));
+  }catch(e){}
+}
+function applyCachedData(){
+  const cachedSettings = readCache("ms_cache_settings", null);
+  const cachedCategories = readCache("ms_cache_categories", null);
+  const cachedProducts = readCache("ms_cache_products", null);
+  const cachedAd = readCache("ms_cache_ad", null);
+  const cachedVisitors = readCache("ms_cache_visitors", null);
+
+  if(cachedSettings){
+    storeSettings = Object.assign({}, defaultSettings, cachedSettings || {});
+    applyStoreSettings();
+    fillSettingsForm();
+    fillMaintenanceForm();
+  }
+  if(Array.isArray(cachedCategories) && cachedCategories.length){
+    allCategories = cachedCategories;
+    renderCategories();
+    fillCategorySelect();
+    renderAdminCategories();
+  }
+  if(Array.isArray(cachedProducts) && cachedProducts.length){
+    allProducts = cachedProducts.map(p => normalizeProduct(p.id, p));
+    productsMap = {};
+    allProducts.forEach(p => { productsMap[p.id] = p; });
+    renderProducts();
+    if(isAdmin) renderAdminProducts();
+  }
+  if(cachedAd){
+    currentAd = cachedAd;
+    renderAdsStrip();
+    renderAdminAds();
+  }
+  if(typeof cachedVisitors === "number"){
+    visitorsCount = cachedVisitors;
+    updateStatsCards();
+  }
+  if((Array.isArray(cachedProducts) && cachedProducts.length) || (Array.isArray(cachedCategories) && cachedCategories.length)){
+    setTimeout(() => hideSplash(), 120);
+  }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   applySavedTheme();
+  applyCachedData();
   initAdminState();
   showProductSkeletons();
   countVisitor();
@@ -550,15 +728,16 @@ document.addEventListener("DOMContentLoaded", () => {
   listenAds();
   initMaintenanceAccess();
   initImagePicker();
-  startSplash();
-  window.addEventListener("load", () => scheduleSplashHide(3500), { once: true });
+    setupMobileKeyboardFix();
+startSplash();
+  window.addEventListener("load", () => scheduleSplashHide(400), { once: true });
   window.addEventListener("error", () => hideSplash(), { once: true });
 });
 
 function startSplash(){
   const bar = document.getElementById("progressFill");
   if(bar) setTimeout(() => { bar.style.width = "100%"; }, 50);
-  scheduleSplashHide(3500);
+  scheduleSplashHide(300);
 }
 function scheduleSplashHide(delay = 3500){
   clearTimeout(splashHideTimer);
@@ -577,7 +756,7 @@ function hideSplash(){
 function showProductSkeletons(){
   const container = document.getElementById("productsContainer");
   let html = "";
-  for(let i=0;i<6;i++){
+  for(let i=0;i<2;i++){
     html += `<div class="sk-card"><div class="sk-img skeleton"></div><div class="sk-line skeleton"></div><div class="sk-line skeleton small"></div><div class="sk-line skeleton"></div></div>`;
   }
   container.innerHTML = html;
@@ -605,7 +784,7 @@ function initAdminState(){
 function updateAdminUI(){
   document.getElementById("fabAdmin").classList.toggle("show", isAdmin);
   renderProducts();
-  renderAdminProducts();
+  if(isAdmin) renderAdminProducts();
   applyMaintenanceMode();
 }
 
@@ -622,7 +801,7 @@ document.getElementById("brandTapArea").onclick = function(){
       updateAdminUI();
       openAdminPanel();
     }else{
-      alert("رمز الإدارة غير صحيح");
+      showToast("رمز الإدارة غير صحيح", true);
     }
   }
 };
@@ -669,6 +848,7 @@ function logoutAdmin(){
 function listenStoreSettings(){
   db.ref("settings/store").on("value", snap => {
     storeSettings = Object.assign({}, defaultSettings, snap.val() || {});
+    writeCache("ms_cache_settings", storeSettings);
     applyStoreSettings();
     fillSettingsForm();
     fillMaintenanceForm();
@@ -742,16 +922,16 @@ async function saveStoreSettings(){
     footerRightsSize: val("setFooterRightsSize") || defaultSettings.footerRightsSize
   });
   await db.ref("settings/store").set(data);
-  alert("تم حفظ إعدادات المتجر بنجاح");
+  showToast("تم حفظ الإعدادات بنجاح");
   closeById("settingsModal");
 }
 async function changeAdminPin(){
   const oldPin = val("oldPin"), newPin = val("newPin");
-  if(oldPin !== (storeSettings.adminPin || defaultSettings.adminPin)){ alert("الرمز الحالي غير صحيح"); return; }
+  if(oldPin !== (storeSettings.adminPin || defaultSettings.adminPin)){ showToast("الرمز الحالي غير صحيح", true); return; }
   if(!newPin){ alert("أدخل رمزًا جديدًا"); return; }
   await db.ref("settings/store/adminPin").set(newPin);
   setVal("oldPin",""); setVal("newPin","");
-  alert("تم تغيير رمز الإدارة");
+  showToast("تم تغيير رمز الإدارة بنجاح");
   closeById("passwordModal");
 }
 
@@ -763,6 +943,7 @@ function countVisitor(){
   }
   db.ref("settings/visitors").on("value", s => {
     visitorsCount = s.val() || 0;
+    writeCache("ms_cache_visitors", visitorsCount);
     updateStatsCards();
   });
 }
@@ -775,9 +956,10 @@ function listenCategories(){
       allCategories.push({ id: child.key, name: v.name || v });
     });
     if(allCategories.length === 0){ seedDefaultCategories(); return; }
+    writeCache("ms_cache_categories", allCategories);
     renderCategories();
     fillCategorySelect();
-    renderAdminCategories();
+    if(isAdmin) renderAdminCategories();
     updateStatsCards();
     hideSplash();
   }, () => hideSplash());
@@ -823,10 +1005,10 @@ async function addCategory(fromModal){
   try{
     await db.ref("categories").push({ name, createdAt: Date.now() });
     input.value = "";
-    alert("تمت إضافة القسم بنجاح");
+    showToast("تمت إضافة القسم بنجاح");
   }catch(err){
     console.error(err);
-    alert("فشل إضافة القسم.");
+    showToast("فشل إضافة القسم", true);
   }
 }
 async function editCategory(id, oldName){
@@ -861,20 +1043,41 @@ function renderAdminCategories(){
   });
 }
 
+
 function listenProducts(){
-  db.ref("products").on("value", snap => {
-    const list = [];
-    snap.forEach(child => {
-      const p = child.val() || {};
-      list.push(normalizeProduct(child.key, p));
-    });
-    allProducts = list;
+  const ref = db.ref("products");
+
+  ref.on("child_added", snap => {
+    const p = normalizeProduct(snap.key, snap.val() || {});
+    productsMap[snap.key] = p;
+    syncProductsFromMap();
     renderProducts();
-    renderAdminProducts();
+    if(isAdmin) renderAdminProducts();
     updateStatsCards();
-    hideSplash();
-  }, () => hideSplash());
+    if(!productsFirstPaintDone){
+      productsFirstPaintDone = true;
+      hideSplash();
+    }
+  });
+
+  ref.on("child_changed", snap => {
+    const p = normalizeProduct(snap.key, snap.val() || {});
+    productsMap[snap.key] = p;
+    syncProductsFromMap();
+    renderProducts();
+    if(isAdmin) renderAdminProducts();
+    updateStatsCards();
+  });
+
+  ref.on("child_removed", snap => {
+    delete productsMap[snap.key];
+    syncProductsFromMap();
+    renderProducts();
+    if(isAdmin) renderAdminProducts();
+    updateStatsCards();
+  });
 }
+
 
 function normalizeProduct(id, p){
   let images = [];
@@ -921,11 +1124,11 @@ function renderProducts(){
   if(sort === "featured"){
     items.sort((a,b) => Number(b.featured) - Number(a.featured) || (b.createdAt||0) - (a.createdAt||0));
   }else if(sort === "priceAsc"){
-    items.sort((a,b) => a.price - b.price);
+    items.sort((a,b) => (a.price||0) - (b.price||0));
   }else if(sort === "priceDesc"){
-    items.sort((a,b) => b.price - a.price);
+    items.sort((a,b) => (b.price||0) - (a.price||0));
   }else if(sort === "nameAsc"){
-    items.sort((a,b) => (a.name||"").localeCompare(b.name||"", "ar"));
+    items.sort((a,b) => ((a.name||"") > (b.name||"") ? 1 : -1));
   }else{
     items.sort((a,b) => (b.createdAt||0) - (a.createdAt||0));
   }
@@ -939,11 +1142,44 @@ function renderProducts(){
   }
 
   empty.classList.add("hidden");
-  const frag = document.createDocumentFragment();
-  items.forEach(p => frag.appendChild(buildProductCard(p)));
-  container.innerHTML = "";
-  container.appendChild(frag);
+  requestAnimationFrame(() => {
+    const frag = document.createDocumentFragment();
+    for(const p of items) frag.appendChild(buildProductCard(p));
+    container.innerHTML = "";
+    container.appendChild(frag);
+    scheduleRealImageLoading();
+  });
 }
+
+function scheduleRealImageLoading(){
+  const imgs = document.querySelectorAll('img[data-src]');
+  if(!imgs.length) return;
+
+  if("IntersectionObserver" in window){
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if(entry.isIntersecting){
+          const img = entry.target;
+          img.src = img.getAttribute("data-src");
+          img.removeAttribute("data-src");
+          io.unobserve(img);
+        }
+      });
+    }, { rootMargin: "120px 0px" });
+    imgs.forEach(img => io.observe(img));
+  }else{
+    imgs.forEach(img => {
+      img.src = img.getAttribute("data-src");
+      img.removeAttribute("data-src");
+    });
+  }
+}
+
+function syncProductsFromMap(){
+  allProducts = Object.values(productsMap);
+  writeCache("ms_cache_products", allProducts);
+}
+
 function buildProductCard(p){
   const card = document.createElement("div");
   card.className = "card";
@@ -960,7 +1196,7 @@ function buildProductCard(p){
     ${adminControls}
     <div class="card-top-badges">${featuredBadge}</div>
     <div class="gallery-wrapper">
-      <img class="gallery-img" src="${escapeAttr(firstImage)}" alt="${escapeAttr(p.name)}" onclick="openZoom(${encodeJsArray(p.images && p.images.length ? p.images : [firstImage])})" onerror="this.src='${escapeAttr(placeholderImage(p.name))}'" />
+      <img class="gallery-img" src="${escapeAttr(placeholderImage(p.name))}" data-src="${escapeAttr(firstImage)}" alt="${escapeAttr(p.name)}" onclick="openZoom(${encodeJsArray(p.images && p.images.length ? p.images : [firstImage])})" onerror="this.src='${escapeAttr(placeholderImage(p.name))}'" />
     </div>
     <div class="product-info">
       <h3 class="p-name">${escapeHtml(p.name)}</h3>
@@ -992,7 +1228,7 @@ function renderAdminProducts(){
     item.className = "admin-item";
     item.innerHTML = `
       <div class="admin-item-top">
-        <img class="admin-thumb" src="${escapeAttr(img)}" alt="${escapeAttr(p.name)}" onerror="this.src='${escapeAttr(placeholderImage(p.name))}'" />
+        <img class="admin-thumb" src="${escapeAttr(placeholderImage(p.name))}" data-src="${escapeAttr(img)}" alt="${escapeAttr(p.name)}" onerror="this.src='${escapeAttr(placeholderImage(p.name))}'" />
         <div class="admin-item-main">
           <div class="admin-item-name">${escapeHtml(p.name)}</div>
           <div class="admin-item-meta">
@@ -1009,6 +1245,38 @@ function renderAdminProducts(){
       </div>`;
     wrap.appendChild(item);
   });
+  scheduleRealImageLoading();
+}
+
+
+async function uploadImageToImgBB(file){
+  const formData = new FormData();
+  formData.append("key", IMGBB_API_KEY);
+  formData.append("image", file);
+
+  const response = await fetch(IMGBB_API_URL, {
+    method: "POST",
+    body: formData
+  });
+
+  if(!response.ok){
+    throw new Error("IMG_UPLOAD_HTTP_" + response.status);
+  }
+
+  const result = await response.json();
+  if(!result || !result.success || !result.data || !result.data.url){
+    throw new Error("IMG_UPLOAD_FAILED");
+  }
+
+  return result.data.url;
+}
+
+function setSaveButtonsDisabled(disabled){
+  document.querySelectorAll('#productModal .btn').forEach(btn => {
+    btn.disabled = !!disabled;
+    btn.style.opacity = disabled ? '.7' : '';
+    btn.style.pointerEvents = disabled ? 'none' : '';
+  });
 }
 
 function initImagePicker(){
@@ -1018,16 +1286,23 @@ function initImagePicker(){
   input.addEventListener("change", async (event) => {
     const files = Array.from(event.target.files || []);
     if(!files.length) return;
-    for(const file of files){
-      try{
-        const dataUrl = await fileToDataUrl(file);
-        currentEditingImages.push(dataUrl);
-      }catch(err){
-        console.error(err);
+
+    try{
+      setSaveButtonsDisabled(true);
+      showToast("جاري رفع الصور...");
+      for(const file of files){
+        const imageUrl = await uploadImageToImgBB(file);
+        currentEditingImages.push(imageUrl);
       }
+      renderPreviewImages();
+      showToast("تم رفع الصور بنجاح");
+    }catch(err){
+      console.error(err);
+      showToast("فشل رفع صورة أو أكثر", true);
+    }finally{
+      setSaveButtonsDisabled(false);
+      input.value = "";
     }
-    renderPreviewImages();
-    input.value = "";
   });
 }
 function fileToDataUrl(file){
@@ -1081,7 +1356,7 @@ function renderPreviewImages(){
   const all = [...currentEditingImages, ...getDirectImageUrls()];
   wrap.innerHTML = all.map((src, i) => `
     <div class="preview-item">
-      <img src="${escapeAttr(src)}" alt="preview" onerror="this.src='${escapeAttr(placeholderImage('صورة'))}'" />
+      <img loading="lazy" decoding="async" src="${escapeAttr(src)}" alt="preview" onerror="this.src='${escapeAttr(placeholderImage('صورة'))}'" />
       <button onclick="removePreviewImage(${i})"><i class="fa-solid fa-xmark"></i></button>
     </div>
   `).join("");
@@ -1111,7 +1386,7 @@ async function saveProduct(){
   };
   const ref = id ? db.ref("products/" + id) : db.ref("products").push();
   await ref.set(payload);
-  alert("تم حفظ المنتج بنجاح");
+  showToast(id ? "تم حفظ التعديل بنجاح" : "تم نشر المنتج بنجاح");
   closeById("productModal");
   resetProductForm();
 }
@@ -1130,6 +1405,7 @@ async function toggleProductVisibility(id, nextState){
 function listenAds(){
   db.ref("settings/ad").on("value", snap => {
     currentAd = snap.val() || null;
+    writeCache("ms_cache_ad", currentAd);
     renderAdsStrip();
     renderAdminAds();
   });
@@ -1138,7 +1414,6 @@ function renderAdminAds(){
   const ad = currentAd || {};
   setVal("adTextInput", ad.text || "");
   setVal("adColorInput", ad.color || "#2563eb");
-  setVal("adSpeedInput", ad.speed || "medium");
   const c = document.getElementById("adColorInput");
   if(c) c.style.background = c.value;
 }
@@ -1146,8 +1421,7 @@ function previewSingleAd(){
   renderAdsStrip({
     enabled: document.getElementById("adsEnabledToggle").checked,
     text: val("adTextInput"),
-    color: val("adColorInput") || "#2563eb",
-    speed: val("adSpeedInput") || "medium"
+    color: val("adColorInput") || "#2563eb"
   });
 }
 function renderAdsStrip(override){
@@ -1163,14 +1437,10 @@ function renderAdsStrip(override){
   wrap.classList.add("show");
   strip.style.background = ad.color || "#2563eb";
   const text = escapeHtml(ad.text || "");
-  const speed = escapeHtml(ad.speed || "medium");
   strip.innerHTML = `
     <div class="ads-label"><i class="fa-solid fa-bullhorn"></i> إعلان</div>
     <div class="ads-marquee">
-      <div class="ads-track ${speed}">
-        <span class="ads-item-inline">${text}</span>
-        <span class="ads-item-inline">${text}</span>
-        <span class="ads-item-inline">${text}</span>
+      <div class="ads-track">
         <span class="ads-item-inline">${text}</span>
       </div>
     </div>`;
@@ -1181,10 +1451,9 @@ async function saveSingleAd(){
   await db.ref("settings/ad").set({
     enabled,
     text: val("adTextInput").trim(),
-    color: val("adColorInput") || "#2563eb",
-    speed: val("adSpeedInput") || "medium"
+    color: val("adColorInput") || "#2563eb"
   });
-  alert("تم حفظ الإعلان");
+  showToast("تم حفظ الإعلان بنجاح");
 }
 async function deleteSingleAd(){
   if(!confirm("هل تريد حذف الإعلان؟")) return;
@@ -1195,7 +1464,7 @@ async function saveMaintenanceSettings(){
     maintenanceMode: document.getElementById("maintenanceToggle").checked,
     maintenanceMessage: val("maintenanceMessageInput").trim() || defaultSettings.maintenanceMessage
   });
-  alert("تم حفظ إعدادات الصيانة");
+  showToast("تم حفظ إعدادات الصيانة");
 }
 
 function updateStatsCards(){
@@ -1212,7 +1481,7 @@ function switchAdminTab(tabId, btn){
 }
 function openZoom(images){
   const gal = document.getElementById("zGal");
-  gal.innerHTML = images.map(src => `<img class="z-img" src="${escapeAttr(src)}" alt="zoom" />`).join("");
+  gal.innerHTML = images.map(src => `<img class="z-img" loading="lazy" decoding="async" src="${escapeAttr(src)}" alt="zoom" />`).join("");
   document.getElementById("zoomOverlay").classList.add("show");
 }
 function closeZoom(){
@@ -1238,6 +1507,22 @@ function closeById(id){
 }
 function closeModal(event, id){
   if(event.target.id === id) closeById(id);
+}
+
+
+function showToast(message, isError=false){
+  const wrap = document.getElementById("toastWrap");
+  if(!wrap) return;
+  const t = document.createElement("div");
+  t.className = "toast";
+  if(isError) t.style.background = "rgba(220,38,38,.96)";
+  t.textContent = message;
+  wrap.appendChild(t);
+  requestAnimationFrame(() => t.classList.add("show"));
+  setTimeout(() => {
+    t.classList.remove("show");
+    setTimeout(() => t.remove(), 250);
+  }, 1800);
 }
 
 function cleanupNumber(num){
