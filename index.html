@@ -105,11 +105,12 @@
     .gallery-thumb.active{border-color:var(--accent);box-shadow:0 0 0 2px rgba(37,99,235,.12)}
     .product-info{padding:10px;display:flex;flex-direction:column;flex:1}
     .p-name{font-size:15px;font-weight:900;line-height:1.45;margin:0 0 3px}
-    .p-desc{font-size:14px;color:var(--muted);margin:0 0 10px;line-height:1.95;overflow:hidden;cursor:pointer;font-weight:600;min-height:58px;display:block;max-height:4.2em;transition:max-height .25s ease,color .2s ease,background .2s ease,padding .2s ease;border-radius:14px;background:rgba(37,99,235,.04);padding:10px 12px;border:1px solid rgba(37,99,235,.08);overflow-wrap:anywhere;word-break:break-word;white-space:pre-wrap}
-    .p-desc.short-desc{font-size:17px;font-weight:900;color:var(--text);line-height:1.7}
-    .p-desc.expanded{max-height:260px;background:var(--bg);padding:10px 12px;color:var(--text);overflow:auto}
-    .p-desc.has-more::after{content:" عرض المزيد";font-size:12px;font-weight:900;color:var(--accent);margin-right:6px}
-    .p-desc.expanded::after{content:" عرض أقل";font-size:12px;font-weight:900;color:var(--accent);margin-right:6px}
+    .p-desc-preview{font-size:14px;color:var(--muted);margin:0 0 8px;line-height:1.9;font-weight:600;display:block;overflow-wrap:anywhere;word-break:break-word;white-space:pre-wrap}
+    .p-desc-box{display:none;margin:0 0 10px;padding:12px 14px;border-radius:16px;background:rgba(37,99,235,.04);border:1px solid rgba(37,99,235,.10);color:var(--text);line-height:2;overflow-wrap:anywhere;word-break:break-word;white-space:pre-wrap}
+    .p-desc-box.show{display:block}
+    .desc-toggle-btn{display:inline-flex;align-items:center;justify-content:center;border:none;background:transparent;color:var(--accent);font-weight:900;font-size:13px;padding:0 0 10px;cursor:pointer}
+    .desc-toggle-btn.hidden{display:none}
+    #resultCountText{display:none!important}
     .meta-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
     .stock{font-size:11px;font-weight:800;border-radius:999px;padding:6px 10px}
     .stock.in{background:rgba(22,163,74,.12);color:var(--success)}
@@ -296,7 +297,7 @@
 
   <div class="section-bar">
     <div><div class="section-title"></div><div class="section-note">   </div></div>
-    <div class="section-note" id="resultCountText">  ...</div>
+    <div class="section-note hidden" id="resultCountText">  ...</div>
   </div>
 
   <div class="category-strip" id="categoryFilter"></div>
@@ -1014,15 +1015,13 @@ function renderProducts(){
   initAutoGalleries();
 }
 
-function getDescriptionClass(desc){
-  const clean = String(desc || "").trim();
-  if(clean.length && clean.length <= 5) return "short-desc";
-  return "long-desc";
-}
 function getShortDescription(desc){
   const clean = String(desc || "").trim();
   if(!clean) return DEFAULT_NO_DESC;
-  return clean.length > 120 ? clean.slice(0, 120) + "..." : clean;
+  return clean.length > 90 ? clean.slice(0, 90) + "..." : clean;
+}
+function hasLongDescription(desc){
+  return String(desc || "").trim().length > 90;
 }
 function buildOrderMessage(p){
   const template = storeSettings.orderMessageTemplate || defaultSettings.orderMessageTemplate;
@@ -1083,10 +1082,12 @@ function changeGalleryImage(btn, direction){
   wrapper._galleryIndex = (current + direction + total) % total;
   updateGalleryUI(wrapper);
 }
-function toggleCardDescription(el){
-  if(!el) return;
-  const isExpanded = el.classList.toggle('expanded');
-  el.textContent = isExpanded ? (el.dataset.full || DEFAULT_NO_DESC) : (el.dataset.short || DEFAULT_NO_DESC);
+function toggleCardDescription(btn){
+  if(!btn) return;
+  const box = btn.parentElement.querySelector('.p-desc-box');
+  if(!box) return;
+  const open = box.classList.toggle('show');
+  btn.textContent = open ? 'إخفاء الوصف' : 'عرض الوصف';
 }
 function openProductDetails(productId){
   const p = allProducts.find(x => x.id === productId);
@@ -1113,10 +1114,6 @@ function buildProductCard(p){
 
   const featuredBadge = p.featured ? '<span class="badge featured">مميز</span>' : '';
   const stockClass = p.stock === "متوفر" ? "in" : "out";
-  const descClass = getDescriptionClass(p.desc || "");
-  const shortDesc = escapeHtml(getShortDescription(p.desc || DEFAULT_NO_DESC));
-  const fullDesc = escapeHtml(String(p.desc || DEFAULT_NO_DESC));
-  const hasMoreClass = String(p.desc || '').trim().length > 120 ? 'has-more' : '';
   const thumbs = images.map((img, index) =>
     `<img class="gallery-thumb ${index === 0 ? "active" : ""}" src="${escapeAttr(img)}" alt="${escapeAttr(p.name)}" onclick="switchCardImage(this,'${escapeJsString(img)}','${escapeJsString(p.name)}')" onerror="this.src='${escapeAttr(placeholderImage(p.name))}'" />`
   ).join("");
@@ -1134,7 +1131,9 @@ function buildProductCard(p){
     </div>
     <div class="product-info">
       <h3 class="p-name" onclick="openProductDetails('${p.id}')">${escapeHtml(p.name)}</h3>
-      <p class="p-desc ${descClass} ${hasMoreClass}" data-short="${escapeAttr(shortDesc)}" data-full="${escapeAttr(fullDesc)}" onclick="toggleCardDescription(this); event.stopPropagation();">${shortDesc}</p>
+      <div class="p-desc-preview">${escapeHtml(getShortDescription(p.desc || DEFAULT_NO_DESC))}</div>
+      <button type="button" class="desc-toggle-btn ${hasLongDescription(p.desc) ? '' : 'hidden'}" onclick="toggleCardDescription(this); event.stopPropagation();">عرض الوصف</button>
+      <div class="p-desc-box">${escapeHtml(String(p.desc || DEFAULT_NO_DESC))}</div>
       <div class="meta-row">
         <span class="stock ${stockClass}">${escapeHtml(p.stock)}</span>
         <span class="section-note">${escapeHtml(p.category)}</span>
