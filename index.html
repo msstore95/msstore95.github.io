@@ -1522,7 +1522,7 @@ body.keyboard-open .modal-card{
           <button type="button" class="btn btn-secondary upload-pick-btn" onclick="document.getElementById('pImageFiles').click()">اختيار الصور</button>
           <div id="pImageStatus" class="upload-status">لم يتم اختيار صور بعد</div>
         </div>
-        <div class="helper">الصور ستنضغط أولاً ثم تُرفع واحدة واحدة لتقليل الفشل وتسريع العرض.</div>
+        <div class="helper">الصور سترفع إلى ImgBB ثم يُحفظ الرابط فقط، وهذا أسرع وأخف.</div>
       </div>
       <div class="preview-images" id="previewImages"></div>
       <div class="row-actions">
@@ -1598,6 +1598,8 @@ body.keyboard-open .modal-card{
     </div>
   </div>
 
+<script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
+
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyAn0y49jyaoLHyL6P7bce7IHcrsVNJ3ERM",
@@ -1610,25 +1612,12 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const IMGBB_API_URL = "https://api.imgbb.com/1/upload";
-const IMGBB_API_KEY = "";
-
-/* ===== Image upload provider =====
-   إذا تريد GitHub:
-   1) خلي USE_GITHUB_UPLOAD = true
-   2) حط التوكن داخل GITHUB_TOKEN
-   3) حط اسم_المستخدم/اسم_المستودع داخل GITHUB_REPO
-   مثال: mustafa10sadi-del/msstore
-*/
-const USE_GITHUB_UPLOAD = true;
-const GITHUB_TOKEN = "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";
-const GITHUB_REPO = "mustafa10sadi-del/msstore";
-const GITHUB_BRANCH = "main";
+const IMGBB_API_KEY = "17ce7ef832ce751d7760244683606c20";
 
 let isAdmin = false, tapCounter = 0, maintenanceTapCounter = 0;
 let allProducts = [], allCategories = [], storeSettings = {}, visitorsCount = 0, selectedCategory = "الكل";
 let searchDebounce = null;
 let currentEditingImages = [];
-let pendingPreviewImages = [];
 let splashHideTimer = null;
 let splashHidden = false;
 let splashStartedAt = null;
@@ -2608,6 +2597,26 @@ function renderAdminProducts(){
 }
 
 
+
+async function compressImageBeforeUpload(file){
+  if(typeof imageCompression === "undefined") return file;
+
+  const options = {
+    maxSizeMB: 0.1,
+    maxWidthOrHeight: 800,
+    useWebWorker: true,
+    initialQuality: 0.8
+  };
+
+  try{
+    const compressedFile = await imageCompression(file, options);
+    return compressedFile || file;
+  }catch(err){
+    console.error("IMAGE_COMPRESS_FAILED", err);
+    return file;
+  }
+}
+
 async function uploadImageToImgBB(file){
   const formData = new FormData();
   formData.append("key", IMGBB_API_KEY);
@@ -2647,11 +2656,16 @@ function initImagePicker(){
 
     try{
       setSaveButtonsDisabled(true);
+      document.getElementById("pImageStatus").textContent = "جاري ضغط ورفع الصور...";
+
       for(const file of files){
-        const imageUrl = await uploadImageToImgBB(file);
+        const compressedFile = await compressImageBeforeUpload(file);
+        const imageUrl = await uploadImageToImgBB(compressedFile);
         currentEditingImages.push(imageUrl);
       }
+
       renderPreviewImages();
+      showToast("تم ضغط ورفع الصور بنجاح");
     }catch(err){
       console.error(err);
       showToast("فشل رفع صورة أو أكثر", true);
@@ -2705,39 +2719,19 @@ function resetProductForm(){
 function getDirectImageUrls(){
   return [];
 }
-
 function renderPreviewImages(){
   const wrap = document.getElementById("previewImages");
   const status = document.getElementById("pImageStatus");
-  const allSaved = [...currentEditingImages, ...getDirectImageUrls()];
-
-  const pendingHtml = pendingPreviewImages.map((item, i) => {
-    const stateClass = item.state === "failed" ? " failed" : item.state === "done" ? " done" : " pending";
-    const stateText = item.state === "failed" ? "فشل" : item.state === "done" ? "تم الرفع" : "جاري الرفع";
-    return `
-      <div class="preview-item${stateClass}">
-        <img loading="lazy" decoding="async" src="${escapeAttr(item.localUrl || placeholderImage('صورة'))}" alt="preview" />
-        <span class="preview-badge">${stateText}</span>
-      </div>
-    `;
-  }).join("");
-
-  const savedHtml = allSaved.map((src, i) => `
+  const all = [...currentEditingImages, ...getDirectImageUrls()];
+  if(status){
+    status.textContent = all.length ? `تمت إضافة ${all.length} صورة` : "لم يتم اختيار صور بعد";
+  }
+  wrap.innerHTML = all.map((src, i) => `
     <div class="preview-item">
       <img loading="lazy" decoding="async" src="${escapeAttr(src)}" alt="preview" onerror="this.src='${escapeAttr(placeholderImage('صورة'))}'" />
       <button onclick="removePreviewImage(${i})"><i class="fa-solid fa-xmark"></i></button>
     </div>
   `).join("");
-
-  if(status){
-    if(pendingPreviewImages.some(item => item && item.state === "pending")){
-      status.textContent = "جاري رفع الصور...";
-    }else{
-      status.textContent = allSaved.length ? `تمت إضافة ${allSaved.length} صورة` : "لم يتم اختيار صور بعد";
-    }
-  }
-
-  wrap.innerHTML = pendingHtml + savedHtml;
 }
 function removePreviewImage(index){
   if(index < currentEditingImages.length){
@@ -3071,196 +3065,3 @@ function toggleDescExpand(el){
 
 </body>
 </html>
-async function compressImageBeforeUpload(file){
-  if(typeof imageCompression === "undefined") return file;
-
-  const options = {
-    maxSizeMB: 0.08,
-    maxWidthOrHeight: 700,
-    useWebWorker: true,
-    initialQuality: 0.8
-  };
-
-  try{
-    const compressedFile = await imageCompression(file, options);
-    return compressedFile || file;
-  }catch(err){
-    console.error("IMAGE_COMPRESS_FAILED", err);
-    return file;
-  }
-}
-
-function fileToDataUrl(file){
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result || ""));
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
-function updateUploadStatus(message){
-  const el = document.getElementById("pImageStatus");
-  if(el) el.textContent = message;
-}
-
-function sleep(ms){
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-async function uploadImageToImgBB(file){
-  const formData = new FormData();
-  formData.append("key", IMGBB_API_KEY);
-  formData.append("image", file);
-
-  const response = await fetch(IMGBB_API_URL, {
-    method: "POST",
-    body: formData
-  });
-
-  if(!response.ok){
-    throw new Error("IMG_UPLOAD_HTTP_" + response.status);
-  }
-
-  const result = await response.json();
-  if(!result || !result.success || !result.data || !result.data.image || !result.data.image.url){
-    throw new Error("IMG_UPLOAD_FAILED");
-  }
-
-  return result.data.image.url;
-}
-
-async function uploadImageToGitHub(file){
-  if(!GITHUB_TOKEN || !GITHUB_REPO){
-    throw new Error("GITHUB_CONFIG_MISSING");
-  }
-
-  const dataUrl = await fileToDataUrl(file);
-  const base64 = dataUrl.split(",")[1];
-  const originalName = String(file.name || "image.jpg");
-  const ext = (originalName.split(".").pop() || "jpg").toLowerCase();
-  const safeExt = ["jpg","jpeg","png","webp","gif"].includes(ext) ? ext : "jpg";
-  const fileName = "image_" + Date.now() + "_" + Math.random().toString(36).slice(2,8) + "." + safeExt;
-  const path = "images/" + fileName;
-
-  const response = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${path}`, {
-    method: "PUT",
-    headers: {
-      "Authorization": `Bearer ${GITHUB_TOKEN}`,
-      "Accept": "application/vnd.github+json",
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      message: "upload image",
-      content: base64,
-      branch: GITHUB_BRANCH
-    })
-  });
-
-  const result = await response.json();
-  if(!response.ok || !result || !result.content){
-    console.error("GITHUB_UPLOAD_ERROR", result);
-    throw new Error("GITHUB_UPLOAD_FAILED");
-  }
-
-  return `https://raw.githubusercontent.com/${GITHUB_REPO}/${GITHUB_BRANCH}/${path}`;
-}
-
-async function uploadImage(file){
-  if(USE_GITHUB_UPLOAD){
-    return await uploadImageToGitHub(file);
-  }
-  return await uploadImageToImgBB(file);
-}
-
-async function uploadImageWithRetry(file, retries = 2){
-  let lastError = null;
-  for(let attempt = 0; attempt <= retries; attempt++){
-    try{
-      return await uploadImage(file);
-    }catch(err){
-      lastError = err;
-      if(attempt < retries){
-        await sleep(1200 * (attempt + 1));
-      }
-    }
-  }
-  throw lastError || new Error("UPLOAD_FAILED");
-}
-
-function setSaveButtonsDisabled(disabled){
-  document.querySelectorAll('#productModal .btn').forEach(btn => {
-    btn.disabled = !!disabled;
-    btn.style.opacity = disabled ? '.7' : '';
-    btn.style.pointerEvents = disabled ? 'none' : '';
-  });
-}
-
-async function initLocalPendingPreviews(files){
-  pendingPreviewImages = [];
-  for(const file of files){
-    try{
-      const localUrl = await fileToDataUrl(file);
-      pendingPreviewImages.push({ localUrl, state: "pending" });
-    }catch(err){
-      pendingPreviewImages.push({ localUrl: placeholderImage("صورة"), state: "failed" });
-    }
-  }
-  renderPreviewImages();
-}
-
-function markPendingPreviewDone(index, remoteUrl){
-  if(!pendingPreviewImages[index]) return;
-  pendingPreviewImages[index].state = "done";
-  pendingPreviewImages[index].remoteUrl = remoteUrl;
-}
-
-function markPendingPreviewFailed(index){
-  if(!pendingPreviewImages[index]) return;
-  pendingPreviewImages[index].state = "failed";
-}
-
-function syncDonePendingToCurrentImages(){
-  const doneUrls = pendingPreviewImages
-    .filter(item => item && item.state === "done" && item.remoteUrl)
-    .map(item => item.remoteUrl);
-
-  currentEditingImages.push(...doneUrls);
-  pendingPreviewImages = pendingPreviewImages.filter(item => !(item && item.state === "done"));
-}
-
-function initImagePicker(){
-  const input = document.getElementById("pImageFiles");
-  if(!input) return;
-  input.addEventListener("change", async (event) => {
-    const files = Array.from(event.target.files || []);
-    if(!files.length) return;
-
-    try{
-      setSaveButtonsDisabled(true);
-      updateUploadStatus("جاري تجهيز الصور...");
-      await initLocalPendingPreviews(files);
-
-      for(let i = 0; i < files.length; i++){
-        updateUploadStatus(`جاري ضغط ورفع الصورة ${i + 1} من ${files.length}...`);
-        const compressedFile = await compressImageBeforeUpload(files[i]);
-        const imageUrl = await uploadImageWithRetry(compressedFile, 2);
-        markPendingPreviewDone(i, imageUrl);
-        syncDonePendingToCurrentImages();
-        renderPreviewImages();
-      }
-
-      updateUploadStatus(`تمت إضافة ${currentEditingImages.length + getDirectImageUrls().length} صورة`);
-      showToast("تم ضغط ورفع الصور بنجاح");
-    }catch(err){
-      console.error(err);
-      updateUploadStatus("فشل رفع صورة أو أكثر");
-      showToast("فشل رفع صورة أو أكثر", true);
-      renderPreviewImages();
-    }finally{
-      setSaveButtonsDisabled(false);
-      input.value = "";
-    }
-  });
-}
-
