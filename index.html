@@ -1264,6 +1264,28 @@ body.dark-mode .card{
 .categories-note, .section-note { display:none !important; }
 </style>
 
+<style>
+
+/* keyboard fix for admin/settings modals on mobile */
+body.keyboard-open .modal{
+  align-items:flex-start !important;
+  padding:6px !important;
+}
+body.keyboard-open .modal-card{
+  max-height:calc(var(--vvh, 100vh) - 8px) !important;
+  padding-bottom:260px !important;
+  margin-bottom:0 !important;
+  overflow-y:auto !important;
+  scroll-behavior:smooth !important;
+}
+.modal-card input,
+.modal-card textarea,
+.modal-card select{
+  scroll-margin-top:24px !important;
+  scroll-margin-bottom:260px !important;
+}
+
+</style>
 </head>
 <body>
 
@@ -1376,7 +1398,7 @@ body.dark-mode .card{
     <div class="modal-card" onclick="event.stopPropagation()">
       <div class="modal-head"><h3 class="modal-title">لوحة إدارة متجر MS</h3><button class="close-btn" onclick="closeById('adminPanel')"><i class="fa-solid fa-xmark"></i></button></div>
 
-      
+      <div class="notice">هذه النسخة مرتبة للاستقرار: شاشة ترحيب ثابتة، ربط على Firebase الصحيح، وإضافة صور من الاستوديو بدون اشتراك. ملاحظة: الصور تنحفظ داخل قاعدة البيانات نفسها، لذلك استخدم صورًا صغيرة ومتوسطة فقط.</div>
 
       <div class="stats-grid">
         <div class="stat-card"><div class="icon"><i class="fa-solid fa-box"></i></div><div class="num" id="statProducts">0</div><div class="label">إجمالي المنتجات</div></div>
@@ -1397,7 +1419,7 @@ body.dark-mode .card{
       <div id="tabDashboard" class="tab-content active">
         <div class="row-actions">
           <button class="btn btn-primary" onclick="resetProductForm(); openModal('productModal')"><i class="fa-solid fa-plus"></i> إضافة منتج</button>
-          <button class="btn btn-secondary" onclick="openModal('categoryModal')"><i class="fa-solid fa-folder-plus"></i> إدارة الأقسام</button>
+          
           <button class="btn btn-warning" onclick="openModal('settingsModal')"><i class="fa-solid fa-store"></i> إعدادات المتجر</button>
           <button class="btn btn-danger" onclick="logoutAdmin()"><i class="fa-solid fa-right-from-bracket"></i> خروج من الإدارة</button>
         </div>
@@ -1628,22 +1650,47 @@ function setupMobileKeyboardFix(){
     document.documentElement.style.setProperty('--vvh', h + 'px');
   }
 
+  function getKeyboardOpen(){
+    const viewportHeight = supportsVV ? window.visualViewport.height : window.innerHeight;
+    return (window.innerHeight - viewportHeight) > 120;
+  }
+
+  function scrollActiveFieldIntoView(){
+    const active = document.activeElement;
+    if(!active || !/^(INPUT|TEXTAREA|SELECT)$/.test(active.tagName)) return;
+
+    const modalCard = active.closest('.modal-card');
+    if(modalCard){
+      const field = active.closest('.field, .toggle-box, .ad-toggle-box') || active;
+      const fieldRect = field.getBoundingClientRect();
+      const cardRect = modalCard.getBoundingClientRect();
+      const visibleTop = cardRect.top + 12;
+      const visibleBottom = (supportsVV ? window.visualViewport.height : window.innerHeight) - 16;
+      if(fieldRect.bottom > visibleBottom || fieldRect.top < visibleTop){
+        const delta = fieldRect.top - cardRect.top - 24;
+        modalCard.scrollTo({
+          top: Math.max(0, modalCard.scrollTop + delta),
+          behavior: 'smooth'
+        });
+      }
+    }else{
+      try{
+        active.scrollIntoView({behavior:'smooth', block:'center', inline:'nearest'});
+      }catch(e){}
+    }
+  }
+
   function onViewportChange(){
     setViewportHeight();
-
     const active = document.activeElement;
     const isField = active && /^(INPUT|TEXTAREA|SELECT)$/.test(active.tagName);
-    const viewportHeight = supportsVV ? window.visualViewport.height : window.innerHeight;
-    const keyboardOpen = !!(isField && (window.innerHeight - viewportHeight > 120));
+    const keyboardOpen = !!(isField && getKeyboardOpen());
 
     document.body.classList.toggle('keyboard-open', keyboardOpen);
 
-    if(keyboardOpen && active){
-      setTimeout(() => {
-        try{
-          active.scrollIntoView({behavior:'smooth', block:'nearest', inline:'nearest'});
-        }catch(e){}
-      }, 120);
+    if(keyboardOpen){
+      setTimeout(scrollActiveFieldIntoView, 120);
+      setTimeout(scrollActiveFieldIntoView, 320);
     }
   }
 
@@ -1660,12 +1707,8 @@ function setupMobileKeyboardFix(){
     const t = e.target;
     if(t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)){
       document.body.classList.add('keyboard-open');
-      setTimeout(() => {
-        try{
-          const field = t.closest('.field, .toggle-box, .ad-toggle-box') || t;
-          field.scrollIntoView({behavior:'smooth', block:'nearest', inline:'nearest'});
-        }catch(e){}
-      }, 120);
+      setTimeout(scrollActiveFieldIntoView, 120);
+      setTimeout(scrollActiveFieldIntoView, 320);
     }
   });
 
@@ -2946,35 +2989,7 @@ function toggleDescExpand(el){
 }
 
 </script>
-<button class="btn btn-secondary settings-action-btn" onclick="toggleThemeFromSettings()">
-          <span id="themeModeEmoji">🌞</span>
-          <span id="themeModeBtnText">نهاري</span>
-        </button>
-      </div>
 
-      <div class="settings-tile">
-        <div>
-          <div class="settings-label">الصوت</div>
-          <div class="settings-sub">صوت نقرة خفيف عند الضغط</div>
-        </div>
-        <button class="btn btn-secondary settings-action-btn" onclick="toggleClickSound()">
-          <span id="soundModeEmoji">🔊</span>
-          <span id="soundModeText">عام</span>
-        </button>
-      </div>
-    </div>
-  </div>
-
-
-<script>
-window.addEventListener("load", function(){
-  try{
-    if(typeof scheduleSplashHideFromSettings === "function"){
-      scheduleSplashHideFromSettings(true);
-    }
-  }catch(e){}
-});
-</script>
 
 </body>
 </html>
