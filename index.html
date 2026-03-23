@@ -135,7 +135,11 @@ function toggleDescExpand(el){
     .gallery-next{left:8px}
     .gallery-arrow i{font-size:11px}
     .gallery-zoom-badge{display:none !important}
-    .gallery-img{width:100%;height:100%;object-fit:cover;background:#fff;cursor:zoom-in;touch-action:pan-y;user-select:none;-webkit-user-drag:none}
+    .gallery-img{width:100%;height:100%;object-fit:cover;background:#fff;cursor:zoom-in;touch-action:pan-y;user-select:none;-webkit-user-drag:none;opacity:0;transition:opacity .25s ease}
+    .gallery-wrapper.img-loading::before{content:"";position:absolute;inset:0;z-index:2;background:linear-gradient(90deg,#e5e7eb 25%,#f3f4f6 37%,#e5e7eb 63%);background-size:400% 100%;animation:shimmer 1.3s infinite}
+    body.dark-mode .gallery-wrapper.img-loading::before{background:linear-gradient(90deg,#1f2937 25%,#334155 37%,#1f2937 63%);background-size:400% 100%}
+    .gallery-wrapper.img-loaded::before{display:none}
+    .gallery-img.real-ready{opacity:1}
     .product-info{padding:10px;display:flex;flex-direction:column;flex:1;justify-content:flex-start}
     .p-name{font-size:15px;font-weight:900;line-height:1.35;margin:0 0 4px;min-height:auto;display:block}
     .p-desc{margin:0 0 5px;cursor:pointer}
@@ -2393,6 +2397,36 @@ function renderProducts(){
   });
 }
 
+function markProductImageLoaded(img){
+  if(!img) return;
+  img.classList.add("real-ready");
+  const wrapper = img.closest(".gallery-wrapper");
+  if(wrapper){
+    wrapper.classList.remove("img-loading");
+    wrapper.classList.add("img-loaded");
+  }
+}
+function handleProductImageError(img){
+  if(!img) return;
+  img.src = placeholderImage(img.alt || "صورة");
+  markProductImageLoaded(img);
+}
+function loadRealProductImage(img){
+  if(!img) return;
+  const realSrc = img.getAttribute("data-src");
+  if(!realSrc) return;
+  const realImage = new Image();
+  realImage.onload = () => {
+    img.src = realSrc;
+    img.removeAttribute("data-src");
+    markProductImageLoaded(img);
+  };
+  realImage.onerror = () => {
+    img.removeAttribute("data-src");
+    handleProductImageError(img);
+  };
+  realImage.src = realSrc;
+}
 function scheduleRealImageLoading(){
   const imgs = document.querySelectorAll('img[data-src]');
   if(!imgs.length) return;
@@ -2402,18 +2436,14 @@ function scheduleRealImageLoading(){
       entries.forEach(entry => {
         if(entry.isIntersecting){
           const img = entry.target;
-          img.src = img.getAttribute("data-src");
-          img.removeAttribute("data-src");
+          loadRealProductImage(img);
           io.unobserve(img);
         }
       });
     }, { rootMargin: "120px 0px" });
     imgs.forEach(img => io.observe(img));
   }else{
-    imgs.forEach(img => {
-      img.src = img.getAttribute("data-src");
-      img.removeAttribute("data-src");
-    });
+    imgs.forEach(img => loadRealProductImage(img));
   }
 }
 
@@ -2437,8 +2467,8 @@ function buildProductCard(p){
   card.innerHTML = `
     ${adminControls}
     <div class="card-top-badges">${featuredBadge}</div>
-    <div class="gallery-wrapper">
-      <img class="gallery-img" src="${escapeAttr(placeholderImage(p.name))}" data-src="${escapeAttr(firstImage)}" alt="${escapeAttr(p.name)}" data-product-id="${escapeAttr(p.id)}" data-index="0" data-images='${escapeAttr(encodeJsArray(p.images && p.images.length ? p.images : [firstImage]))}' onclick="openZoomFromElement(this,event)" onerror="this.src='${escapeAttr(placeholderImage(p.name))}'" />
+    <div class="gallery-wrapper img-loading">
+      <img class="gallery-img" src="${escapeAttr(placeholderImage(p.name))}" data-src="${escapeAttr(firstImage)}" alt="${escapeAttr(p.name)}" data-product-id="${escapeAttr(p.id)}" data-index="0" data-images='${escapeAttr(encodeJsArray(p.images && p.images.length ? p.images : [firstImage]))}' onclick="openZoomFromElement(this,event)" onerror="handleProductImageError(this)" />
       ${(p.images && p.images.length > 1) ? `
         <button class="gallery-arrow gallery-prev" onclick="changeCardImage('${p.id}', -1, event)"><i class="fa-solid fa-chevron-right"></i></button>
         <button class="gallery-arrow gallery-next" onclick="changeCardImage('${p.id}', 1, event)"><i class="fa-solid fa-chevron-left"></i></button>
@@ -2478,7 +2508,22 @@ function changeCardImage(productId, step, event){
 
   img.setAttribute("data-index", String(nextIndex));
   img.setAttribute("data-images", escapeAttr(encodeJsArray(p.images)));
-  img.src = p.images[nextIndex] || placeholderImage(p.name);
+  img.classList.remove("real-ready");
+  const wrapper = img.closest(".gallery-wrapper");
+  if(wrapper){
+    wrapper.classList.remove("img-loaded");
+    wrapper.classList.add("img-loading");
+  }
+  const nextSrc = p.images[nextIndex] || placeholderImage(p.name);
+  const realImage = new Image();
+  realImage.onload = () => {
+    img.src = nextSrc;
+    markProductImageLoaded(img);
+  };
+  realImage.onerror = () => {
+    handleProductImageError(img);
+  };
+  realImage.src = nextSrc;
 }
 
 function initCardImageSwipe(){
