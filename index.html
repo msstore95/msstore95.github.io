@@ -1598,6 +1598,8 @@ body.keyboard-open .modal-card{
     </div>
   </div>
 
+<script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
+
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyAn0y49jyaoLHyL6P7bce7IHcrsVNJ3ERM",
@@ -2595,6 +2597,26 @@ function renderAdminProducts(){
 }
 
 
+
+async function compressImageBeforeUpload(file){
+  if(typeof imageCompression === "undefined") return file;
+
+  const options = {
+    maxSizeMB: 0.1,
+    maxWidthOrHeight: 800,
+    useWebWorker: true,
+    initialQuality: 0.8
+  };
+
+  try{
+    const compressedFile = await imageCompression(file, options);
+    return compressedFile || file;
+  }catch(err){
+    console.error("IMAGE_COMPRESS_FAILED", err);
+    return file;
+  }
+}
+
 async function uploadImageToImgBB(file){
   const formData = new FormData();
   formData.append("key", IMGBB_API_KEY);
@@ -2634,11 +2656,16 @@ function initImagePicker(){
 
     try{
       setSaveButtonsDisabled(true);
+      document.getElementById("pImageStatus").textContent = "جاري ضغط ورفع الصور...";
+
       for(const file of files){
-        const imageUrl = await uploadImageToImgBB(file);
+        const compressedFile = await compressImageBeforeUpload(file);
+        const imageUrl = await uploadImageToImgBB(compressedFile);
         currentEditingImages.push(imageUrl);
       }
+
       renderPreviewImages();
+      showToast("تم ضغط ورفع الصور بنجاح");
     }catch(err){
       console.error(err);
       showToast("فشل رفع صورة أو أكثر", true);
