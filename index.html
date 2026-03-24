@@ -1365,8 +1365,6 @@ body.keyboard-open .modal-card{
     <div class="modal-card" onclick="event.stopPropagation()">
       <div class="modal-head"><h3 class="modal-title">لوحة إدارة متجر MS</h3><button class="close-btn" onclick="closeById('adminPanel')"><i class="fa-solid fa-xmark"></i></button></div>
 
-      <div class="notice">هذه النسخة مرتبة للاستقرار: شاشة ترحيب ثابتة، ربط على Firebase الصحيح، وإضافة صور من الاستوديو بدون اشتراك. ملاحظة: الصور تنحفظ داخل قاعدة البيانات نفسها، لذلك استخدم صورًا صغيرة ومتوسطة فقط.</div>
-
       <div class="stats-grid">
         <div class="stat-card"><div class="icon"><i class="fa-solid fa-box"></i></div><div class="num" id="statProducts">0</div><div class="label">إجمالي المنتجات</div></div>
         <div class="stat-card"><div class="icon"><i class="fa-solid fa-layer-group"></i></div><div class="num" id="statCategories">0</div><div class="label">عدد الأقسام</div></div>
@@ -1378,7 +1376,6 @@ body.keyboard-open .modal-card{
         <button class="tab-btn active" onclick="switchAdminTab('tabDashboard', this)">الإدارة</button>
         <button class="tab-btn" onclick="switchAdminTab('tabProducts', this)">المنتجات</button>
         <button class="tab-btn" onclick="switchAdminTab('tabCategories', this)">الأقسام</button>
-        <button class="tab-btn" onclick="switchAdminTab('tabSettings', this)">الإعدادات</button>
         <button class="tab-btn" onclick="switchAdminTab('tabAds', this)">إعلان</button>
         <button class="tab-btn" onclick="switchAdminTab('tabMaintenance', this)">الصيانة</button>
       </div>
@@ -1386,8 +1383,8 @@ body.keyboard-open .modal-card{
       <div id="tabDashboard" class="tab-content active">
         <div class="row-actions">
           <button class="btn btn-primary" onclick="resetProductForm(); openModal('productModal')"><i class="fa-solid fa-plus"></i> إضافة منتج</button>
-
           <button class="btn btn-warning" onclick="openModal('settingsModal')"><i class="fa-solid fa-store"></i> إعدادات المتجر</button>
+          <button class="btn btn-secondary" onclick="openModal('passwordModal')"><i class="fa-solid fa-key"></i> تغيير رمز الإدارة</button>
           <button class="btn btn-danger" onclick="logoutAdmin()"><i class="fa-solid fa-right-from-bracket"></i> خروج من الإدارة</button>
         </div>
       </div>
@@ -1402,13 +1399,6 @@ body.keyboard-open .modal-card{
         <div class="field"><label>اسم قسم جديد</label><input type="text" id="newCategoryName" placeholder="مثال: أدوات منزلية" /></div>
         <div class="row-actions"><button class="btn btn-primary" onclick="addCategory(false)">إضافة القسم</button></div>
         <div class="chips" id="adminCategoriesList"></div>
-      </div>
-
-      <div id="tabSettings" class="tab-content">
-        <div class="row-actions">
-          <button class="btn btn-warning" onclick="openModal('settingsModal')">فتح إعدادات المتجر</button>
-          <button class="btn btn-secondary" onclick="openModal('passwordModal')">تغيير رمز الإدارة</button>
-        </div>
       </div>
 
       <div id="tabAds" class="tab-content">
