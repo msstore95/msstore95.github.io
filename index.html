@@ -2011,6 +2011,9 @@ function openAdminPanel(){
   fillMaintenanceForm();
   updateStatsCards();
   document.getElementById("maintenanceOverlay").classList.remove("show");
+  if(location.hash !== "#admin"){
+    location.hash = "admin";
+  }
 }
 function logoutAdmin(){
   if(!confirm("هل تريد الخروج من وضع الإدارة؟")) return;
@@ -2984,11 +2987,14 @@ function openModal(id){
     document.body.classList.add("modal-open");
   }
 }
-function closeById(id){
+function closeById(id, fromBack = false){
   const el = document.getElementById(id);
   if(el) el.classList.remove("show");
   if(!document.querySelector('.modal.show') && !document.getElementById("zoomOverlay")?.classList.contains("show")){
     document.body.classList.remove("modal-open");
+  }
+  if(!fromBack && id === "adminPanel" && location.hash === "#admin"){
+    history.back();
   }
 }
 function closeModal(event, id){
@@ -3094,10 +3100,16 @@ document.addEventListener("DOMContentLoaded", ()=>{
   }
 });
 
-window.addEventListener("hashchange", function () {
+window.addEventListener("hashchange", function(){
   const overlay = document.getElementById("zoomOverlay");
+  const adminPanel = document.getElementById("adminPanel");
+
   if(location.hash !== "#zoom" && overlay && overlay.classList.contains("show")){
     closeZoom(true);
+  }
+
+  if(location.hash !== "#admin" && adminPanel && adminPanel.classList.contains("show")){
+    closeById("adminPanel", true);
   }
 });
 
