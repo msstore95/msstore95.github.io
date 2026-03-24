@@ -2906,8 +2906,7 @@ let zoomImages = [];
 let zoomIndex = 0;
 let zoomTouchStartX = 0;
 let zoomTouchStartY = 0;
-let zoomHistoryPushed = false;
-let zoomHashToken = "#zoom-viewer";
+const ZOOM_SESSION_PREFIX = "ms_zoom_session_";
 
 function renderZoomImage(){
   const gal = document.getElementById("zGal");
@@ -2917,25 +2916,25 @@ function renderZoomImage(){
 }
 
 function openZoom(images, startIndex = 0){
-  const overlay = document.getElementById("zoomOverlay");
-  if(!overlay) return;
+  const safeImages = Array.isArray(images) ? images.filter(Boolean) : [String(images || "")].filter(Boolean);
+  if(!safeImages.length) return;
 
-  zoomImages = Array.isArray(images) ? images.filter(Boolean) : [String(images || "")].filter(Boolean);
-  if(!zoomImages.length) return;
+  const token = "z" + Date.now() + "_" + Math.random().toString(36).slice(2,8);
+  const payload = {
+    images: safeImages,
+    index: Math.max(0, Math.min(startIndex, safeImages.length - 1))
+  };
 
-  zoomIndex = Math.max(0, Math.min(startIndex, zoomImages.length - 1));
-  renderZoomImage();
-  overlay.classList.add("show");
-  overlay.style.display = "flex";
-  overlay.style.visibility = "visible";
-  document.body.classList.add("modal-open");
-
-  if(location.hash !== zoomHashToken){
-    zoomHistoryPushed = true;
-    location.hash = zoomHashToken;
-  }else{
-    zoomHistoryPushed = true;
+  try{
+    sessionStorage.setItem(ZOOM_SESSION_PREFIX + token, JSON.stringify(payload));
+  }catch(e){
+    console.error("ZOOM_SESSION_SAVE_FAILED", e);
+    return;
   }
+
+  const url = new URL(window.location.href);
+  url.searchParams.set("zv", token);
+  window.location.href = url.toString();
 }
 
 function zoomNext(event){
@@ -2952,14 +2951,8 @@ function zoomPrev(event){
   renderZoomImage();
 }
 
-function closeZoom(fromPopState = false){
+function closeZoom(){
   const overlay = document.getElementById("zoomOverlay");
-
-  if(!fromPopState && zoomHistoryPushed && location.hash === zoomHashToken){
-    history.back();
-    return;
-  }
-
   if(overlay){
     overlay.classList.remove("show");
     overlay.style.display = "none";
@@ -2967,14 +2960,46 @@ function closeZoom(fromPopState = false){
   }
   zoomImages = [];
   zoomIndex = 0;
-  zoomHistoryPushed = false;
 
-  if(location.hash === zoomHashToken){
-    history.replaceState(null, "", location.pathname + location.search);
+  const url = new URL(window.location.href);
+  if(url.searchParams.has("zv")){
+    history.back();
+    return;
   }
 
   if(!document.querySelector('.modal.show')){
     document.body.classList.remove("modal-open");
+  }
+}
+
+
+function openZoomOverlayDirect(images, startIndex = 0){
+  const overlay = document.getElementById("zoomOverlay");
+  if(!overlay) return;
+  zoomImages = Array.isArray(images) ? images.filter(Boolean) : [];
+  if(!zoomImages.length) return;
+  zoomIndex = Math.max(0, Math.min(startIndex, zoomImages.length - 1));
+  renderZoomImage();
+  overlay.classList.add("show");
+  overlay.style.display = "flex";
+  overlay.style.visibility = "visible";
+  document.body.classList.add("modal-open");
+}
+
+function restoreZoomFromUrl(){
+  const url = new URL(window.location.href);
+  const token = url.searchParams.get("zv");
+  if(!token) return;
+
+  try{
+    const raw = sessionStorage.getItem(ZOOM_SESSION_PREFIX + token);
+    if(!raw) return;
+    const payload = JSON.parse(raw);
+    const images = Array.isArray(payload.images) ? payload.images : [];
+    const index = Number(payload.index || 0);
+    openZoomOverlayDirect(images, index);
+  }catch(e){
+    console.error("ZOOM_SESSION_READ_FAILED", e);
   }
 }
 
@@ -3103,17 +3128,8 @@ document.addEventListener("DOMContentLoaded", ()=>{
   if(overlay){
     document.body.appendChild(overlay);
   }
+  restoreZoomFromUrl();
 });
-
-function handleZoomBackNavigation(){
-  const overlay = document.getElementById("zoomOverlay");
-  if(overlay && overlay.classList.contains("show") && location.hash !== zoomHashToken){
-    closeZoom(true);
-  }
-}
-
-window.addEventListener("popstate", handleZoomBackNavigation);
-window.addEventListener("hashchange", handleZoomBackNavigation);
 
 
 function toggleDescExpand(el){
