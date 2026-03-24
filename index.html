@@ -2906,7 +2906,6 @@ let zoomImages = [];
 let zoomIndex = 0;
 let zoomTouchStartX = 0;
 let zoomTouchStartY = 0;
-let zoomHistoryOpen = false;
 
 function renderZoomImage(){
   const gal = document.getElementById("zGal");
@@ -2929,9 +2928,8 @@ function openZoom(images, startIndex = 0){
   overlay.style.visibility = "visible";
   document.body.classList.add("modal-open");
 
-  if(!zoomHistoryOpen){
-    history.pushState({ zoomOpen: true }, "");
-    zoomHistoryOpen = true;
+  if(location.hash !== "#zoom"){
+    location.hash = "zoom";
   }
 }
 
@@ -2964,11 +2962,8 @@ function closeZoom(fromBack = false){
     document.body.classList.remove("modal-open");
   }
 
-  if(zoomHistoryOpen){
-    zoomHistoryOpen = false;
-    if(!fromBack){
-      history.back();
-    }
+  if(!fromBack && location.hash === "#zoom"){
+    history.back();
   }
 }
 
@@ -3099,9 +3094,9 @@ document.addEventListener("DOMContentLoaded", ()=>{
   }
 });
 
-window.addEventListener("popstate", function () {
+window.addEventListener("hashchange", function () {
   const overlay = document.getElementById("zoomOverlay");
-  if(overlay && overlay.classList.contains("show")){
+  if(location.hash !== "#zoom" && overlay && overlay.classList.contains("show")){
     closeZoom(true);
   }
 });
