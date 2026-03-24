@@ -6,8 +6,34 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>متجر MS</title>
 
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js">
+document.addEventListener("DOMContentLoaded", ()=>{
+  const overlay = document.getElementById("zoomOverlay");
+  if(overlay){
+    document.body.appendChild(overlay);
+  }
+});
+
+
+function toggleDescExpand(el){
+  el.classList.toggle("expanded");
+}
+
+</script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js">
+document.addEventListener("DOMContentLoaded", ()=>{
+  const overlay = document.getElementById("zoomOverlay");
+  if(overlay){
+    document.body.appendChild(overlay);
+  }
+});
+
+
+function toggleDescExpand(el){
+  el.classList.toggle("expanded");
+}
+
+</script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
   <style>
@@ -2932,8 +2958,17 @@ function closeById(id){
     document.body.classList.remove("modal-open");
   }
 }
+
 function closeModal(event, id){
-  if(event.target.id === id) closeById(id);
+  const modal = document.getElementById(id);
+  if(!modal) return;
+
+  const clickedInsideCard = event.target.closest(".modal-card");
+  if(clickedInsideCard) return;
+
+  if(event.target === modal || event.target.id === id){
+    closeById(id);
+  }
 }
 
 
