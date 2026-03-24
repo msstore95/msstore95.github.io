@@ -2907,6 +2907,7 @@ let zoomIndex = 0;
 let zoomTouchStartX = 0;
 let zoomTouchStartY = 0;
 let zoomHistoryPushed = false;
+let zoomHashToken = "#zoom-viewer";
 
 function renderZoomImage(){
   const gal = document.getElementById("zGal");
@@ -2918,8 +2919,10 @@ function renderZoomImage(){
 function openZoom(images, startIndex = 0){
   const overlay = document.getElementById("zoomOverlay");
   if(!overlay) return;
+
   zoomImages = Array.isArray(images) ? images.filter(Boolean) : [String(images || "")].filter(Boolean);
   if(!zoomImages.length) return;
+
   zoomIndex = Math.max(0, Math.min(startIndex, zoomImages.length - 1));
   renderZoomImage();
   overlay.classList.add("show");
@@ -2927,8 +2930,10 @@ function openZoom(images, startIndex = 0){
   overlay.style.visibility = "visible";
   document.body.classList.add("modal-open");
 
-  if(!zoomHistoryPushed){
-    history.pushState({ zoomOverlay: true }, "");
+  if(location.hash !== zoomHashToken){
+    zoomHistoryPushed = true;
+    location.hash = zoomHashToken;
+  }else{
     zoomHistoryPushed = true;
   }
 }
@@ -2950,7 +2955,7 @@ function zoomPrev(event){
 function closeZoom(fromPopState = false){
   const overlay = document.getElementById("zoomOverlay");
 
-  if(!fromPopState && zoomHistoryPushed && overlay && overlay.classList.contains("show")){
+  if(!fromPopState && zoomHistoryPushed && location.hash === zoomHashToken){
     history.back();
     return;
   }
@@ -2963,6 +2968,11 @@ function closeZoom(fromPopState = false){
   zoomImages = [];
   zoomIndex = 0;
   zoomHistoryPushed = false;
+
+  if(location.hash === zoomHashToken){
+    history.replaceState(null, "", location.pathname + location.search);
+  }
+
   if(!document.querySelector('.modal.show')){
     document.body.classList.remove("modal-open");
   }
@@ -3095,12 +3105,15 @@ document.addEventListener("DOMContentLoaded", ()=>{
   }
 });
 
-window.addEventListener("popstate", () => {
+function handleZoomBackNavigation(){
   const overlay = document.getElementById("zoomOverlay");
-  if(overlay && overlay.classList.contains("show")){
+  if(overlay && overlay.classList.contains("show") && location.hash !== zoomHashToken){
     closeZoom(true);
   }
-});
+}
+
+window.addEventListener("popstate", handleZoomBackNavigation);
+window.addEventListener("hashchange", handleZoomBackNavigation);
 
 
 function toggleDescExpand(el){
