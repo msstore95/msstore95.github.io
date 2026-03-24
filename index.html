@@ -6,34 +6,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>متجر MS</title>
 
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js">
-document.addEventListener("DOMContentLoaded", ()=>{
-  const overlay = document.getElementById("zoomOverlay");
-  if(overlay){
-    document.body.appendChild(overlay);
-  }
-});
-
-
-function toggleDescExpand(el){
-  el.classList.toggle("expanded");
-}
-
-</script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js">
-document.addEventListener("DOMContentLoaded", ()=>{
-  const overlay = document.getElementById("zoomOverlay");
-  if(overlay){
-    document.body.appendChild(overlay);
-  }
-});
-
-
-function toggleDescExpand(el){
-  el.classList.toggle("expanded");
-}
-
-</script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
   <style>
@@ -1402,7 +1377,7 @@ body.keyboard-open .modal-card{
     <div class="modal-card" onclick="event.stopPropagation()">
       <div class="modal-head"><h3 class="modal-title">لوحة إدارة متجر MS</h3><button class="close-btn" onclick="closeById('adminPanel')"><i class="fa-solid fa-xmark"></i></button></div>
 
-      <div class="notice">هذه النسخة مرتبة للاستقرار: شاشة ترحيب ثابتة، ربط على Firebase الصحيح، وإضافة صور من الاستوديو بدون اشتراك. ملاحظة: الصور تنحفظ داخل قاعدة البيانات نفسها، لذلك استخدم صورًا صغيرة ومتوسطة فقط.</div>
+      <div class="notice">هذه النسخة مرتبة للاستقرار: شاشة ترحيب ثابتة، وربط صحيح، ورفع صور من الاستوديو مع ضغط تلقائي ومحاولة إعادة عند الفشل.</div>
 
       <div class="stats-grid">
         <div class="stat-card"><div class="icon"><i class="fa-solid fa-box"></i></div><div class="num" id="statProducts">0</div><div class="label">إجمالي المنتجات</div></div>
@@ -1619,9 +1594,9 @@ const IMGBB_API_KEY = "17ce7ef832ce751d7760244683606c20";
    3) حط اسم_المستخدم/اسم_المستودع داخل GITHUB_REPO
    مثال: mustafa10sadi-del/msstore
 */
-const USE_GITHUB_UPLOAD = true;
-const GITHUB_TOKEN = "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";
-const GITHUB_REPO = "mustafa10sadi-del/msstore";
+const USE_GITHUB_UPLOAD = false;
+const GITHUB_TOKEN = "";
+const GITHUB_REPO = "";
 const GITHUB_BRANCH = "main";
 
 let isAdmin = false, tapCounter = 0, maintenanceTapCounter = 0;
@@ -3066,11 +3041,6 @@ function toggleDescExpand(el){
   el.classList.toggle("expanded");
 }
 
-</script>
-
-
-</body>
-</html>
 async function compressImageBeforeUpload(file){
   if(typeof imageCompression === "undefined") return file;
 
@@ -3263,4 +3233,7 @@ function initImagePicker(){
     }
   });
 }
+</script>
 
+</body>
+</html>
