@@ -1496,7 +1496,7 @@ body.keyboard-open .modal-card{
           <button type="button" class="btn btn-secondary upload-pick-btn" onclick="document.getElementById('pImageFiles').click()">اختيار الصور</button>
           <div id="pImageStatus" class="upload-status">لم يتم اختيار صور بعد</div>
         </div>
-        <div class="helper">الصور سترفع إلى Supabase ثم يُحفظ الرابط فقط، وهذا أسرع وأثبت.</div>
+        <div class="helper">الصور ستنضغط تقريباً إلى 100KB ثم تُرفع إلى Supabase، وهذا يخليك تخزن صور أكثر.</div>
       </div>
       <div class="preview-images" id="previewImages"></div>
       <div class="row-actions">
@@ -2576,22 +2576,58 @@ function renderAdminProducts(){
 
 
 async function compressImageBeforeUpload(file){
-  if(typeof imageCompression === "undefined") return file;
-
-  const options = {
-    maxSizeMB: 0.1,
-    maxWidthOrHeight: 800,
-    useWebWorker: true,
-    initialQuality: 0.8
-  };
-
-  try{
-    const compressedFile = await imageCompression(file, options);
-    return compressedFile || file;
-  }catch(err){
-    console.error("IMAGE_COMPRESS_FAILED", err);
-    return file;
+  if(typeof imageCompression !== "undefined"){
+    try{
+      const compressed = await imageCompression(file, {
+        maxSizeMB: 0.1,
+        maxWidthOrHeight: 800,
+        useWebWorker: true,
+        initialQuality: 0.7
+      });
+      if(compressed && compressed.size <= 120 * 1024) return compressed;
+    }catch(err){
+      console.error("IMAGE_COMPRESSION_LIB_FAILED", err);
+    }
   }
+
+  return await new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const maxWidth = 800;
+      const scale = Math.min(1, maxWidth / img.width);
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+      let quality = 0.82;
+
+      const tryCompress = () => {
+        canvas.toBlob((blob) => {
+          if(!blob){
+            resolve(file);
+            return;
+          }
+
+          if(blob.size <= 105 * 1024 || quality <= 0.35){
+            const finalName = (file.name || "image.jpg").replace(/\.[^.]+$/, "") + ".jpg";
+            const finalFile = new File([blob], finalName, { type: "image/jpeg" });
+            resolve(finalFile);
+            return;
+          }
+
+          quality -= 0.08;
+          tryCompress();
+        }, "image/jpeg", quality);
+      };
+
+      tryCompress();
+    };
+
+    img.onerror = () => resolve(file);
+    img.src = URL.createObjectURL(file);
+  });
 }
 
 async function uploadImage(file){
