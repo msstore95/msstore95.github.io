@@ -6,34 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>متجر MS</title>
 
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js">
-document.addEventListener("DOMContentLoaded", ()=>{
-  const overlay = document.getElementById("zoomOverlay");
-  if(overlay){
-    document.body.appendChild(overlay);
-  }
-});
-
-
-function toggleDescExpand(el){
-  el.classList.toggle("expanded");
-}
-
-</script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js">
-document.addEventListener("DOMContentLoaded", ()=>{
-  const overlay = document.getElementById("zoomOverlay");
-  if(overlay){
-    document.body.appendChild(overlay);
-  }
-});
-
-
-function toggleDescExpand(el){
-  el.classList.toggle("expanded");
-}
-
-</script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
   <style>
@@ -1599,6 +1573,7 @@ body.keyboard-open .modal-card{
   </div>
 
 <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
 const firebaseConfig = {
@@ -1611,8 +1586,10 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-const IMGBB_API_URL = "https://api.imgbb.com/1/upload";
-const IMGBB_API_KEY = "17ce7ef832ce751d7760244683606c20";
+const SUPABASE_URL = "https://fjoszzuknftuhwtbxbhq.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_T6hWw3Vk5joSjFrIkeBklQ_1FBbmzdZ";
+const SUPABASE_BUCKET = "products";
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
 let isAdmin = false, tapCounter = 0, maintenanceTapCounter = 0;
 let allProducts = [], allCategories = [], storeSettings = {}, visitorsCount = 0, selectedCategory = "الكل";
@@ -2128,7 +2105,7 @@ async function saveStoreSettings(){
 
   if(logoFile){
     try{
-      logoUrl = await uploadImageToImgBB(logoFile);
+      logoUrl = await uploadImage(logoFile);
       if(!splashLogoFile && (!storeSettings.splashLogoUrl || storeSettings.splashLogoUrl === storeSettings.logoUrl)){
         splashLogoUrl = logoUrl;
       }
@@ -2141,7 +2118,7 @@ async function saveStoreSettings(){
 
   if(splashLogoFile){
     try{
-      splashLogoUrl = await uploadImageToImgBB(splashLogoFile);
+      splashLogoUrl = await uploadImage(splashLogoFile);
     }catch(err){
       console.error(err);
       showToast("فشل رفع صورة رسالة الترحيب", true);
@@ -2617,26 +2594,34 @@ async function compressImageBeforeUpload(file){
   }
 }
 
-async function uploadImageToImgBB(file){
-  const formData = new FormData();
-  formData.append("key", IMGBB_API_KEY);
-  formData.append("image", file);
+async function uploadImage(file){
+  const originalName = String((file && file.name) || "image.jpg");
+  const ext = (originalName.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "");
+  const safeExt = ["jpg","jpeg","png","webp","gif"].includes(ext) ? ext : "jpg";
+  const fileName = "product_" + Date.now() + "_" + Math.random().toString(36).slice(2,8) + "." + safeExt;
 
-  const response = await fetch(IMGBB_API_URL, {
-    method: "POST",
-    body: formData
-  });
+  const { error } = await supabaseClient.storage
+    .from(SUPABASE_BUCKET)
+    .upload(fileName, file, {
+      cacheControl: "3600",
+      upsert: false,
+      contentType: file.type || ("image/" + safeExt)
+    });
 
-  if(!response.ok){
-    throw new Error("IMG_UPLOAD_HTTP_" + response.status);
+  if(error){
+    console.error("SUPABASE_UPLOAD_ERROR", error);
+    throw new Error(error.message || "SUPABASE_UPLOAD_FAILED");
   }
 
-  const result = await response.json();
-  if(!result || !result.success || !result.data || !result.data.url){
-    throw new Error("IMG_UPLOAD_FAILED");
+  const { data } = supabaseClient.storage
+    .from(SUPABASE_BUCKET)
+    .getPublicUrl(fileName);
+
+  if(!data || !data.publicUrl){
+    throw new Error("SUPABASE_PUBLIC_URL_FAILED");
   }
 
-  return result.data.url;
+  return data.publicUrl;
 }
 
 function setSaveButtonsDisabled(disabled){
@@ -2660,7 +2645,7 @@ function initImagePicker(){
 
       for(const file of files){
         const compressedFile = await compressImageBeforeUpload(file);
-        const imageUrl = await uploadImageToImgBB(compressedFile);
+        const imageUrl = await uploadImage(compressedFile);
         currentEditingImages.push(imageUrl);
       }
 
@@ -2958,14 +2943,11 @@ function closeById(id){
     document.body.classList.remove("modal-open");
   }
 }
-
 function closeModal(event, id){
   const modal = document.getElementById(id);
   if(!modal) return;
-
   const clickedInsideCard = event.target.closest(".modal-card");
   if(clickedInsideCard) return;
-
   if(event.target === modal || event.target.id === id){
     closeById(id);
   }
