@@ -2458,6 +2458,7 @@ function syncProductsFromMap(){
 function buildProductCard(p){
   const card = document.createElement("div");
   card.className = "card";
+  card.setAttribute("data-product-id", p.id);
   const firstImage = (p.images && p.images.length ? p.images[0] : "") || placeholderImage(p.name);
   const adminControls = isAdmin ? `
     <button class="admin-delete-btn" onclick="deleteProduct('${p.id}');event.stopPropagation();"><i class="fa-solid fa-trash"></i></button>
@@ -2927,8 +2928,37 @@ function switchAdminTab(tabId, btn){
 
 let overlayHistoryStack = [];
 let lastScrollYBeforeOverlay = 0;
+let lastActiveProductId = "";
+let lastActiveProductOffset = 0;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
+}
+
+function getStickyOffset(){
+  const header = document.querySelector('.header');
+  const fixed = document.querySelector('.fixed-sub-top');
+  const topSpacer = document.getElementById('topFixedSpacer');
+  const headerH = header ? header.offsetHeight : 0;
+  const fixedH = fixed ? fixed.offsetHeight : 0;
+  const spacerH = topSpacer ? topSpacer.offsetHeight : 0;
+  return Math.max(headerH + fixedH, spacerH, 0) + 12;
+}
+function saveActiveProductPosition(el){
+  const card = el && el.closest ? el.closest('.card') : null;
+  if(!card) return;
+  lastActiveProductId = card.getAttribute('data-product-id') || '';
+  const rect = card.getBoundingClientRect();
+  lastActiveProductOffset = rect.top;
+}
+function restoreActiveProductPosition(){
+  if(!lastActiveProductId) return false;
+  const card = document.querySelector(`.card[data-product-id="${CSS.escape(lastActiveProductId)}"]`);
+  if(!card) return false;
+  const targetY = window.scrollY + card.getBoundingClientRect().top - getStickyOffset();
+  requestAnimationFrame(() => {
+    window.scrollTo({ top: Math.max(0, targetY), behavior: 'auto' });
+  });
+  return true;
 }
 
 function overlayKey(type, id=""){
@@ -2963,6 +2993,8 @@ window.addEventListener('popstate', (event) => {
     closeTopOverlayFromBack();
     return;
   }
+  const restoredToCard = restoreActiveProductPosition();
+  if(restoredToCard) return;
   const targetScroll = event.state && typeof event.state.scrollY === 'number'
     ? event.state.scrollY
     : lastScrollYBeforeOverlay;
@@ -2983,10 +3015,13 @@ function renderZoomImage(){
   gal.innerHTML = src ? `<img class="z-img" src="${escapeAttr(src)}" alt="zoom" onerror="this.style.display='none'" />` : "";
 }
 
-function openZoom(images, startIndex = 0){
+function openZoom(images, startIndex = 0, sourceEl = null){
   const overlay = document.getElementById("zoomOverlay");
   if(!overlay) return;
 
+  if(sourceEl){
+    saveActiveProductPosition(sourceEl);
+  }
   zoomImages = Array.isArray(images) ? images.filter(Boolean) : [String(images || "")].filter(Boolean);
   if(!zoomImages.length) return;
 
@@ -3033,8 +3068,11 @@ function closeZoom(fromBack = false){
     document.body.classList.remove("modal-open");
   }
 
-  if(!overlayHistoryStack.length && typeof lastScrollYBeforeOverlay === 'number'){
-    requestAnimationFrame(() => window.scrollTo(0, lastScrollYBeforeOverlay));
+  if(!overlayHistoryStack.length){
+    if(restoreActiveProductPosition()) return;
+    if(typeof lastScrollYBeforeOverlay === 'number'){
+      requestAnimationFrame(() => window.scrollTo(0, lastScrollYBeforeOverlay));
+    }
   }
 }
 
@@ -3066,8 +3104,11 @@ function closeById(id, fromBack = false){
   if(!document.querySelector('.modal.show') && !document.getElementById("zoomOverlay")?.classList.contains("show")){
     document.body.classList.remove("modal-open");
   }
-  if(!overlayHistoryStack.length && typeof lastScrollYBeforeOverlay === 'number'){
-    requestAnimationFrame(() => window.scrollTo(0, lastScrollYBeforeOverlay));
+  if(!overlayHistoryStack.length){
+    if(restoreActiveProductPosition()) return;
+    if(typeof lastScrollYBeforeOverlay === 'number'){
+      requestAnimationFrame(() => window.scrollTo(0, lastScrollYBeforeOverlay));
+    }
   }
 }
 function closeModal(event, id){
@@ -3121,7 +3162,7 @@ function openZoomFromElement(el, event){
       .replace(/&amp;/g, "&");
     const images = JSON.parse(raw);
     const startIndex = Number(el.getAttribute("data-index") || 0);
-    openZoom(images, startIndex);
+    openZoom(images, startIndex, el);
   }catch(e){
     console.error(e);
   }
