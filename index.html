@@ -2883,6 +2883,53 @@ let zoomImages = [];
 let zoomIndex = 0;
 let zoomTouchStartX = 0;
 let zoomTouchStartY = 0;
+let appHistoryReady = false;
+
+function ensureAppHistoryBase(){
+  try{
+    if(appHistoryReady) return;
+    const state = window.history.state || {};
+    if(!state.__appBase){
+      window.history.replaceState({__appBase:true, appLayer:'home'}, '', window.location.pathname + window.location.search);
+    }
+    appHistoryReady = true;
+  }catch(e){
+    console.warn('history init failed', e);
+  }
+}
+
+function pushAppLayerState(layer, meta = {}){
+  try{
+    ensureAppHistoryBase();
+    const hash = layer === 'zoom' ? '#zoom' : (layer === 'modal' ? '#modal-' + (meta.id || 'layer') : '');
+    window.history.pushState({__appLayer:true, appLayer:layer, ...meta}, '', window.location.pathname + window.location.search + hash);
+  }catch(e){
+    console.warn('pushState failed', e);
+  }
+}
+
+function getOpenModalIds(){
+  return Array.from(document.querySelectorAll('.modal.show')).map(el => el.id).filter(Boolean);
+}
+
+function getTopOpenModalId(){
+  const ids = getOpenModalIds();
+  return ids.length ? ids[ids.length - 1] : null;
+}
+
+function closeTopLayerFromBack(){
+  const zoomOpen = document.getElementById('zoomOverlay')?.classList.contains('show');
+  if(zoomOpen){
+    closeZoom(true);
+    return true;
+  }
+  const topModalId = getTopOpenModalId();
+  if(topModalId){
+    closeById(topModalId, true);
+    return true;
+  }
+  return false;
+}
 
 function renderZoomImage(){
   const gal = document.getElementById("zGal");
@@ -2904,6 +2951,7 @@ function openZoom(images, startIndex = 0){
   overlay.style.display = "flex";
   overlay.style.visibility = "visible";
   document.body.classList.add("modal-open");
+  pushAppLayerState('zoom', {id:'zoomOverlay'});
 
 }
 
@@ -2923,6 +2971,14 @@ function zoomPrev(event){
 
 function closeZoom(fromBack = false){
   const overlay = document.getElementById("zoomOverlay");
+  const isOpen = overlay?.classList.contains('show');
+  if(!isOpen && !fromBack) return;
+
+  if(!fromBack && window.history.state?.appLayer === 'zoom'){
+    window.history.back();
+    return;
+  }
+
   if(overlay){
     overlay.classList.remove("show");
     overlay.style.display = "none";
@@ -2953,10 +3009,19 @@ function openModal(id){
   if(el){
     el.classList.add("show");
     document.body.classList.add("modal-open");
+    pushAppLayerState('modal', {id});
   }
 }
-function closeById(id){
+function closeById(id, fromBack = false){
   const el = document.getElementById(id);
+  const isOpen = el?.classList.contains('show');
+  if(!isOpen && !fromBack) return;
+
+  if(!fromBack && window.history.state?.appLayer === 'modal' && window.history.state?.id === id){
+    window.history.back();
+    return;
+  }
+
   if(el) el.classList.remove("show");
   if(!document.querySelector('.modal.show') && !document.getElementById("zoomOverlay")?.classList.contains("show")){
     document.body.classList.remove("modal-open");
@@ -3057,6 +3122,14 @@ function val(id){
   const el = document.getElementById(id);
   return el ? el.value : "";
 }
+
+window.addEventListener("popstate", () => {
+  closeTopLayerFromBack();
+});
+
+window.addEventListener("load", () => {
+  ensureAppHistoryBase();
+});
 
 document.addEventListener("DOMContentLoaded", ()=>{
   const overlay = document.getElementById("zoomOverlay");
