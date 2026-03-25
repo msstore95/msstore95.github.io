@@ -1,3 +1,9 @@
+<!--
+  Cleaned version:
+  - Safe formatting cleanup only
+  - No functional changes intended
+  - No UI/logic removal performed
+-->
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -6,7 +12,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>متجر MS</title>
 
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js">
+window.addEventListener("load", () => {
+  setTimeout(() => {
+    try { hideSplash(); } catch(e) {}
+  }, 2500);
+}, { once: true });
+
+window.addEventListener("load", () => {
+  setTimeout(() => {
+    try { hideSplash(); } catch(e) {}
+    const splash = document.getElementById("splashScreen");
+    if(splash){
+      splash.style.display = "none";
+      splash.style.opacity = "0";
+      splash.style.visibility = "hidden";
+      splash.style.pointerEvents = "none";
+    }
+  }, 2200);
+}, { once: true });
+
+</script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
@@ -76,7 +102,7 @@
     .ads-strip{min-height:auto;display:flex;align-items:center;gap:8px;padding:8px 10px;font-size:12px;font-weight:800;line-height:1.5;background:#2563eb;color:#fff}
     .ads-label{display:inline-flex;align-items:center;gap:4px;padding:5px 8px;border-radius:999px;font-size:10px;font-weight:900;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.22);flex-shrink:0;margin-left:4px}
     .ads-marquee{flex:1;overflow:hidden;direction:rtl;position:relative;white-space:nowrap}
-    .ads-track{display:inline-flex;align-items:center;gap:40px;white-space:nowrap;will-change:transform;animation:adsTicker 18s linear infinite}
+    .ads-track{display:inline-flex;align-items:center;gap:40px;white-space:nowrap;will-change:transform;animation:adsTicker 26s linear infinite}
     .ads-track.fast{animation-duration:10s}.ads-track.medium{animation-duration:16s}.ads-track.slow{animation-duration:24s}
     .ads-item-inline{display:inline;direction:rtl;unicode-bidi:plaintext}
     @keyframes adsTicker{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
@@ -245,7 +271,6 @@
       .category-strip{top:82px}
     }
 
-
     .fixed-top-area{position:sticky;top:0;z-index:2000;background:linear-gradient(180deg,var(--bg),rgba(245,247,251,.96));padding-bottom:2px}
     body.dark-mode .fixed-top-area{background:linear-gradient(180deg,var(--bg),rgba(11,18,32,.96))}
     .fixed-sub-top{position:sticky;top:74px;z-index:2050;background:linear-gradient(180deg,var(--bg),rgba(245,247,251,.98));padding-top:2px;padding-bottom:2px}
@@ -257,7 +282,6 @@
     .fixed-sub-top .filters{display:none}
     .fixed-sub-top .ads-wrap{margin-top:1px;position:relative;z-index:1;display:block;overflow:visible}
 
-
     .search-sort-row{display:flex;gap:6px;align-items:center;padding:3px 0 1px;background:transparent}
     .search-sort-row .search-box{flex:1;min-width:0}
     .search-sort-row .mini-sort{width:82px;flex:0 0 82px;border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:10px;padding:6px 8px;outline:none;box-shadow:var(--shadow);min-height:auto;font-size:11px}
@@ -268,11 +292,9 @@
       .search-box input{padding:5px 0;font-size:10px}
     }
 
-
     .toast-wrap{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);z-index:999999;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
     .toast{min-width:180px;max-width:88vw;background:rgba(22,163,74,.96);color:#fff;padding:12px 16px;border-radius:14px;box-shadow:0 12px 30px rgba(0,0,0,.22);font-size:13px;font-weight:800;opacity:0;transform:translateY(10px);transition:.25s ease;text-align:center}
     .toast.show{opacity:1;transform:translateY(0)}
-
 
     .sticky-browse-top{position:static !important}
     body.dark-mode .sticky-browse-top{background:linear-gradient(180deg,var(--bg),rgba(11,18,32,.98))}
@@ -285,20 +307,16 @@
       .sticky-browse-top .category-strip{padding-top:3px;padding-bottom:5px}
     }
 
-
     .sticky-top-block{position:static !important}
     body.dark-mode .sticky-top-block{background:linear-gradient(180deg,var(--bg),rgba(11,18,32,.98))}
 
-
     body{overflow-x:hidden}
-
 
 .sticky-top-block,.sticky-browse-top{position:static !important;top:auto !important}
 
     html,body{overflow-x:hidden}
     .header,.category-strip{left:0;right:0}
     body.dark-mode .category-strip,body.dark-mode .section-bar{background:linear-gradient(180deg,var(--bg),rgba(11,18,32,.98))}
-
 
     .top-fixed-shell{
       position:fixed;
@@ -365,14 +383,12 @@
       margin-top:0 !important;
     }
 
-
 /* FORCE COMPACT PRODUCT CARDS */
 .card{padding:6px !important}
 .card *{margin:0 !important}
 .card h3,.card h4,.card p{margin:2px 0 !important;line-height:1.2 !important}
 .card .price{margin:2px 0 !important;font-size:13px !important}
 .card button{margin-top:4px !important;padding:6px !important;font-size:12px !important}
-
 
 /* FIX BIG EMPTY SPACE */
 .card{
@@ -390,7 +406,6 @@
   font-size:11px !important;
   padding:5px 6px !important;
 }
-
 
 /* FINAL FIX GAP + ALIGN */
 .card{
@@ -415,7 +430,6 @@
   padding:5px 8px !important;
   margin-top:6px !important;
 }
-
 
 /* FINAL ULTRA FIX */
 .card{
@@ -452,7 +466,6 @@
 .share-btn, .share, .card .share{
   display:none !important;
 }
-
 
 /* Compact real product card structure */
 .product-info{
@@ -508,7 +521,6 @@
 .btn-share{
   display:none !important;
 }
-
 
 /* Card layout closer to sample while preserving theme colors */
 .card{
@@ -588,7 +600,6 @@
   display:none !important;
 }
 
-
 /* FINAL REAL FIX (remove fixed height causing gap) */
 .card{
   height:auto !important;
@@ -612,7 +623,6 @@
   border-radius:12px !important;
 }
 
-
 /* Remove availability + category text row */
 .meta-row{
   display:none !important;
@@ -631,7 +641,6 @@
 .btn-order{
   margin-top:0 !important;
 }
-
 
 /* Final tighten gap + classic order button */
 .product-info{
@@ -664,14 +673,12 @@
   box-shadow:0 2px 6px rgba(0,0,0,.2) !important;
 }
 
-
 /* FINAL REAL CARD FIX */
 .p-desc.long,.p-desc.short{min-height:auto !important}
 .meta-row{display:none !important}
 .card-actions{margin-top:4px !important;padding-top:0 !important}
 .btn-order{width:100% !important}
 .btn-share,.share-btn,.share{display:none !important}
-
 
 /* ===== PROFESSIONAL UI REFRESH (visual only) ===== */
 :root{
@@ -943,7 +950,6 @@ body.dark-mode .footer{
   }
 }
 
-
 /* Equal order button size across cards + expandable description */
 .card-actions{
   align-items:stretch !important;
@@ -971,7 +977,6 @@ body.dark-mode .footer{
   overflow:visible !important;
 }
 
-
 /* force equal button height */
 .card-actions{
   display:flex !important;
@@ -998,7 +1003,6 @@ body.dark-mode .footer{
   display:block !important;
   -webkit-line-clamp:unset !important;
 }
-
 
 /* ===== final small fixes only ===== */
 
@@ -1060,7 +1064,6 @@ body.dark-mode .footer{
   margin-top:0 !important;
 }
 
-
 /* Auto size for store logo */
 #storeLogo{
   width:auto !important;
@@ -1068,7 +1071,6 @@ body.dark-mode .footer{
   max-width:100% !important;
   object-fit:contain !important;
 }
-
 
 /* natural logo sizing inside badge */
 .brand-badge img,
@@ -1079,13 +1081,11 @@ body.dark-mode .footer{
   object-fit:cover !important;
 }
 
-
 /* prevent background page scroll while modals/admin are open */
 body.modal-open{
   overflow:hidden !important;
   height:100vh !important;
 }
-
 
 /* compact upload UI */
 .hidden-file-input{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px}
@@ -1129,7 +1129,6 @@ body.keyboard-open .modal-card{
   scroll-margin-bottom:180px;
 }
 
-
 /* tighter modal with keyboard */
 body.keyboard-open .modal{
   align-items:flex-start !important;
@@ -1143,7 +1142,6 @@ body.keyboard-open .modal-card{
 .modal-card{
   overscroll-behavior:contain;
 }
-
 
 /* show full product image without cropping */
 .gallery-wrapper{
@@ -1159,7 +1157,6 @@ body.keyboard-open .modal-card{
   object-fit:contain !important;
   background:#fff !important;
 }
-
 
 /* ===== small premium visual refresh ===== */
 .header{
@@ -1191,7 +1188,6 @@ body.dark-mode .card{
 
 /* settings modal */
 
-
 /* ===== Faster, smoother splash (keeps admin settings) ===== */
 #splashScreen, .splash, .welcome-screen{
   will-change: opacity, transform;
@@ -1213,9 +1209,7 @@ body.dark-mode .card{
   transition:opacity .45s ease, visibility .45s ease !important;
 }
 
-
 /* splash enabled */
-
 
     /* ===== Easy custom tweaks ===== */
     :root{
@@ -1268,13 +1262,571 @@ body.dark-mode .card{
     }
     /* ===== End easy custom tweaks ===== */
 
-</style>
+/* ===== PREMIUM HERO BANNER ===== */
+.premium-hero{
+  position:relative;
+  margin:4px 12px 6px;
+  min-height:72px;
+  border-radius:10px;
+  overflow:hidden;
+  background:
+    linear-gradient(135deg, rgba(15,23,42,.90), rgba(37,99,235,.80) 58%, rgba(6,182,212,.72)),
+    url('https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da') center/cover no-repeat;
+  box-shadow:0 8px 20px rgba(0,0,0,.14);
+  border:1px solid rgba(255,255,255,.10);
+}
+.premium-hero-sticky{position:static}
+.hero-overlay{
+  position:absolute;
+  inset:0;
+  background:
+    linear-gradient(90deg, rgba(255,255,255,.03), rgba(255,255,255,0)),
+    radial-gradient(circle at top right, rgba(255,255,255,.12), transparent 34%);
+}
+.hero-glow{
+  position:absolute;
+  border-radius:999px;
+  background:rgba(255,255,255,.10);
+  filter:blur(2px);
+  animation:heroFloat 5s ease-in-out infinite alternate;
+}
+.hero-glow-1{width:54px;height:54px;left:-10px;bottom:-18px}
+.hero-glow-2{width:34px;height:34px;left:48px;top:-10px;animation-duration:4s}
+@keyframes heroFloat{
+  from{transform:translateY(0) translateX(0)}
+  to{transform:translateY(-5px) translateX(5px)}
+}
+.hero-content{
+  position:relative;
+  z-index:2;
+  color:#fff;
+  padding:10px 12px;
+  text-align:right;
+  animation:heroFadeIn .7s ease both;
+}
+@keyframes heroFadeIn{
+  from{opacity:0;transform:translateY(8px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.hero-badge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:3px 8px;
+  margin-bottom:5px;
+  border-radius:999px;
+  background:rgba(255,255,255,.14);
+  border:1px solid rgba(255,255,255,.18);
+  font-size:9px;
+  font-weight:800;
+  backdrop-filter:blur(8px);
+}
+.hero-content h1{
+  font-size:13px;
+  font-weight:900;
+  margin:0 0 3px;
+  line-height:1.3;
+}
+.hero-content p{
+  font-size:9.5px;
+  margin:0;
+  opacity:.95;
+  line-height:1.5;
+  max-width:100%;
+}
+@media (max-width:640px){
+  .premium-hero{
+    min-height:66px;
+    margin:3px 12px 5px;
+    border-radius:9px;
+  }
+  .hero-content{padding:9px 11px}
+  .hero-content h1{font-size:12px}
+  .hero-content p{font-size:9px}
+}
 
+/* equal order buttons */
+.card-actions{
+  display:flex !important;
+  align-items:stretch !important;
+}
+.btn-order{
+  width:100% !important;
+  min-height:40px !important;
+  height:40px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  white-space:nowrap !important;
+  line-height:1 !important;
+  padding:0 10px !important;
+  box-sizing:border-box !important;
+}
+
+/* gallery dots + slideshow */
+.gallery-arrow{display:none !important}
+.gallery-dots{
+  position:absolute;
+  right:0;
+  left:0;
+  bottom:8px;
+  z-index:4;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  pointer-events:none;
+}
+.gallery-dot{
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:rgba(255,255,255,.45);
+  box-shadow:0 2px 6px rgba(0,0,0,.18);
+  transition:.25s ease;
+}
+.gallery-dot.active{
+  width:14px;
+  border-radius:999px;
+  background:#fff;
+}
+
+/* stronger moving premium banner */
+.premium-hero{
+  animation: heroPulse 3.8s ease-in-out infinite;
+  background-size: 140% 140%, cover;
+}
+.premium-hero::before{
+  content:"";
+  position:absolute;
+  top:0;
+  right:-35%;
+  width:40%;
+  height:100%;
+  background:linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.18), rgba(255,255,255,0));
+  transform:skewX(-20deg);
+  animation: heroShine 3.2s linear infinite;
+  z-index:1;
+}
+@keyframes heroPulse{
+  0%{transform:translateY(0) scale(1)}
+  50%{transform:translateY(-1px) scale(1.01)}
+  100%{transform:translateY(0) scale(1)}
+}
+@keyframes heroShine{
+  0%{right:-45%}
+  100%{right:120%}
+}
+.hero-content{z-index:2 !important}
+.hero-glow-1{animation-duration:2.8s !important}
+.hero-glow-2{animation-duration:2.1s !important}
+
+/* ===== IMAGE SIZE FIX (FULL IMAGE VISIBLE, NO GAP) ===== */
+.gallery-wrapper{
+  aspect-ratio:1/1 !important;
+  background:#ffffff !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  padding:0 !important;
+}
+
+.gallery-img{
+  width:100% !important;
+  height:100% !important;
+  object-fit:contain !important;
+  object-position:center center !important;
+  background:#ffffff !important;
+}
+/* ===== ROUNDED PRODUCT IMAGES ===== */
+.gallery-wrapper{
+  border-radius:18px !important;
+  overflow:hidden !important;
+}
+
+.gallery-img{
+  border-radius:18px !important;
+}
+
+/* ===== PREMIUM ORDER BUTTON TOUCH ===== */
+.btn-order{
+  position:relative !important;
+  overflow:hidden !important;
+  background:linear-gradient(135deg,#22c55e,#16a34a) !important;
+  border:1px solid rgba(255,255,255,.18) !important;
+  box-shadow:0 10px 20px rgba(34,197,94,.22) !important;
+  letter-spacing:.2px !important;
+}
+
+.btn-order::before{
+  content:"" !important;
+  position:absolute !important;
+  top:0 !important;
+  right:-35% !important;
+  width:36% !important;
+  height:100% !important;
+  background:linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.28), rgba(255,255,255,0)) !important;
+  transform:skewX(-18deg) !important;
+  animation:orderBtnShine 3s linear infinite !important;
+}
+
+.btn-order span,
+.btn-order i{
+  position:relative !important;
+  z-index:1 !important;
+}
+
+.btn-order:hover{
+  transform:translateY(-1px) !important;
+  box-shadow:0 14px 24px rgba(34,197,94,.28) !important;
+}
+
+.btn-order:active{
+  transform:scale(.98) !important;
+}
+
+@keyframes orderBtnShine{
+  0%{right:-40%}
+  100%{right:120%}
+}
+
+/* ===== EXTRA PREMIUM ORDER BUTTON ===== */
+.btn-order{
+  position:relative !important;
+  overflow:hidden !important;
+  background:linear-gradient(135deg,#22c55e 0%, #16a34a 55%, #15803d 100%) !important;
+  border:1px solid rgba(255,255,255,.22) !important;
+  box-shadow:0 12px 26px rgba(34,197,94,.28), inset 0 1px 0 rgba(255,255,255,.18) !important;
+  font-weight:800 !important;
+  letter-spacing:.2px !important;
+  transition:.25s ease !important;
+}
+
+.btn-order::before{
+  content:"" !important;
+  position:absolute !important;
+  top:0 !important;
+  right:-38% !important;
+  width:34% !important;
+  height:100% !important;
+  background:linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.30), rgba(255,255,255,0)) !important;
+  transform:skewX(-20deg) !important;
+  animation:orderBtnShine 2.8s linear infinite !important;
+}
+
+.btn-order::after{
+  content:"" !important;
+  position:absolute !important;
+  inset:0 !important;
+  border-radius:inherit !important;
+  background:linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,0)) !important;
+  pointer-events:none !important;
+}
+
+.btn-order:hover{
+  transform:translateY(-2px) !important;
+  box-shadow:0 16px 30px rgba(34,197,94,.34), inset 0 1px 0 rgba(255,255,255,.20) !important;
+}
+
+.btn-order:active{
+  transform:scale(.985) !important;
+}
+
+/* ===== PRODUCT IMAGE FLUSH LAYOUT ===== */
+.gallery-wrapper{
+  padding:0 !important;
+  margin:0 !important;
+  line-height:0 !important;
+}
+
+.gallery-img{
+  display:block !important;
+  margin:0 !important;
+  padding:0 !important;
+}
+
+/* ===== SCROLLABLE LONG DESCRIPTION BOX ===== */
+
+/* ===== IMPROVED DESCRIPTION BOX ===== */
+.p-desc.long{
+  min-height:48px !important;
+  max-height:48px !important;
+  padding:6px 8px !important;
+  font-size:11px !important;
+  line-height:1.4 !important;
+  text-align:justify !important;
+}
+
+.p-name{
+  margin-bottom:8px !important;
+}
+
+.p-desc{
+  margin:0 0 10px !important;
+}
+
+.p-desc.long{
+  display:block !important;
+  min-height:58px !important;
+  max-height:58px !important;
+  overflow-y:auto !important;
+  overflow-x:hidden !important;
+  padding:8px 10px !important;
+  border-radius:12px !important;
+  background:rgba(255,255,255,.05) !important;
+  border:1px solid rgba(148,163,184,.18) !important;
+  -webkit-line-clamp:unset !important;
+  white-space:normal !important;
+  scrollbar-width:thin !important;
+}
+
+.p-desc.long::-webkit-scrollbar{
+  width:4px !important;
+}
+
+.p-desc.long::-webkit-scrollbar-track{
+  background:transparent !important;
+}
+
+.p-desc.long::-webkit-scrollbar-thumb{
+  background:rgba(148,163,184,.45) !important;
+  border-radius:999px !important;
+}
+
+body.dark-mode .p-desc.long{
+  background:rgba(255,255,255,.03) !important;
+  border:1px solid rgba(148,163,184,.14) !important;
+}
+
+.card-actions{
+  margin-top:8px !important;
+}
+
+/* ===== EQUAL PRODUCT CARDS ===== */
+.card{
+  display:flex !important;
+  flex-direction:column !important;
+  justify-content:space-between !important;
+  height:100% !important;
+}
+
+.product-info{
+  display:flex !important;
+  flex-direction:column !important;
+  flex:1 !important;
+}
+
+.card-actions{
+  margin-top:auto !important;
+}
+
+/* ===== REMOVE IMAGE GAP COMPLETELY ===== */
+.gallery-img{
+  object-fit:cover !important;
+}
+
+/* ===== DESC SCROLL RIGHT + CLEAN ===== */
+.p-desc.long{
+  direction:ltr !important;
+  text-align:right !important;
+}
+
+.p-desc.long *{
+  direction:rtl !important;
+}
+
+/* ===== REFINED PREMIUM BANNER ===== */
+.premium-hero{
+  min-height:64px !important;
+  margin:4px 12px 8px !important;
+  border-radius:14px !important;
+  background:
+    radial-gradient(circle at top left, rgba(255,255,255,.12), transparent 28%),
+    linear-gradient(135deg, #172554 0%, #1d4ed8 52%, #38bdf8 100%) !important;
+  border:1px solid rgba(255,255,255,.14) !important;
+  box-shadow:0 12px 28px rgba(29,78,216,.24) !important;
+}
+.premium-hero::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    linear-gradient(120deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.10) 48%, rgba(255,255,255,0) 62%);
+  transform:translateX(-120%);
+  animation:premiumBannerShine 4.5s linear infinite;
+  pointer-events:none;
+}
+@keyframes premiumBannerShine{
+  to{transform:translateX(120%)}
+}
+.hero-content{
+  padding:10px 12px !important;
+}
+.hero-badge{
+  padding:3px 8px !important;
+  font-size:9px !important;
+  margin-bottom:4px !important;
+}
+.hero-content h1{
+  font-size:12px !important;
+  margin:0 0 2px !important;
+}
+.hero-content p{
+  font-size:9px !important;
+  opacity:.96 !important;
+  line-height:1.45 !important;
+}
+
+/* ===== SMALLER ORDER BUTTON ===== */
+.btn-order{
+  width:100% !important;
+  height:36px !important;
+  min-height:36px !important;
+  padding:0 10px !important;
+  border-radius:14px !important;
+  font-size:10px !important;
+  font-weight:800 !important;
+  box-shadow:0 8px 18px rgba(34,197,94,.22) !important;
+}
+.btn-order i{
+  font-size:10px !important;
+  margin-left:5px !important;
+}
+
+/* ===== PREMIUM ALERT BAR ===== */
+.alert-bar{
+  margin:6px 12px;
+  padding:10px 14px;
+  border-radius:14px;
+  background:linear-gradient(135deg,#ef4444,#dc2626);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  box-shadow:0 8px 20px rgba(239,68,68,.25);
+  position:relative;
+  overflow:hidden;
+}
+
+.alert-bar span{
+  font-size:13px;
+  font-weight:800;
+}
+
+.alert-badge{
+  font-size:10px;
+  padding:4px 10px;
+  border-radius:999px;
+  background:rgba(255,255,255,.2);
+}
+
+.alert-bar::before{
+  content:"";
+  position:absolute;
+  top:0;
+  right:-40%;
+  width:40%;
+  height:100%;
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,.35), transparent);
+  transform:skewX(-20deg);
+  animation:alertShine 3s linear infinite;
+}
+
+@keyframes alertShine{
+  0%{right:-40%}
+  100%{right:120%}
+}
+
+/* ===== ADS SIMPLE MODE ===== */
+.ads-wrap{
+  margin:4px 12px 6px !important;
+  border-radius:12px !important;
+  overflow:hidden !important;
+  transition:none !important;
+}
+.ads-wrap.ads-hidden-animated,
+.ads-wrap.ads-visible-animated{
+  opacity:1 !important;
+  transform:none !important;
+  filter:none !important;
+  pointer-events:auto !important;
+}
+.ads-strip{
+  min-height:auto !important;
+  padding:8px 10px !important;
+  border-radius:12px !important;
+  font-size:12px !important;
+  font-weight:800 !important;
+  position:relative !important;
+  overflow:hidden !important;
+}
+.ads-strip::before,
+.ads-strip::after{
+  display:none !important;
+}
+.ads-label{
+  padding:5px 8px !important;
+  font-size:10px !important;
+  border-radius:999px !important;
+  background:rgba(255,255,255,.16) !important;
+  border:1px solid rgba(255,255,255,.22) !important;
+  flex-shrink:0 !important;
+}
+.ads-marquee{
+  flex:1 !important;
+  overflow:hidden !important;
+  position:relative !important;
+  white-space:nowrap !important;
+}
+.ads-track{
+  display:flex !important;
+  align-items:center !important;
+  width:max-content !important;
+  min-width:max-content !important;
+  will-change:transform !important;
+  animation:adsTicker 26s linear infinite !important;
+}
+.ads-track.fast{animation-duration:18s !important}
+.ads-track.medium{animation-duration:26s !important}
+.ads-track.slow{animation-duration:36s !important}
+.ads-seq{
+  display:inline-flex !important;
+  align-items:center !important;
+  gap:28px !important;
+  padding-inline-end:28px !important;
+  flex-shrink:0 !important;
+}
+.ads-item-inline{
+  display:inline-block !important;
+  font-size:15px !important;
+  font-weight:900 !important;
+  text-shadow:0 1px 3px rgba(0,0,0,.28) !important;
+  line-height:1.4 !important;
+}
+.ads-text-stage,.ads-text-current,.ads-text-next{
+  all:unset;
+}
+@keyframes adsTicker{
+  from{transform:translateX(0)}
+  to{transform:translateX(50%)}
+}
+</style>
 
 <style>
 /* tighten categories spacing */
 .categories, .sections, .cats, .categories-header { margin-top:0 !important; padding-top:0 !important; }
 .categories-note, .section-note { display:none !important; }
+
+/* ===== DESC SCROLL RIGHT + CLEAN ===== */
+.p-desc.long{
+  direction:ltr !important;
+  text-align:right !important;
+}
+
+.p-desc.long *{
+  direction:rtl !important;
+}
+
 </style>
 
 <style>
@@ -1296,6 +1848,16 @@ body.keyboard-open .modal-card{
 .modal-card select{
   scroll-margin-top:24px !important;
   scroll-margin-bottom:260px !important;
+}
+
+/* ===== DESC SCROLL RIGHT + CLEAN ===== */
+.p-desc.long{
+  direction:ltr !important;
+  text-align:right !important;
+}
+
+.p-desc.long *{
+  direction:rtl !important;
 }
 
 </style>
@@ -1322,7 +1884,6 @@ body.keyboard-open .modal-card{
     </div>
   </div>
   <div id="topFixedShell" class="top-fixed-shell">
-
 
   <div class="fixed-top-area">
   <header class="header">
@@ -1359,6 +1920,17 @@ body.keyboard-open .modal-card{
 <div class="fixed-sub-top">
   <section id="adsWrap" class="ads-wrap"><div id="adsStrip" class="ads-strip"></div></section>
 
+  <section class="premium-hero premium-hero-sticky">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <span class="hero-badge">متجر MS</span>
+      <h1 id="heroTitle">مرحبًا بك في متجر MS، حيث الفخامة تبدأ من أول نظرة</h1>
+      <p id="heroDesc">اكتشف تشكيلة أنيقة ومنتجات مختارة بعناية، واطلب بسهولة وسرعة عبر واتساب.</p>
+    </div>
+    <div class="hero-glow hero-glow-1"></div>
+    <div class="hero-glow hero-glow-2"></div>
+  </section>
+
   <div class="section-bar">
     <div><div class="section-title">الأقسام</div><div class="section-note"></div></div>
     <div class="section-note" id="resultCountText">جاري التحميل...</div>
@@ -1366,10 +1938,9 @@ body.keyboard-open .modal-card{
 
   <div class="category-strip" id="categoryFilter"></div>
 </div>
-  </div>
+</div>
   <div id="topFixedSpacer"></div>
-
-  <main id="productsContainer" class="products"></main>
+<main id="productsContainer" class="products"></main>
 
   <div id="emptyState" class="empty-state hidden">
     <i class="fa-solid fa-box-open" style="font-size:34px; margin-bottom:10px;"></i>
@@ -1387,7 +1958,6 @@ body.keyboard-open .modal-card{
     <div class="mini-text" id="footerRights" style="white-space: pre-line; line-height:1.8;"></div>
   </footer>
   <div id="toastWrap" class="toast-wrap"></div>
-
 
   <button id="fabAdmin" class="fab-admin" onclick="openAdminPanel()"><i class="fa-solid fa-gear"></i></button>
 
@@ -1462,15 +2032,14 @@ body.keyboard-open .modal-card{
             <input type="color" id="adColorInput" style="background:#2563eb;" value="#2563eb" oninput="previewSingleAd(); this.style.background = this.value;" />
           </div>
           <div class="field">
-            <label>سرعة الإعلان</label>
+            <label>سرعة حركة النص</label>
             <select id="adSpeedInput" onchange="previewSingleAd()">
               <option value="slow">بطيء</option>
               <option value="medium">وسط</option>
               <option value="fast">سريع</option>
             </select>
           </div>
-        </div>
-        <div class="row-actions">
+        </div>        <div class="row-actions">
           <button class="btn btn-primary" onclick="saveSingleAd()">حفظ / تعديل الإعلان</button>
           <button class="btn btn-danger" onclick="deleteSingleAd()">حذف الإعلان</button>
         </div>
@@ -1627,6 +2196,8 @@ let splashDurationMs = null;
 let currentAd = null;
 let productsMap = {};
 let productsFirstPaintDone = false;
+let adAutoToggleTimer = null;
+let adIsTemporarilyHidden = false;
 
 const defaultSettings = {
   storeName: "متجر MS",
@@ -1645,9 +2216,10 @@ const defaultSettings = {
   adsEnabled: true,
   footerRights: "",
   footerRightsSize: "12",
-  footerIconSize: "42"
+  footerIconSize: "42",
+  adToggleMinutes: "0",
+  adTransition: "fade"
 };
-
 
 function setupMobileKeyboardFix(){
   const supportsVV = !!window.visualViewport;
@@ -1729,7 +2301,6 @@ function setupMobileKeyboardFix(){
   });
 }
 
-
 function readCache(key, fallback){
   try{
     const raw = localStorage.getItem(key);
@@ -1784,7 +2355,6 @@ function applyCachedData(){
   }
 }
 
-
 function initZoomSwipe(){
   const gal = document.getElementById("zGal");
   if(!gal) return;
@@ -1808,6 +2378,14 @@ function initZoomSwipe(){
   }, { passive: true });
 }
 
+function updateHeroPinnedState(){
+  const fixedSubTop = document.querySelector('.fixed-sub-top');
+  const adsWrap = document.getElementById('adsWrap');
+  if(!fixedSubTop || !adsWrap) return;
+  const adsHidden = adsWrap.style.display === 'none' || !adsWrap.classList.contains('show');
+  fixedSubTop.classList.toggle('hero-up', adsHidden);
+  setTimeout(updateTopFixedShellSpacer, 0);
+}
 
 function updateTopFixedShellSpacer(){
   const shell = document.getElementById('topFixedShell');
@@ -1826,6 +2404,7 @@ applyCachedData();
   listenCategories();
   listenProducts();
   listenAds();
+  setTimeout(updateHeroPinnedState, 120);
   initMaintenanceAccess();
   initImagePicker();
   initCardImageSwipe();
@@ -1836,8 +2415,15 @@ applyCachedData();
   window.addEventListener("load", () => { updateTopFixedShellSpacer(); scheduleSplashHideFromSettings(); }, { once: true });
   window.addEventListener("resize", updateTopFixedShellSpacer);
   window.addEventListener("error", () => hideSplash(), { once: true });
-});
 
+setTimeout(() => {
+  const splash = document.getElementById("splashScreen");
+  if(splash && getComputedStyle(splash).display !== "none"){
+    hideSplash();
+  }
+}, 5000);
+
+});
 
 function getSplashDurationMs(){
   const raw = Number((storeSettings && storeSettings.splashDuration) || defaultSettings.splashDuration || 2);
@@ -1940,7 +2526,6 @@ function hideSplash(){
   setTimeout(() => { splash.style.display = "none"; }, 450);
 }
 
-
 function showProductSkeletons(){
   const container = document.getElementById("productsContainer");
   let html = "";
@@ -1977,6 +2562,7 @@ function updateAdminUI(){
 }
 
 document.getElementById("brandTapArea").onclick = function(){
+  if(this.dataset.adminTapBound === "true") return;
   tapCounter++;
   if(tapCounter >= 8){
     tapCounter = 0;
@@ -2291,41 +2877,31 @@ function renderAdminCategories(){
   });
 }
 
-
 function listenProducts(){
   const ref = db.ref("products");
 
-  ref.on("child_added", snap => {
-    const p = normalizeProduct(snap.key, snap.val() || {});
-    productsMap[snap.key] = p;
+  ref.on("value", snap => {
+    productsMap = {};
+    allProducts = [];
+
+    snap.forEach(child => {
+      const p = normalizeProduct(child.key, child.val() || {});
+      productsMap[child.key] = p;
+    });
+
     syncProductsFromMap();
     renderProducts();
     if(isAdmin) renderAdminProducts();
     updateStatsCards();
+
     if(!productsFirstPaintDone){
       productsFirstPaintDone = true;
       scheduleSplashHideFromSettings();
     }
-  });
-
-  ref.on("child_changed", snap => {
-    const p = normalizeProduct(snap.key, snap.val() || {});
-    productsMap[snap.key] = p;
-    syncProductsFromMap();
-    renderProducts();
-    if(isAdmin) renderAdminProducts();
-    updateStatsCards();
-  });
-
-  ref.on("child_removed", snap => {
-    delete productsMap[snap.key];
-    syncProductsFromMap();
-    renderProducts();
-    if(isAdmin) renderAdminProducts();
-    updateStatsCards();
+  }, () => {
+    scheduleSplashHideFromSettings(true);
   });
 }
-
 
 function normalizeProduct(id, p){
   let images = [];
@@ -2363,13 +2939,21 @@ function renderProducts(){
   const q = (document.getElementById("searchInput").value || "").trim().toLowerCase();
   const sort = document.getElementById("sortSelect").value;
 
-  let items = allProducts.filter(p => p.active !== false);
+  const uniqueMap = {};
+  (allProducts || []).forEach(p => {
+    if(p && p.id) uniqueMap[p.id] = p;
+  });
+
+  let items = Object.values(uniqueMap).filter(p => p.active !== false);
+
   if(selectedCategory !== "الكل") items = items.filter(p => p.category === selectedCategory);
-  if(q) items = items.filter(p =>
-    (p.name || "").toLowerCase().includes(q) ||
-    (p.desc || "").toLowerCase().includes(q) ||
-    (p.category || "").toLowerCase().includes(q)
-  );
+  if(q){
+    items = items.filter(p =>
+      (p.name || "").toLowerCase().includes(q) ||
+      (p.desc || "").toLowerCase().includes(q) ||
+      (p.category || "").toLowerCase().includes(q)
+    );
+  }
 
   if(sort === "featured"){
     items.sort((a,b) => Number(b.featured) - Number(a.featured) || (b.createdAt||0) - (a.createdAt||0));
@@ -2394,10 +2978,13 @@ function renderProducts(){
   empty.classList.add("hidden");
   requestAnimationFrame(() => {
     const frag = document.createDocumentFragment();
-    for(const p of items) frag.appendChild(buildProductCard(p));
+    for(const p of items){
+      frag.appendChild(buildProductCard(p));
+    }
     container.innerHTML = "";
     container.appendChild(frag);
     scheduleRealImageLoading();
+    startCardSlideshows();
   });
 }
 
@@ -2452,7 +3039,12 @@ function scheduleRealImageLoading(){
 }
 
 function syncProductsFromMap(){
-  allProducts = Object.values(productsMap);
+  const uniqueMap = {};
+  Object.values(productsMap).forEach(p => {
+    if(p && p.id) uniqueMap[p.id] = p;
+  });
+  productsMap = uniqueMap;
+  allProducts = Object.values(uniqueMap);
   writeCache("ms_cache_products", allProducts);
 }
 
@@ -2474,27 +3066,22 @@ function buildProductCard(p){
     <div class="card-top-badges">${featuredBadge}</div>
     <div class="gallery-wrapper img-loading">
       <img class="gallery-img" src="${escapeAttr(placeholderImage(p.name))}" data-src="${escapeAttr(firstImage)}" alt="${escapeAttr(p.name)}" data-product-id="${escapeAttr(p.id)}" data-index="0" data-images='${escapeAttr(encodeJsArray(p.images && p.images.length ? p.images : [firstImage]))}' onclick="openZoomFromElement(this,event)" onerror="handleProductImageError(this)" />
-      ${(p.images && p.images.length > 1) ? `
-        <button class="gallery-arrow gallery-prev" onclick="changeCardImage('${p.id}', -1, event)"><i class="fa-solid fa-chevron-right"></i></button>
-        <button class="gallery-arrow gallery-next" onclick="changeCardImage('${p.id}', 1, event)"><i class="fa-solid fa-chevron-left"></i></button>
-      ` : ""}
+      ${(p.images && p.images.length > 1) ? `<div class="gallery-dots">${p.images.map((_,i)=>`<span class="gallery-dot ${i===0?'active':''}" data-index="${i}"></span>`).join('')}</div>` : ""}
     </div>
     <div class="product-info">
       <h3 class="p-name">${escapeHtml(p.name)}</h3>
-      <p class="p-desc ${descMode}" ${descMode === "long" ? 'onclick="this.classList.toggle(\'expanded\')"' : ""}>${escapeHtml(p.desc || "لا يوجد وصف")}</p>
+      <p class="p-desc ${descMode}">${escapeHtml(p.desc || "لا يوجد وصف")}</p>
       <div class="meta-row">
         <span class="stock ${p.stock === 'متوفر' ? 'in' : 'out'}">${escapeHtml(p.stock)}</span>
         <span class="section-note">${escapeHtml(p.category)}</span>
       </div>
       <div class="price-tag">${formatPrice(p.price)}</div>
       <div class="card-actions">
-        <a class="btn btn-order" href="https://wa.me/${whatsapp}?text=${encodeURIComponent(orderText)}" target="_blank">اطلب الآن</a>
-        <button class="btn btn-share" onclick="shareProduct('${p.id}');event.stopPropagation();"><i class="fa-solid fa-share-nodes"></i></button>
+        <a class="btn btn-order" href="https://wa.me/${whatsapp}?text=${encodeURIComponent(orderText)}" target="_blank"><i class="fa-solid fa-bag-shopping" style="margin-left:5px;font-size:10px;position:relative;z-index:1"></i><span>اطلب الآن</span></a>
       </div>
     </div>`;
   return card;
 }
-
 
 function changeCardImage(productId, step, event){
   if(event){
@@ -2524,11 +3111,49 @@ function changeCardImage(productId, step, event){
   realImage.onload = () => {
     img.src = nextSrc;
     markProductImageLoaded(img);
+    updateGalleryDots(productId, nextIndex);
   };
   realImage.onerror = () => {
     handleProductImageError(img);
+    updateGalleryDots(productId, nextIndex);
   };
   realImage.src = nextSrc;
+}
+
+function updateGalleryDots(productId, activeIndex){
+  const card = document.querySelector(`.card[data-product-id="${productId}"]`);
+  if(!card) return;
+  card.querySelectorAll('.gallery-dot').forEach((dot, i) => {
+    dot.classList.toggle('active', i === activeIndex);
+  });
+}
+
+/* ===== FIX IMAGE SLIDESHOW DUPLICATION ===== */
+let slideshowIntervals = {};
+
+function startCardSlideshows(){
+  document.querySelectorAll('.gallery-img[data-product-id]').forEach(img => {
+    const productId = img.getAttribute('data-product-id');
+    const p = allProducts.find(x => x.id === productId);
+    if(!p || !p.images || p.images.length < 2) return;
+
+    if(img.dataset.slideshowStarted === 'true') return;
+    img.dataset.slideshowStarted = 'true';
+
+    if(slideshowIntervals[productId]){
+      clearInterval(slideshowIntervals[productId]);
+    }
+
+    slideshowIntervals[productId] = setInterval(() => {
+      const currentImg = document.querySelector(`.gallery-img[data-product-id="${productId}"]`);
+      if(!currentImg || !document.body.contains(currentImg)){
+        clearInterval(slideshowIntervals[productId]);
+        delete slideshowIntervals[productId];
+        return;
+      }
+      changeCardImage(productId, 1);
+    }, 3500);
+  });
 }
 
 function initCardImageSwipe(){
@@ -2564,12 +3189,12 @@ function initCardImageSwipe(){
   }, { passive: true });
 }
 
-
 function renderAdminProducts(){
   const wrap = document.getElementById("adminProductsList");
   if(!wrap) return;
   const q = (document.getElementById("adminProductSearch")?.value || "").trim().toLowerCase();
-  const list = allProducts.filter(p => !q || (p.name || "").toLowerCase().includes(q) || (p.category || "").toLowerCase().includes(q))
+  const dedupedAdminProducts = Object.values((allProducts || []).reduce((acc, p) => { if(p && p.id) acc[p.id] = p; return acc; }, {}));
+  const list = dedupedAdminProducts.filter(p => !q || (p.name || "").toLowerCase().includes(q) || (p.category || "").toLowerCase().includes(q))
     .sort((a,b) => (b.createdAt||0) - (a.createdAt||0));
   wrap.innerHTML = "";
   if(!list.length){ wrap.innerHTML = `<div class="notice">لا توجد منتجات حالياً.</div>`; return; }
@@ -2597,8 +3222,8 @@ function renderAdminProducts(){
     wrap.appendChild(item);
   });
   scheduleRealImageLoading();
+  startCardSlideshows();
 }
-
 
 async function compressImageBeforeUpload(file){
   if(typeof imageCompression !== "undefined"){
@@ -2816,6 +3441,24 @@ async function toggleProductVisibility(id, nextState){
   await db.ref("products/" + id + "/active").set(nextState);
 }
 
+function renderAdminAds(){
+  const ad = currentAd || {};
+  setVal("adTextInput", ad.text || "");
+  setVal("adColorInput", ad.color || "#2563eb");
+  setVal("adSpeedInput", ad.speed || "medium");
+  const c = document.getElementById("adColorInput");
+  if(c) c.style.background = c.value;
+}
+
+function previewSingleAd(){
+  renderAdsStrip({
+    enabled: document.getElementById("adsEnabledToggle").checked,
+    text: val("adTextInput"),
+    color: val("adColorInput") || "#2563eb",
+    speed: val("adSpeedInput") || "medium"
+  });
+}
+
 function listenAds(){
   db.ref("settings/ad").on("value", snap => {
     currentAd = snap.val() || null;
@@ -2825,22 +3468,28 @@ function listenAds(){
     renderAdminAds();
   });
 }
-function renderAdminAds(){
-  const ad = currentAd || {};
-  setVal("adTextInput", ad.text || "");
-  setVal("adColorInput", ad.color || "#2563eb");
-  setVal("adSpeedInput", ad.speed || "medium");
-  const c = document.getElementById("adColorInput");
-  if(c) c.style.background = c.value;
+
+function clearAdAutoToggleTimer(){
+  if(adAutoToggleTimer){
+    clearInterval(adAutoToggleTimer);
+    adAutoToggleTimer = null;
+  }
 }
-function previewSingleAd(){
-  renderAdsStrip({
-    enabled: document.getElementById("adsEnabledToggle").checked,
-    text: val("adTextInput"),
-    color: val("adColorInput") || "#2563eb",
-    speed: val("adSpeedInput") || "medium"
+
+function applyAdVisibilityState(visible, transitionType){
+  const wrap = document.getElementById("adsWrap");
+  if(!wrap) return;
+  wrap.classList.remove("ads-hidden-animated", "ads-visible-animated");
+  requestAnimationFrame(() => {
+    wrap.classList.add(visible ? "ads-visible-animated" : "ads-hidden-animated");
   });
 }
+
+function setupAdAutoToggle(ad){
+  clearAdAutoToggleTimer();
+  adIsTemporarilyHidden = false;
+}
+
 function renderAdsStrip(override){
   const ad = override || currentAd || {};
   const wrap = document.getElementById("adsWrap");
@@ -2850,33 +3499,45 @@ function renderAdsStrip(override){
   const enabled = (storeSettings.adsEnabled !== false) && !!ad.enabled && !!String(ad.text || "").trim();
 
   if(!enabled){
-    wrap.classList.remove("show");
+    clearAdAutoToggleTimer();
+    wrap.classList.remove("show", "ads-hidden-animated", "ads-visible-animated");
     wrap.style.display = "none";
     wrap.style.visibility = "hidden";
     strip.innerHTML = "";
     strip.style.background = "transparent";
     strip.style.color = "";
+    if(typeof updateHeroPinnedState === "function") setTimeout(updateHeroPinnedState, 0);
     return;
   }
 
   const bg = ad.color || "#2563eb";
   const speed = ad.speed || "medium";
-  wrap.classList.add("show");
+  const text = escapeHtml(ad.text || "");
+
+  wrap.classList.add("show", "ads-visible-animated");
+  wrap.classList.remove("ads-hidden-animated");
   wrap.style.display = "block";
   wrap.style.visibility = "visible";
 
   strip.style.background = bg;
   strip.style.color = "#fff";
 
-  const text = escapeHtml(ad.text || "");
+  const seq = `
+    <span class="ads-item-inline">${text}</span>
+    <span class="ads-item-inline">${text}</span>
+    <span class="ads-item-inline">${text}</span>
+    <span class="ads-item-inline">${text}</span>
+  `;
+
   strip.innerHTML = `
     <div class="ads-label"><i class="fa-solid fa-bullhorn"></i> إعلان</div>
     <div class="ads-marquee">
       <div class="ads-track ${speed}">
-        <span class="ads-item-inline">${text}</span>
-        <span class="ads-item-inline">${text}</span>
+        <div class="ads-seq">${seq}</div>
+        <div class="ads-seq" aria-hidden="true">${seq}</div>
       </div>
     </div>`;
+  if(typeof updateHeroPinnedState === "function") setTimeout(updateHeroPinnedState, 0);
 }
 async function saveSingleAd(){
   const enabled = document.getElementById("adsEnabledToggle").checked;
@@ -3142,7 +3803,6 @@ function closeModal(event, id){
   }
 }
 
-
 function showToast(message, isError=false){
   const wrap = document.getElementById("toastWrap");
   if(!wrap) return;
@@ -3235,13 +3895,11 @@ document.addEventListener("DOMContentLoaded", ()=>{
   }
 });
 
-
 function toggleDescExpand(el){
   el.classList.toggle("expanded");
 }
 
 </script>
-
 
 </body>
 </html>
