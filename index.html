@@ -78,7 +78,7 @@
     .ads-track{display:inline-flex;align-items:center;gap:40px;white-space:nowrap;will-change:transform;animation:adsTicker 18s linear infinite}
     .ads-track.fast{animation-duration:10s}.ads-track.medium{animation-duration:16s}.ads-track.slow{animation-duration:24s}
     .ads-item-inline{display:inline;direction:rtl;unicode-bidi:plaintext}
-    @keyframes adsTicker{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}100%{transform:translateX(0)}}
+    @keyframes adsTicker{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
 
     .section-bar{display:flex;align-items:center;justify-content:space-between;padding:2px 12px 0;gap:10px;flex-wrap:wrap;background:var(--bg)}
     .section-title{font-size:12px;font-weight:900}
@@ -207,14 +207,7 @@
     .zoom-gal{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;height:100%;width:100%;scrollbar-width:none}
     .zoom-gal::-webkit-scrollbar{display:none}
     .z-img{flex:0 0 100%;width:100%;height:100%;object-fit:contain;scroll-snap-align:start;background:#000}
-
-    .zoom-close-btn{
-      z-index:1000000001;
-      position:fixed;top:14px;right:14px;z-index:1000000002;
-      width:42px;height:42px;border:none;border-radius:50%;
-      background:rgba(220,38,38,.96);color:#fff;font-size:24px;font-weight:900;
-      display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 10px 25px rgba(0,0,0,.35)
-    }
+    .zoom-close-btn{display:none !important}
     .zoom-arrow{
       position:fixed;top:50%;transform:translateY(-50%);z-index:1000000001;
       width:42px;height:42px;border:none;border-radius:50%;
@@ -1221,6 +1214,59 @@ body.dark-mode .card{
 
 
 /* splash enabled */
+
+
+    /* ===== Easy custom tweaks ===== */
+    :root{
+      --product-image-fit: contain; /* contain = إظهار الصورة كاملة بدون قص، cover = ملء المربع مع احتمال قص */
+      --short-desc-max-lines: 2;
+      --long-desc-max-lines: 3;
+    }
+
+    .gallery-wrapper{
+      display:flex !important;
+      align-items:center !important;
+      justify-content:center !important;
+      background:#fff !important;
+      overflow:hidden !important;
+    }
+
+    .gallery-img{
+      width:100% !important;
+      height:100% !important;
+      object-fit:var(--product-image-fit) !important;
+      object-position:center center !important;
+      background:#fff !important;
+    }
+
+    .p-desc{
+      display:-webkit-box !important;
+      -webkit-box-orient:vertical !important;
+      overflow:hidden !important;
+      word-break:break-word;
+    }
+
+    .p-desc.short{
+      font-size:18px !important;
+      line-height:1.2 !important;
+      font-weight:900 !important;
+      color:var(--text) !important;
+      -webkit-line-clamp:var(--short-desc-max-lines) !important;
+    }
+
+    .p-desc.long{
+      font-size:11px !important;
+      line-height:1.55 !important;
+      color:var(--muted) !important;
+      -webkit-line-clamp:var(--long-desc-max-lines) !important;
+    }
+
+    .p-desc.long.expanded{
+      -webkit-line-clamp:unset !important;
+      overflow:visible !important;
+    }
+    /* ===== End easy custom tweaks ===== */
+
 </style>
 
 
@@ -1353,8 +1399,6 @@ body.keyboard-open .modal-card{
   </div>
 
   <div id="zoomOverlay" onclick="closeZoom()">
-    <button class="zoom-close-btn" title="إغلاق" onclick="closeZoom();event.stopPropagation();">×</button>
-    <div style="position:absolute;top:18px;left:18px;background:rgba(255,255,255,.12);color:#fff;padding:8px 12px;border-radius:12px;font-size:14px;backdrop-filter:blur(6px);z-index:1000000001;">للإغلاق اضغط ×</div>
     <button class="zoom-arrow zoom-prev" onclick="zoomPrev(event)">›</button>
     <button class="zoom-arrow zoom-next" onclick="zoomNext(event)">‹</button>
     <div class="zoom-top"></div>
@@ -2307,8 +2351,10 @@ function debouncedRenderProducts(){
   clearTimeout(searchDebounce);
   searchDebounce = setTimeout(renderProducts, 180);
 }
+const SHORT_DESC_MAX_LENGTH = 10; // الوصف يعتبر قصيراً إذا كان 10 أحرف أو أقل
+
 function getDescMode(desc){
-  return String(desc || "").trim().length <= 5 ? "short" : "long";
+  return String(desc || "").trim().length <= SHORT_DESC_MAX_LENGTH ? "short" : "long";
 }
 function renderProducts(){
   const container = document.getElementById("productsContainer");
@@ -2879,57 +2925,42 @@ function switchAdminTab(tabId, btn){
   btn.classList.add("active");
 }
 
-let zoomImages = [];
-let zoomIndex = 0;
-let zoomTouchStartX = 0;
-let zoomTouchStartY = 0;
-let appHistoryReady = false;
+let overlayHistoryStack = [];
 
-function ensureAppHistoryBase(){
-  try{
-    if(appHistoryReady) return;
-    const state = window.history.state || {};
-    if(!state.__appBase){
-      window.history.replaceState({__appBase:true, appLayer:'home'}, '', window.location.pathname + window.location.search);
-    }
-    appHistoryReady = true;
-  }catch(e){
-    console.warn('history init failed', e);
-  }
+function overlayKey(type, id=""){
+  return `${type}:${id || ""}`;
 }
-
-function pushAppLayerState(layer, meta = {}){
-  try{
-    ensureAppHistoryBase();
-    const hash = layer === 'zoom' ? '#zoom' : (layer === 'modal' ? '#modal-' + (meta.id || 'layer') : '');
-    window.history.pushState({__appLayer:true, appLayer:layer, ...meta}, '', window.location.pathname + window.location.search + hash);
-  }catch(e){
-    console.warn('pushState failed', e);
-  }
+function pushOverlayHistory(type, id=""){
+  const key = overlayKey(type, id);
+  if(overlayHistoryStack[overlayHistoryStack.length - 1] === key) return;
+  overlayHistoryStack.push(key);
+  const clean = location.pathname + location.search;
+  const hash = type === "zoom" ? '#zoom' : `#${id || 'modal'}`;
+  history.pushState({ msOverlay: true, key }, "", clean + hash);
 }
-
-function getOpenModalIds(){
-  return Array.from(document.querySelectorAll('.modal.show')).map(el => el.id).filter(Boolean);
-}
-
-function getTopOpenModalId(){
-  const ids = getOpenModalIds();
-  return ids.length ? ids[ids.length - 1] : null;
-}
-
-function closeTopLayerFromBack(){
-  const zoomOpen = document.getElementById('zoomOverlay')?.classList.contains('show');
-  if(zoomOpen){
+function closeTopOverlayFromBack(){
+  const key = overlayHistoryStack.pop();
+  if(!key) return false;
+  const [type, ...rest] = key.split(':');
+  const id = rest.join(':');
+  if(type === 'zoom'){
     closeZoom(true);
     return true;
   }
-  const topModalId = getTopOpenModalId();
-  if(topModalId){
-    closeById(topModalId, true);
+  if(id){
+    closeById(id, true);
     return true;
   }
   return false;
 }
+window.addEventListener('popstate', () => {
+  closeTopOverlayFromBack();
+});
+
+let zoomImages = [];
+let zoomIndex = 0;
+let zoomTouchStartX = 0;
+let zoomTouchStartY = 0;
 
 function renderZoomImage(){
   const gal = document.getElementById("zGal");
@@ -2951,8 +2982,7 @@ function openZoom(images, startIndex = 0){
   overlay.style.display = "flex";
   overlay.style.visibility = "visible";
   document.body.classList.add("modal-open");
-  pushAppLayerState('zoom', {id:'zoomOverlay'});
-
+  pushOverlayHistory('zoom');
 }
 
 function zoomNext(event){
@@ -2970,15 +3000,12 @@ function zoomPrev(event){
 }
 
 function closeZoom(fromBack = false){
-  const overlay = document.getElementById("zoomOverlay");
-  const isOpen = overlay?.classList.contains('show');
-  if(!isOpen && !fromBack) return;
-
-  if(!fromBack && window.history.state?.appLayer === 'zoom'){
-    window.history.back();
+  if(!fromBack && overlayHistoryStack[overlayHistoryStack.length - 1] === overlayKey('zoom')){
+    history.back();
     return;
   }
 
+  const overlay = document.getElementById("zoomOverlay");
   if(overlay){
     overlay.classList.remove("show");
     overlay.style.display = "none";
@@ -2991,7 +3018,6 @@ function closeZoom(fromBack = false){
   if(!document.querySelector('.modal.show')){
     document.body.classList.remove("modal-open");
   }
-
 }
 
 function shareProduct(id){
@@ -3006,22 +3032,18 @@ function shareProduct(id){
 }
 function openModal(id){
   const el = document.getElementById(id);
-  if(el){
+  if(el && !el.classList.contains("show")){
     el.classList.add("show");
     document.body.classList.add("modal-open");
-    pushAppLayerState('modal', {id});
+    pushOverlayHistory('modal', id);
   }
 }
 function closeById(id, fromBack = false){
-  const el = document.getElementById(id);
-  const isOpen = el?.classList.contains('show');
-  if(!isOpen && !fromBack) return;
-
-  if(!fromBack && window.history.state?.appLayer === 'modal' && window.history.state?.id === id){
-    window.history.back();
+  if(!fromBack && overlayHistoryStack[overlayHistoryStack.length - 1] === overlayKey('modal', id)){
+    history.back();
     return;
   }
-
+  const el = document.getElementById(id);
   if(el) el.classList.remove("show");
   if(!document.querySelector('.modal.show') && !document.getElementById("zoomOverlay")?.classList.contains("show")){
     document.body.classList.remove("modal-open");
@@ -3122,14 +3144,6 @@ function val(id){
   const el = document.getElementById(id);
   return el ? el.value : "";
 }
-
-window.addEventListener("popstate", () => {
-  closeTopLayerFromBack();
-});
-
-window.addEventListener("load", () => {
-  ensureAppHistoryBase();
-});
 
 document.addEventListener("DOMContentLoaded", ()=>{
   const overlay = document.getElementById("zoomOverlay");
