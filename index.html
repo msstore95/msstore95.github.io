@@ -3663,6 +3663,21 @@ window.addEventListener('popstate', (event) => {
   }
 });
 
+function clearZoomHash(){
+  if(location.hash === '#zoom'){
+    history.replaceState(history.state, '', location.pathname + location.search);
+  }
+}
+
+window.addEventListener('hashchange', () => {
+  if(location.hash !== '#zoom'){
+    const overlay = document.getElementById('zoomOverlay');
+    if(overlay && overlay.classList.contains('show')){
+      closeZoom(true);
+    }
+  }
+});
+
 let zoomImages = [];
 let zoomIndex = 0;
 let zoomTouchStartX = 0;
@@ -3692,7 +3707,10 @@ function openZoom(images, startIndex = 0, sourceEl = null){
   overlay.style.display = "flex";
   overlay.style.visibility = "visible";
   document.body.classList.add("modal-open");
-  pushOverlayHistory('zoom');
+
+  if(location.hash !== '#zoom'){
+    location.hash = 'zoom';
+  }
 }
 
 function zoomNext(event){
@@ -3710,11 +3728,6 @@ function zoomPrev(event){
 }
 
 function closeZoom(fromBack = false){
-  if(!fromBack && overlayHistoryStack[overlayHistoryStack.length - 1] === overlayKey('zoom')){
-    history.back();
-    return;
-  }
-
   const overlay = document.getElementById("zoomOverlay");
   if(overlay){
     overlay.classList.remove("show");
@@ -3729,11 +3742,13 @@ function closeZoom(fromBack = false){
     document.body.classList.remove("modal-open");
   }
 
-  if(!overlayHistoryStack.length){
-    if(restoreActiveProductPosition()) return;
-    if(typeof lastScrollYBeforeOverlay === 'number'){
-      requestAnimationFrame(() => window.scrollTo(0, lastScrollYBeforeOverlay));
-    }
+  if(!fromBack){
+    clearZoomHash();
+  }
+
+  if(restoreActiveProductPosition()) return;
+  if(typeof lastScrollYBeforeOverlay === 'number'){
+    requestAnimationFrame(() => window.scrollTo(0, lastScrollYBeforeOverlay));
   }
 }
 
