@@ -3590,6 +3590,16 @@ function switchAdminTab(tabId, btn){
 }
 
 let overlayHistoryStack = [];
+const useOverlayHistory = (() => {
+  try{
+    const ua = navigator.userAgent || "";
+    const isAndroidWebView = /;\s*wv\)/i.test(ua) || (/Android/i.test(ua) && !/Safari/i.test(ua));
+    const isKodularLike = /Kodular|AppInventor|MIT App Inventor/i.test(ua);
+    return !(isAndroidWebView || isKodularLike);
+  }catch(_){
+    return true;
+  }
+})();
 let lastScrollYBeforeOverlay = 0;
 let lastActiveProductId = "";
 let lastActiveProductOffset = 0;
@@ -3647,6 +3657,7 @@ function overlayKey(type, id=""){
   return `${type}:${id || ""}`;
 }
 function pushOverlayHistory(type, id=""){
+  if(!useOverlayHistory) return;
   const key = overlayKey(type, id);
   if(overlayHistoryStack[overlayHistoryStack.length - 1] === key) return;
   if(!overlayHistoryStack.length){
@@ -3671,6 +3682,7 @@ function closeTopOverlayFromBack(){
   return false;
 }
 window.addEventListener('popstate', (event) => {
+  if(!useOverlayHistory) return;
   if(overlayHistoryStack.length){
     closeTopOverlayFromBack();
     return;
@@ -3732,7 +3744,7 @@ function zoomPrev(event){
 }
 
 function closeZoom(fromBack = false){
-  if(!fromBack && overlayHistoryStack[overlayHistoryStack.length - 1] === overlayKey('zoom')){
+  if(useOverlayHistory && !fromBack && overlayHistoryStack[overlayHistoryStack.length - 1] === overlayKey('zoom')){
     history.back();
     return;
   }
@@ -3778,7 +3790,7 @@ function openModal(id){
   }
 }
 function closeById(id, fromBack = false){
-  if(!fromBack && overlayHistoryStack[overlayHistoryStack.length - 1] === overlayKey('modal', id)){
+  if(useOverlayHistory && !fromBack && overlayHistoryStack[overlayHistoryStack.length - 1] === overlayKey('modal', id)){
     history.back();
     return;
   }
