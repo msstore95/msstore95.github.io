@@ -36,6 +36,7 @@
     #splashScreen{
       position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;flex-direction:column;
       background:linear-gradient(135deg,#0f172a,#1d4ed8,#0ea5e9);color:#fff;text-align:center;padding:20px;transition:.45s ease;
+      will-change:opacity;transform:translateZ(0);backface-visibility:hidden;
     }
     #splashScreen .logo{
       width:110px;height:110px;border-radius:30px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.22);
@@ -1819,7 +1820,7 @@ body.keyboard-open .modal-card{
 }
 </style>
 </head>
-<body>
+<body style="background:#f4f7fb;">
 
   <div id="splashScreen">
     <div class="logo" id="splashLogoBox">MS</div>
@@ -2373,6 +2374,21 @@ applyCachedData();
   window.addEventListener("load", () => { updateTopFixedShellSpacer(); scheduleSplashHideFromSettings(false); }, { once: true });
   window.addEventListener("resize", updateTopFixedShellSpacer);
   window.addEventListener("error", () => hideSplash(), { once: true });
+  window.addEventListener("pageshow", (event) => {
+    setTimeout(updateTopFixedShellSpacer, 0);
+    if(event.persisted){
+      requestAnimationFrame(() => hideSplash(true));
+    }
+  });
+  document.addEventListener("visibilitychange", () => {
+    if(document.visibilityState === "visible"){
+      setTimeout(updateTopFixedShellSpacer, 0);
+      const splash = document.getElementById("splashScreen");
+      if(splash && !splashHidden && Date.now() - (splashStartedAt || Date.now()) > Math.max(getSplashDurationMs() + 400, 1800)){
+        hideSplash(true);
+      }
+    }
+  });
 
 setTimeout(() => {
   const splash = document.getElementById("splashScreen");
@@ -2496,7 +2512,13 @@ function hideSplash(forceImmediate){
   const fadeOut = () => {
     splash.style.opacity = "0";
     splash.style.pointerEvents = "none";
-    setTimeout(() => { splash.style.display = "none"; }, 450);
+    setTimeout(() => {
+      splash.style.display = "none";
+      splash.style.visibility = "hidden";
+      if(document.body){
+        document.body.style.background = "";
+      }
+    }, 450);
   };
 
   if(forceImmediate){
