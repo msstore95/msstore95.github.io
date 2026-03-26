@@ -6,9 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>متجر MS</title>
 
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js">
-
-</script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
@@ -3623,7 +3621,6 @@ function restoreActiveProductPosition(attempt = 0){
   return true;
 }
 
-
 function clearOverlayHash(expected){
   if(!location.hash) return;
   if(expected && location.hash !== expected) return;
@@ -3631,6 +3628,14 @@ function clearOverlayHash(expected){
   history.replaceState(history.state, '', cleanUrl);
 }
 
+/* =========================
+   BACK CONTROL - لا تعدل
+   START
+   هذا الجزء مسؤول عن:
+   - رجوع الصور
+   - هاش الزوم #zoom
+   - غلق الزوم عند الرجوع
+   ========================= */
 function clearZoomHash(){
   clearOverlayHash('#zoom');
 }
@@ -3722,6 +3727,11 @@ function closeZoom(fromBack = false){
     requestAnimationFrame(() => window.scrollTo(0, lastScrollYBeforeOverlay));
   }
 }
+
+/* =========================
+   BACK CONTROL - لا تعدل
+   END
+   ========================= */
 
 function shareProduct(id){
   const p = allProducts.find(x => x.id === id);
