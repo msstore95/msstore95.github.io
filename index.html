@@ -3567,7 +3567,6 @@ function switchAdminTab(tabId, btn){
   btn.classList.add("active");
 }
 
-let overlayHistoryStack = [];
 let lastScrollYBeforeOverlay = 0;
 let lastActiveProductId = "";
 let lastActiveProductOffset = 0;
@@ -3624,61 +3623,30 @@ function restoreActiveProductPosition(attempt = 0){
   return true;
 }
 
-function overlayKey(type, id=""){
-  return `${type}:${id || ""}`;
+
+function clearOverlayHash(expected){
+  if(!location.hash) return;
+  if(expected && location.hash !== expected) return;
+  const cleanUrl = location.pathname + location.search;
+  history.replaceState(history.state, '', cleanUrl);
 }
-function pushOverlayHistory(type, id=""){
-  const key = overlayKey(type, id);
-  if(overlayHistoryStack[overlayHistoryStack.length - 1] === key) return;
-  if(!overlayHistoryStack.length){
-    lastScrollYBeforeOverlay = window.scrollY || window.pageYOffset || 0;
-  }
-  overlayHistoryStack.push(key);
-  history.pushState({ msOverlay: true, key, scrollY: lastScrollYBeforeOverlay }, "", location.pathname + location.search);
-}
-function closeTopOverlayFromBack(){
-  const key = overlayHistoryStack.pop();
-  if(!key) return false;
-  const [type, ...rest] = key.split(':');
-  const id = rest.join(':');
-  if(type === 'zoom'){
-    closeZoom(true);
-    return true;
-  }
-  if(id){
-    closeById(id, true);
-    return true;
-  }
-  return false;
-}
-window.addEventListener('popstate', (event) => {
-  if(overlayHistoryStack.length){
-    closeTopOverlayFromBack();
-    return;
-  }
-  const restoredToCard = restoreActiveProductPosition();
-  if(restoredToCard) return;
-  const targetScroll = event.state && typeof event.state.scrollY === 'number'
-    ? event.state.scrollY
-    : lastScrollYBeforeOverlay;
-  if(typeof targetScroll === 'number' && !Number.isNaN(targetScroll)){
-    requestAnimationFrame(() => window.scrollTo(0, targetScroll));
-  }
-});
 
 function clearZoomHash(){
-  if(location.hash === '#zoom'){
-    history.replaceState(history.state, '', location.pathname + location.search);
-  }
+  clearOverlayHash('#zoom');
 }
 
 window.addEventListener('hashchange', () => {
-  if(location.hash !== '#zoom'){
-    const overlay = document.getElementById('zoomOverlay');
-    if(overlay && overlay.classList.contains('show')){
-      closeZoom(true);
-    }
+  const hash = location.hash || '';
+  const zoomOverlay = document.getElementById('zoomOverlay');
+  if(hash !== '#zoom' && zoomOverlay && zoomOverlay.classList.contains('show')){
+    closeZoom(true);
   }
+  document.querySelectorAll('.modal.show').forEach((modal) => {
+    const expectedHash = '#modal-' + modal.id;
+    if(hash !== expectedHash){
+      closeById(modal.id, true);
+    }
+  });
 });
 
 let zoomImages = [];
@@ -3767,27 +3735,26 @@ function shareProduct(id){
 }
 function openModal(id){
   const el = document.getElementById(id);
-  if(el && !el.classList.contains("show")){
-    el.classList.add("show");
-    document.body.classList.add("modal-open");
-    pushOverlayHistory('modal', id);
+  if(el && !el.classList.contains('show')){
+    el.classList.add('show');
+    document.body.classList.add('modal-open');
+    if(location.hash !== '#modal-' + id){
+      location.hash = 'modal-' + id;
+    }
   }
 }
 function closeById(id, fromBack = false){
-  if(!fromBack && overlayHistoryStack[overlayHistoryStack.length - 1] === overlayKey('modal', id)){
-    history.back();
-    return;
-  }
   const el = document.getElementById(id);
-  if(el) el.classList.remove("show");
-  if(!document.querySelector('.modal.show') && !document.getElementById("zoomOverlay")?.classList.contains("show")){
-    document.body.classList.remove("modal-open");
+  if(el) el.classList.remove('show');
+  if(!document.querySelector('.modal.show') && !document.getElementById('zoomOverlay')?.classList.contains('show')){
+    document.body.classList.remove('modal-open');
   }
-  if(!overlayHistoryStack.length){
-    if(restoreActiveProductPosition()) return;
-    if(typeof lastScrollYBeforeOverlay === 'number'){
-      requestAnimationFrame(() => window.scrollTo(0, lastScrollYBeforeOverlay));
-    }
+  if(!fromBack){
+    clearOverlayHash('#modal-' + id);
+  }
+  if(restoreActiveProductPosition()) return;
+  if(typeof lastScrollYBeforeOverlay === 'number'){
+    requestAnimationFrame(() => window.scrollTo(0, lastScrollYBeforeOverlay));
   }
 }
 function closeModal(event, id){
