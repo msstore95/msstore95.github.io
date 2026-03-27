@@ -1825,120 +1825,177 @@ body.keyboard-open .modal-card{
   scroll-margin-bottom:260px !important;
 }
 </style>
-<style id="anti-white-flash-aggressive">
-/* Aggressive anti white-flash fix for Android WebView */
-html,body{
-  background:#0b1220 !important;
-  overflow-x:hidden !important;
-  overflow-y:auto !important;
-}
-
-body{
-  background:#0b1220 !important;
-  background-image:none !important;
-}
-
-body:not(.dark-mode){
-  background:#f4f7fb !important;
-  background-image:none !important;
-}
-
-/* most common flash source in WebView */
-.header,
-.fixed-top-area,
-.fixed-sub-top,
-.top-fixed-shell,
-.footer{
-  background:#0b1220 !important;
-  background-image:none !important;
-  -webkit-backdrop-filter:none !important;
-  backdrop-filter:none !important;
-  box-shadow:none !important;
-}
-
-body:not(.dark-mode) .header,
-body:not(.dark-mode) .fixed-top-area,
-body:not(.dark-mode) .fixed-sub-top,
-body:not(.dark-mode) .top-fixed-shell,
-body:not(.dark-mode) .footer{
-  background:#f4f7fb !important;
-  background-image:none !important;
-}
-
-#productsContainer,
-main,
-.section-bar,
-.category-strip{
-  background:transparent !important;
-  background-image:none !important;
-}
-
-/* stop shimmer/shine effects that trigger repaint flashes */
-.skeleton,
-.premium-hero,
-.premium-hero::before,
-.premium-hero::after,
-.hero-glow,
-.hero-overlay,
-.alert-bar::before,
-.btn-order::before,
-.btn-order::after{
-  animation:none !important;
-}
-
-.premium-hero,
-.alert-bar,
-.btn-order{
-  -webkit-backface-visibility:hidden !important;
-  backface-visibility:hidden !important;
-  transform:translateZ(0) !important;
-}
-
-/* keep image cards stable */
-.card,
-.gallery-wrapper,
-.gallery-img{
-  -webkit-backface-visibility:hidden !important;
-  backface-visibility:hidden !important;
-  transform:translateZ(0) !important;
-}
-
-.gallery-wrapper,
-.gallery-img{
-  background:#111827 !important;
-}
-
-/* avoid hidden overlays stealing paint */
-#splashScreen[style*="display: none"],
-#splashScreen[style*="opacity: 0"],
-.maint-overlay:not(.show),
-.modal:not(.show),
-#zoomOverlay[style*="display: none"]{
-  pointer-events:none !important;
-}
+<style id="minimal-zoom-safe">
+  #zoomOverlay{
+    position:fixed;
+    top:0;left:0;
+    width:100%;height:100%;
+    z-index:999999999;
+    background:rgba(0,0,0,.96);
+    display:none;
+    flex-direction:column;
+    pointer-events:auto;
+  }
+  #zoomOverlay.show{display:flex;}
+  .zoom-gal{
+    position:relative;
+    width:100%;
+    height:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+    touch-action:none;
+  }
+  .z-img{
+    max-width:100%;
+    max-height:100%;
+    object-fit:contain;
+    user-select:none;
+    -webkit-user-drag:none;
+    touch-action:none;
+    transform-origin:center center;
+    will-change:transform;
+  }
+  .zoom-hint{
+    position:fixed;
+    bottom:18px;
+    left:50%;
+    transform:translateX(-50%);
+    z-index:1000000002;
+    background:rgba(15,23,42,.74);
+    color:#fff;
+    padding:8px 12px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:700;
+    white-space:nowrap;
+    pointer-events:none;
+    display:none;
+  }
 </style>
-<script id="anti-white-flash-js">
+<style id="pinch-zoom-addon">
+  .zoom-gal{
+    touch-action:none !important;
+  }
+  .z-img{
+    touch-action:none !important;
+    transform-origin:center center;
+    will-change:transform;
+  }
+</style>
+<style id="less-white-flash-only">
+  /* Minimal anti-flash patch: visual only, no scroll/login logic touched */
+  html, body{
+    background:#f4f7fb !important;
+    overflow-x:hidden !important;
+  }
+  body.dark-mode{
+    background:#0b1220 !important;
+  }
+
+  /* WebView often flashes white behind translucent fixed areas */
+  .top-fixed-shell,
+  .fixed-top-area,
+  .fixed-sub-top,
+  .header,
+  .section-bar,
+  .category-strip,
+  .footer{
+    background:#f4f7fb !important;
+    background-image:none !important;
+    -webkit-backdrop-filter:none !important;
+    backdrop-filter:none !important;
+  }
+
+  body.dark-mode .top-fixed-shell,
+  body.dark-mode .fixed-top-area,
+  body.dark-mode .fixed-sub-top,
+  body.dark-mode .header,
+  body.dark-mode .section-bar,
+  body.dark-mode .category-strip,
+  body.dark-mode .footer{
+    background:#0b1220 !important;
+    background-image:none !important;
+  }
+
+  /* Stabilize paint on cards and images only */
+  .card,
+  .gallery-wrapper,
+  .gallery-img,
+  .premium-hero,
+  .ads-wrap{
+    -webkit-backface-visibility:hidden !important;
+    backface-visibility:hidden !important;
+    transform:translateZ(0);
+  }
+
+  /* Keep zoom overlay fully dark */
+  #zoomOverlay{
+    background:rgba(0,0,0,.97) !important;
+  }
+</style>
+<script id="less-white-flash-js">
 (function(){
   function repaintFix(){
     try{
       var dark = document.body.classList.contains('dark-mode');
       var bg = dark ? '#0b1220' : '#f4f7fb';
+
       document.documentElement.style.background = bg;
       document.body.style.background = bg;
-      document.querySelectorAll('.header,.fixed-top-area,.fixed-sub-top,.top-fixed-shell,.footer').forEach(function(el){
-        el.style.background = bg;
-        el.style.backdropFilter = 'none';
-        el.style.webkitBackdropFilter = 'none';
-      });
+
+      document.querySelectorAll('.top-fixed-shell,.fixed-top-area,.fixed-sub-top,.header,.section-bar,.category-strip,.footer')
+        .forEach(function(el){
+          el.style.background = bg;
+          el.style.backgroundImage = 'none';
+          el.style.backdropFilter = 'none';
+          el.style.webkitBackdropFilter = 'none';
+        });
     }catch(e){}
   }
-  window.addEventListener('load', function(){ setTimeout(repaintFix, 100); setTimeout(repaintFix, 1000); });
-  document.addEventListener('visibilitychange', function(){ if(!document.hidden) setTimeout(repaintFix, 100); });
-  window.addEventListener('scroll', function(){}, {passive:true});
+
+  window.addEventListener('load', function(){
+    setTimeout(repaintFix, 60);
+    setTimeout(repaintFix, 700);
+    setTimeout(repaintFix, 1800);
+  });
+
+  document.addEventListener('visibilitychange', function(){
+    if(!document.hidden) setTimeout(repaintFix, 80);
+  });
 })();
 </script>
+
+<style id="image-frame-fix">
+/* Fix white flash inside image frames only */
+.gallery-wrapper,
+.gallery-img,
+.card img,
+.product img,
+img{
+  background:#111827 !important;
+  display:block;
+  backface-visibility:hidden !important;
+  -webkit-backface-visibility:hidden !important;
+  transform:translateZ(0);
+}
+
+.gallery-wrapper,
+.gallery-img{
+  overflow:hidden;
+}
+
+/* stop any shimmer on images */
+.skeleton,
+.image-skeleton,
+.shimmer{
+  animation:none !important;
+}
+</style>
+
 </head>
-<body style="margin:0;background:#0f172a;color:#ffffff;background:#0b1220;overflow-x:hidden;overflow-y:auto">
+<body style="margin:0;background:#0f172a;color:#ffffff;background:#f4f7fb;overflow-x:hidden">
 
   <div id="splashScreen" style="position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;flex-direction:column;background:linear-gradient(135deg,#0f172a,#1d4ed8,#0ea5e9);color:#fff;text-align:center;padding:20px;transition:.45s ease;">
     <div class="logo" id="splashLogoBox">MS</div>
@@ -2050,6 +2107,7 @@ main,
     <button class="zoom-arrow zoom-next" onclick="zoomNext(event)">‹</button>
     <div class="zoom-top"></div>
     <div class="zoom-gal" id="zGal" onclick="event.stopPropagation()"></div>
+    <div class="zoom-hint" id="zoomHint">قرّب بإصبعين للتكبير • اسحب الصورة بعد التكبير</div>
   </div>
 
   <div id="adminPanel" class="modal" onclick="closeModal(event,'adminPanel')">
@@ -2431,28 +2489,7 @@ function applyCachedData(){
   }
 }
 
-function initZoomSwipe(){
-  const gal = document.getElementById("zGal");
-  if(!gal) return;
-
-  gal.addEventListener("touchstart", (e) => {
-    if(!document.getElementById("zoomOverlay")?.classList.contains("show")) return;
-    const t = e.touches[0];
-    zoomTouchStartX = t.clientX;
-    zoomTouchStartY = t.clientY;
-  }, { passive: true });
-
-  gal.addEventListener("touchend", (e) => {
-    if(!document.getElementById("zoomOverlay")?.classList.contains("show")) return;
-    const t = e.changedTouches[0];
-    const dx = t.clientX - zoomTouchStartX;
-    const dy = t.clientY - zoomTouchStartY;
-    if(Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)){
-      if(dx < 0) zoomNext();
-      else zoomPrev();
-    }
-  }, { passive: true });
-}
+function initZoomSwipe(){}
 
 function updateHeroPinnedState(){
   const fixedSubTop = document.querySelector('.fixed-sub-top');
@@ -3809,11 +3846,134 @@ let zoomIndex = 0;
 let zoomTouchStartX = 0;
 let zoomTouchStartY = 0;
 
+let zoomScale = 1;
+let zoomPanX = 0;
+let zoomPanY = 0;
+let zoomStartDistance = 0;
+let zoomStartScale = 1;
+let zoomSingleTouch = null;
+
+function getZoomImageEl(){
+  return document.querySelector("#zGal .z-img");
+}
+
+function applyZoomTransform(){
+  const img = getZoomImageEl();
+  if(!img) return;
+  img.style.transform = `translate(${zoomPanX}px, ${zoomPanY}px) scale(${zoomScale})`;
+}
+
+function resetZoomTransform(){
+  zoomScale = 1;
+  zoomPanX = 0;
+  zoomPanY = 0;
+  zoomStartDistance = 0;
+  zoomStartScale = 1;
+  zoomSingleTouch = null;
+  applyZoomTransform();
+}
+
+function getTouchDistance(t1, t2){
+  const dx = t2.clientX - t1.clientX;
+  const dy = t2.clientY - t1.clientY;
+  return Math.hypot(dx, dy);
+}
+
+function clampZoomPan(){
+  const img = getZoomImageEl();
+  const gal = document.getElementById("zGal");
+  if(!img || !gal) return;
+  const maxX = Math.max(0, ((img.clientWidth * zoomScale) - gal.clientWidth) / 2);
+  const maxY = Math.max(0, ((img.clientHeight * zoomScale) - gal.clientHeight) / 2);
+  zoomPanX = Math.max(-maxX, Math.min(maxX, zoomPanX));
+  zoomPanY = Math.max(-maxY, Math.min(maxY, zoomPanY));
+}
+
+function setupPinchZoom(){
+  const gal = document.getElementById("zGal");
+  if(!gal) return;
+
+  gal.ontouchstart = null;
+  gal.ontouchmove = null;
+  gal.ontouchend = null;
+
+  gal.addEventListener("touchstart", function(e){
+    const img = getZoomImageEl();
+    if(!img) return;
+    e.stopPropagation();
+
+    if(e.touches.length === 2){
+      e.preventDefault();
+      const [t1, t2] = e.touches;
+      zoomStartDistance = getTouchDistance(t1, t2);
+      zoomStartScale = zoomScale;
+      zoomSingleTouch = null;
+    }else if(e.touches.length === 1 && zoomScale > 1){
+      const t = e.touches[0];
+      zoomSingleTouch = {
+        x: t.clientX,
+        y: t.clientY,
+        panX: zoomPanX,
+        panY: zoomPanY
+      };
+    }
+  }, {passive:false});
+
+  gal.addEventListener("touchmove", function(e){
+    const img = getZoomImageEl();
+    if(!img) return;
+
+    if(e.touches.length === 2){
+      e.preventDefault();
+      e.stopPropagation();
+      const [t1, t2] = e.touches;
+      const dist = getTouchDistance(t1, t2);
+      if(!zoomStartDistance) zoomStartDistance = dist;
+      zoomScale = Math.max(1, Math.min(5, zoomStartScale * (dist / zoomStartDistance)));
+      clampZoomPan();
+      applyZoomTransform();
+    }else if(e.touches.length === 1 && zoomScale > 1 && zoomSingleTouch){
+      e.preventDefault();
+      e.stopPropagation();
+      const t = e.touches[0];
+      zoomPanX = zoomSingleTouch.panX + (t.clientX - zoomSingleTouch.x);
+      zoomPanY = zoomSingleTouch.panY + (t.clientY - zoomSingleTouch.y);
+      clampZoomPan();
+      applyZoomTransform();
+    }
+  }, {passive:false});
+
+  gal.addEventListener("touchend", function(){
+    if(zoomScale <= 1.02){
+      resetZoomTransform();
+    }else{
+      clampZoomPan();
+      applyZoomTransform();
+    }
+    zoomSingleTouch = null;
+    zoomStartDistance = 0;
+  }, {passive:true});
+
+  gal.addEventListener("dblclick", function(e){
+    e.preventDefault();
+    e.stopPropagation();
+    if(zoomScale > 1.02){
+      resetZoomTransform();
+    }else{
+      zoomScale = 2;
+      clampZoomPan();
+      applyZoomTransform();
+    }
+  });
+}
+
 function renderZoomImage(){
   const gal = document.getElementById("zGal");
   if(!gal) return;
   const src = zoomImages[zoomIndex] || "";
-  gal.innerHTML = src ? `<img class="z-img" src="${escapeAttr(src)}" alt="zoom" onerror="this.style.display='none'" />` : "";
+  gal.innerHTML = src ? `<img class="z-img" src="${escapeAttr(src)}" alt="zoom" onerror="this.style.display=\'none\'" />` : "";
+  resetZoomTransform();
+  setupPinchZoom();
 }
 
 function openZoom(images, startIndex = 0, sourceEl = null){
