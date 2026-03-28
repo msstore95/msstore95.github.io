@@ -2429,6 +2429,7 @@ let productsMap = {};
 let productsFirstPaintDone = false;
 let adAutoToggleTimer = null;
 let adIsTemporarilyHidden = false;
+let notificationPermissionRequestedThisSession = false;
 
 const defaultSettings = {
   storeName: "متجر MS",
@@ -2714,6 +2715,23 @@ function animateSplashProgress(duration, startedAt){
   }
   splashAnimationFrame = requestAnimationFrame(tick);
 }
+function requestNotificationPermissionAfterSplash(){
+  if(notificationPermissionRequestedThisSession) return;
+  notificationPermissionRequestedThisSession = true;
+
+  try{
+    if(window.AppInventor && typeof window.AppInventor.setWebViewString === "function") {
+      window.AppInventor.setWebViewString("REQUEST_NOTIFICATION_PERMISSION");
+    }
+  }catch(e){}
+
+  try{
+    if(typeof Notification !== "undefined" && Notification.permission === "default" && typeof Notification.requestPermission === "function") {
+      Notification.requestPermission().catch(() => {});
+    }
+  }catch(e){}
+}
+
 function startSplash(){
   splashHidden = false;
   splashStartedAt = Date.now();
@@ -2790,7 +2808,10 @@ function hideSplash(forceImmediate){
   const fadeOut = () => {
     splash.style.opacity = "0";
     splash.style.pointerEvents = "none";
-    setTimeout(() => { splash.style.display = "none"; }, 450);
+    setTimeout(() => {
+      splash.style.display = "none";
+      requestNotificationPermissionAfterSplash();
+    }, 450);
   };
 
   if(forceImmediate){
@@ -3997,7 +4018,7 @@ window.addEventListener('hashchange', () => {
     closeZoom(true);
   }
   document.querySelectorAll('.modal.show').forEach((modal) => {
-    const expectedHash = '#modal-' + modal.id;
+    const expectedHash = '#modal';
     if(hash !== expectedHash){
       closeById(modal.id, true);
     }
@@ -4222,8 +4243,8 @@ function openModal(id){
   if(el && !el.classList.contains('show')){
     el.classList.add('show');
     document.body.classList.add('modal-open');
-    if(location.hash !== '#modal-' + id){
-      location.hash = 'modal-' + id;
+    if(location.hash !== '#modal'){
+      location.hash = 'modal';
     }
   }
 }
@@ -4234,7 +4255,7 @@ function closeById(id, fromBack = false){
     document.body.classList.remove('modal-open');
   }
   if(!fromBack){
-    clearOverlayHash('#modal-' + id);
+    clearOverlayHash('#modal');
   }
   if(restoreActiveProductPosition()) return;
   if(typeof lastScrollYBeforeOverlay === 'number'){
