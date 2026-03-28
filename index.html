@@ -2098,6 +2098,41 @@ img{
 }
 </style>
 
+
+<style id="notifications-admin-style">
+  .payload-box{
+    margin-top:10px;
+    background:var(--bg);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:12px 14px;
+    font-size:12px;
+    line-height:1.8;
+    white-space:pre-wrap;
+    word-break:break-word;
+  }
+  .notify-status{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:6px 10px;
+    border-radius:999px;
+    font-size:11px;
+    font-weight:800;
+  }
+  .notify-status.pending{background:rgba(245,158,11,.12);color:var(--warning)}
+  .notify-status.sent{background:rgba(22,163,74,.12);color:var(--success)}
+  .notify-status.failed{background:rgba(220,38,38,.12);color:var(--danger)}
+  .notify-meta{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-top:8px;
+    color:var(--muted);
+    font-size:12px;
+  }
+</style>
+
 </head>
 <body style="margin:0;background:#0f172a;color:#ffffff;background:#f4f7fb;overflow-x:hidden">
 
@@ -2228,6 +2263,7 @@ img{
         <button class="tab-btn" onclick="switchAdminTab('tabProducts', this)">المنتجات</button>
         <button class="tab-btn" onclick="switchAdminTab('tabCategories', this)">الأقسام</button>
         <button class="tab-btn" onclick="switchAdminTab('tabAds', this)">إعلان</button>
+        <button class="tab-btn" onclick="switchAdminTab('tabNotifications', this)">الإشعارات</button>
         <button class="tab-btn" onclick="switchAdminTab('tabMaintenance', this)">الصيانة</button>
       </div>
 
@@ -2279,6 +2315,24 @@ img{
           <button class="btn btn-primary" onclick="saveSingleAd()">حفظ / تعديل الإعلان</button>
           <button class="btn btn-danger" onclick="deleteSingleAd()">حذف الإعلان</button>
         </div>
+      </div>
+
+
+      <div id="tabNotifications" class="tab-content">
+        <div class="notice">من هنا تگدر ترسل إشعارًا للجميع من داخل الإدارة. ينخزن الطلب داخل قاعدة البيانات، وإذا التطبيق مفتوح داخل Niotron راح ينرسل أمر مباشر له أيضًا.</div>
+        <input type="hidden" id="editingNotificationId" />
+        <div class="grid-2">
+          <div class="field"><label>عنوان الإشعار</label><input type="text" id="notifyTitle" placeholder="مثال: عروض جديدة" oninput="loadNotificationPayloadPreview()" /></div>
+          <div class="field"><label>رابط الفتح (اختياري)</label><input type="text" id="notifyUrl" placeholder="https://msstore95.github.io" oninput="loadNotificationPayloadPreview()" /></div>
+        </div>
+        <div class="field"><label>نص الإشعار</label><textarea id="notifyBody" placeholder="اكتب نص الإشعار هنا" oninput="loadNotificationPayloadPreview()"></textarea></div>
+        <div class="row-actions">
+          <button class="btn btn-primary" onclick="sendPushNotificationFromAdmin()"><i class="fa-solid fa-paper-plane"></i> إرسال للجميع</button>
+          <button class="btn btn-warning" onclick="loadNotificationPayloadPreview()"><i class="fa-solid fa-code"></i> معاينة JSON</button>
+          <button class="btn btn-secondary" onclick="clearNotificationForm()">تفريغ الحقول</button>
+        </div>
+        <div class="payload-box" id="notificationPayloadPreview">راح يطلع هنا شكل الإشعار قبل الإرسال.</div>
+        <div class="admin-list" id="adminNotificationsList" style="margin-top:12px;"></div>
       </div>
 
       <div id="tabMaintenance" class="tab-content">
@@ -2430,6 +2484,7 @@ let productsFirstPaintDone = false;
 let adAutoToggleTimer = null;
 let adIsTemporarilyHidden = false;
 let notificationPermissionRequestedThisSession = false;
+let notificationRequests = [];
 
 const defaultSettings = {
   storeName: "متجر MS",
@@ -2656,6 +2711,7 @@ applyCachedData();
   listenCategories();
   listenProducts();
   listenAds();
+  listenNotificationRequests();
   setTimeout(updateHeroPinnedState, 120);
   initMaintenanceAccess();
   initImagePicker();
@@ -2916,6 +2972,8 @@ function openAdminPanel(){
   renderAdminProducts();
   renderAdminCategories();
   renderAdminAds();
+  renderNotificationRequests();
+  loadNotificationPayloadPreview();
   fillSettingsForm();
   fillMaintenanceForm();
   updateStatsCards();
@@ -3914,6 +3972,165 @@ async function deleteSingleAd(){
   }
   showToast("تم حذف الإعلان");
 }
+
+function listenNotificationRequests(){
+  db.ref("notificationRequests").on("value", snap => {
+    const items = [];
+    snap.forEach(child => {
+      const v = child.val() || {};
+      items.push(Object.assign({ id: child.key }, v));
+    });
+    items.sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0));
+    notificationRequests = items;
+    renderNotificationRequests();
+  });
+}
+
+function getNotificationPayloadFromForm(){
+  const title = val("notifyTitle").trim();
+  const body = val("notifyBody").trim();
+  const url = val("notifyUrl").trim();
+  return {
+    title,
+    body,
+    url,
+    target: "all",
+    createdAt: Date.now()
+  };
+}
+
+function loadNotificationPayloadPreview(){
+  const preview = document.getElementById("notificationPayloadPreview");
+  if(!preview) return;
+  const payload = getNotificationPayloadFromForm();
+  preview.textContent = JSON.stringify(payload, null, 2);
+}
+
+function clearNotificationForm(){
+  setVal("editingNotificationId", "");
+  setVal("notifyTitle", "");
+  setVal("notifyBody", "");
+  setVal("notifyUrl", "");
+  loadNotificationPayloadPreview();
+}
+
+function renderNotificationRequests(){
+  const wrap = document.getElementById("adminNotificationsList");
+  if(!wrap) return;
+  if(!notificationRequests.length){
+    wrap.innerHTML = '<div class="notice">ماكو طلبات إشعارات محفوظة بعد.</div>';
+    return;
+  }
+  wrap.innerHTML = "";
+  notificationRequests.forEach(item => {
+    const status = String(item.status || "pending");
+    const title = escapeHtml(item.title || "بدون عنوان");
+    const body = escapeHtml(item.body || "");
+    const url = item.url ? `<span>الرابط: ${escapeHtml(item.url)}</span>` : "";
+    const created = item.createdAt ? new Date(item.createdAt).toLocaleString("ar-IQ") : "";
+    const row = document.createElement("div");
+    row.className = "admin-item";
+    row.innerHTML = `
+      <div class="admin-item-name">${title}</div>
+      <div style="margin-top:6px; line-height:1.8; font-size:13px;">${body || "بدون نص"}</div>
+      <div class="notify-meta">
+        <span class="notify-status ${status}">${status === "sent" ? "تم الإرسال" : status === "failed" ? "فشل" : "قيد الإرسال"}</span>
+        <span>للجميع</span>
+        ${url}
+        <span>${escapeHtml(created)}</span>
+      </div>
+      <div class="admin-item-actions">
+        <button class="admin-small-btn btn-secondary" onclick="fillNotificationFormFromHistory('${item.id}')">تحميل الحقول</button>
+        <button class="admin-small-btn btn-primary" onclick="copyNotificationPayload('${item.id}')">نسخ JSON</button>
+        <button class="admin-small-btn btn-success" onclick="markNotificationStatus('${item.id}','sent')">تأشير تم الإرسال</button>
+        <button class="admin-small-btn btn-danger" onclick="deleteNotificationRequest('${item.id}')">حذف</button>
+      </div>`;
+    wrap.appendChild(row);
+  });
+}
+
+function fillNotificationFormFromHistory(id){
+  const item = notificationRequests.find(x => x.id === id);
+  if(!item) return;
+  setVal("editingNotificationId", item.id);
+  setVal("notifyTitle", item.title || "");
+  setVal("notifyBody", item.body || "");
+  setVal("notifyUrl", item.url || "");
+  loadNotificationPayloadPreview();
+}
+
+async function markNotificationStatus(id, status){
+  await db.ref("notificationRequests/" + id).update({ status: status, updatedAt: Date.now() });
+  showToast(status === "sent" ? "تم تحديث الحالة إلى تم الإرسال" : "تم تحديث الحالة");
+}
+
+async function deleteNotificationRequest(id){
+  if(!confirm("حذف طلب الإشعار؟")) return;
+  await db.ref("notificationRequests/" + id).remove();
+  showToast("تم حذف طلب الإشعار");
+}
+
+async function copyNotificationPayload(id){
+  const item = notificationRequests.find(x => x.id === id);
+  if(!item) return;
+  const payload = {
+    title: item.title || "",
+    body: item.body || "",
+    url: item.url || "",
+    target: "all"
+  };
+  const text = JSON.stringify(payload, null, 2);
+  try{
+    await navigator.clipboard.writeText(text);
+    showToast("تم نسخ JSON");
+  }catch(e){
+    prompt("انسخ JSON", text);
+  }
+}
+
+function dispatchNotificationToApp(payload){
+  const command = "SEND_PUSH_ALL|" + JSON.stringify(payload);
+  try{
+    if(window.AppInventor && typeof window.AppInventor.setWebViewString === "function"){
+      window.AppInventor.setWebViewString(command);
+      return true;
+    }
+  }catch(e){}
+  try{
+    if(window.Niotron && typeof window.Niotron.setWebViewString === "function"){
+      window.Niotron.setWebViewString(command);
+      return true;
+    }
+  }catch(e){}
+  return false;
+}
+
+async function sendPushNotificationFromAdmin(){
+  const payload = getNotificationPayloadFromForm();
+  if(!payload.title){ alert("اكتب عنوان الإشعار"); return; }
+  if(!payload.body){ alert("اكتب نص الإشعار"); return; }
+
+  loadNotificationPayloadPreview();
+
+  const editingId = val("editingNotificationId").trim();
+  const sendResult = dispatchNotificationToApp(payload);
+  const baseData = Object.assign({}, payload, {
+    status: sendResult ? "sent" : "pending",
+    source: sendResult ? "admin+app" : "admin",
+    updatedAt: Date.now()
+  });
+
+  if(editingId){
+    await db.ref("notificationRequests/" + editingId).update(baseData);
+  }else{
+    await db.ref("notificationRequests").push(baseData);
+  }
+
+  showToast(sendResult ? "تم إرسال أمر الإشعار وحفظه" : "تم حفظ طلب الإشعار. يحتاج التطبيق لالتقاط الأمر للإرسال الفعلي");
+  clearNotificationForm();
+}
+
+
 async function saveMaintenanceSettings(){
   await db.ref("settings/store").update({
     maintenanceMode: document.getElementById("maintenanceToggle").checked,
