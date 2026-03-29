@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>متجر MS</title>
 
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js">
@@ -2096,6 +2096,38 @@ img{
   0%{ left:-150%; }
   100%{ left:150%; }
 }
+</style>
+
+
+<style id="top-gap-fix">
+  :root{
+    --safe-top: env(safe-area-inset-top, 0px);
+  }
+
+  html, body{
+    margin:0 !important;
+    padding:0 !important;
+    min-height:100%;
+    overflow-x:hidden;
+    background:#f4f7fb;
+  }
+
+  body.dark-mode{
+    background:#0b1220 !important;
+  }
+
+  .top-fixed-shell{
+    top:0 !important;
+    left:0 !important;
+    right:0 !important;
+    padding-top:var(--safe-top);
+    margin-top:0 !important;
+  }
+
+  #topFixedSpacer{
+    margin:0 !important;
+    padding:0 !important;
+  }
 </style>
 
 </head>
@@ -4347,6 +4379,41 @@ function toggleDescExpand(el){
   el.classList.toggle("expanded");
 }
 
+</script>
+
+
+<script id="top-gap-fix-js">
+(function () {
+  function applyTopGapFix(){
+    try{
+      var safeTop = 0;
+      var de = document.documentElement;
+      var body = document.body;
+      if(!body) return;
+
+      de.style.margin = '0';
+      de.style.padding = '0';
+      body.style.margin = '0';
+      body.style.padding = '0';
+
+      var shell = document.getElementById('topFixedShell');
+      if(shell){
+        shell.style.top = '0px';
+        shell.style.marginTop = '0px';
+      }
+
+      var spacer = document.getElementById('topFixedSpacer');
+      if(spacer && shell){
+        spacer.style.marginTop = '0px';
+        spacer.style.paddingTop = '0px';
+      }
+    }catch(e){}
+  }
+
+  document.addEventListener('DOMContentLoaded', applyTopGapFix);
+  window.addEventListener('load', applyTopGapFix);
+  window.addEventListener('resize', applyTopGapFix);
+})();
 </script>
 
 </body>
