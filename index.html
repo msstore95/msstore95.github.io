@@ -2099,34 +2099,40 @@ img{
 </style>
 
 
-<style id="top-gap-fix">
-  :root{
-    --safe-top: env(safe-area-inset-top, 0px);
-  }
-
+<style id="top-gap-fix-v2">
   html, body{
     margin:0 !important;
     padding:0 !important;
-    min-height:100%;
-    overflow-x:hidden;
-    background:#f4f7fb;
+    overflow-x:hidden !important;
   }
 
-  body.dark-mode{
-    background:#0b1220 !important;
+  body{
+    padding-top:0 !important;
   }
 
+  /* Replace fixed header + spacer approach with sticky layout */
   .top-fixed-shell{
+    position:sticky !important;
     top:0 !important;
-    left:0 !important;
-    right:0 !important;
-    padding-top:var(--safe-top);
-    margin-top:0 !important;
+    left:auto !important;
+    right:auto !important;
+    width:100% !important;
+    margin:0 !important;
+    padding-top:0 !important;
+    z-index:3000 !important;
   }
 
   #topFixedSpacer{
+    display:none !important;
+    height:0 !important;
     margin:0 !important;
     padding:0 !important;
+  }
+
+  .fixed-top-area,
+  .fixed-sub-top{
+    position:static !important;
+    top:auto !important;
   }
 </style>
 
@@ -4382,37 +4388,39 @@ function toggleDescExpand(el){
 </script>
 
 
-<script id="top-gap-fix-js">
-(function () {
-  function applyTopGapFix(){
+<script id="top-gap-fix-v2-js">
+(function(){
+  function disableTopSpacer(){
     try{
-      var safeTop = 0;
-      var de = document.documentElement;
-      var body = document.body;
-      if(!body) return;
-
-      de.style.margin = '0';
-      de.style.padding = '0';
-      body.style.margin = '0';
-      body.style.padding = '0';
+      var spacer = document.getElementById('topFixedSpacer');
+      if(spacer){
+        spacer.style.display = 'none';
+        spacer.style.height = '0px';
+        spacer.style.margin = '0';
+        spacer.style.padding = '0';
+      }
 
       var shell = document.getElementById('topFixedShell');
       if(shell){
+        shell.style.position = 'sticky';
         shell.style.top = '0px';
-        shell.style.marginTop = '0px';
-      }
-
-      var spacer = document.getElementById('topFixedSpacer');
-      if(spacer && shell){
-        spacer.style.marginTop = '0px';
-        spacer.style.paddingTop = '0px';
+        shell.style.left = 'auto';
+        shell.style.right = 'auto';
+        shell.style.width = '100%';
+        shell.style.marginTop = '0';
+        shell.style.paddingTop = '0';
       }
     }catch(e){}
   }
 
-  document.addEventListener('DOMContentLoaded', applyTopGapFix);
-  window.addEventListener('load', applyTopGapFix);
-  window.addEventListener('resize', applyTopGapFix);
+  var originalFn = window.updateTopFixedShellSpacer;
+  window.updateTopFixedShellSpacer = function(){
+    disableTopSpacer();
+  };
+
+  document.addEventListener('DOMContentLoaded', disableTopSpacer);
+  window.addEventListener('load', disableTopSpacer);
+  window.addEventListener('resize', disableTopSpacer);
 })();
 </script>
 
