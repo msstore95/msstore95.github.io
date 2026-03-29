@@ -6,9 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>متجر MS</title>
 
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js">
-
-</script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
@@ -1819,9 +1817,9 @@ body.keyboard-open .modal-card{
 }
 </style>
 </head>
-<body>
+<body style="margin:0;background:#0f172a;color:#ffffff;">
 
-  <div id="splashScreen">
+  <div id="splashScreen" style="position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;flex-direction:column;background:linear-gradient(135deg,#0f172a,#1d4ed8,#0ea5e9);color:#fff;text-align:center;padding:20px;transition:.45s ease;">
     <div class="logo" id="splashLogoBox">MS</div>
     <h1 id="splashTitle">متجر MS</h1>
     <p id="splashSubtitle">
@@ -2043,7 +2041,7 @@ body.keyboard-open .modal-card{
         <label>إضافة صور من الاستوديو</label>
         <input type="file" id="pImageFiles" accept="image/*" multiple class="hidden-file-input" />
         <div class="upload-row">
-          <button type="button" class="btn btn-secondary upload-pick-btn" onclick="document.getElementById('pImageFiles').click()">اختيار الصور</button>
+          <button type="button" class="btn btn-secondary upload-pick-btn" onclick="requestKodularImagePicker()">اختيار الصور</button>
           <div id="pImageStatus" class="upload-status">لم يتم اختيار صور بعد</div>
         </div>
         <div class="helper">الصور ستنضغط تقريباً إلى 100KB ثم تُرفع إلى Supabase، وهذا يخليك تخزن صور أكثر.</div>
@@ -2373,6 +2371,8 @@ applyCachedData();
   window.addEventListener("load", () => { updateTopFixedShellSpacer(); scheduleSplashHideFromSettings(false); }, { once: true });
   window.addEventListener("resize", updateTopFixedShellSpacer);
   window.addEventListener("error", () => hideSplash(), { once: true });
+
+  updateKodularOverlayState();
 
 setTimeout(() => {
   const splash = document.getElementById("splashScreen");
@@ -3297,6 +3297,22 @@ function setSaveButtonsDisabled(disabled){
   });
 }
 
+
+function requestKodularImagePicker(){
+  const input = document.getElementById("pImageFiles");
+  const isKodular = !!(window.AppInventor && typeof window.AppInventor.setWebViewString === 'function');
+
+  if(isKodular){
+    showToast("اختيار الصور من داخل WebViewer في كودولار قد لا يعمل. استخدم منتقي الصور من كودولار إذا استمرت المشكلة.", true);
+    notifyKodularState("request:image-picker");
+    return;
+  }
+
+  if(input){
+    input.click();
+  }
+}
+
 function initImagePicker(){
   const input = document.getElementById("pImageFiles");
   if(!input) return;
@@ -3567,7 +3583,6 @@ function switchAdminTab(tabId, btn){
   btn.classList.add("active");
 }
 
-let overlayHistoryStack = [];
 let lastScrollYBeforeOverlay = 0;
 let lastActiveProductId = "";
 let lastActiveProductOffset = 0;
@@ -3602,8 +3617,11 @@ function restoreActiveProductPosition(attempt = 0){
   html.classList.add('no-smooth-scroll');
 
   const rect = card.getBoundingClientRect();
-  const stickyOffset = getStickyOffset();
-  const targetY = window.scrollY + rect.top - stickyOffset;
+  const desiredTop = Number.isFinite(lastActiveProductOffset) ? lastActiveProductOffset : rect.top;
+  const currentTop = rect.top;
+  const delta = currentTop - desiredTop;
+  const targetY = window.scrollY + delta;
+
   window.scrollTo(0, Math.max(0, targetY));
 
   if(pendingRestoreTimer){
@@ -3611,58 +3629,124 @@ function restoreActiveProductPosition(attempt = 0){
     pendingRestoreTimer = null;
   }
 
-  if(attempt < 6){
-    pendingRestoreTimer = setTimeout(() => restoreActiveProductPosition(attempt + 1), attempt < 2 ? 20 : 60);
+  if(attempt < 4 && Math.abs(delta) > 1){
+    pendingRestoreTimer = setTimeout(() => restoreActiveProductPosition(attempt + 1), attempt < 2 ? 16 : 40);
   }else{
     setTimeout(() => {
       document.documentElement.classList.remove('no-smooth-scroll');
-    }, 120);
+    }, 80);
   }
   return true;
 }
 
-function overlayKey(type, id=""){
-  return `${type}:${id || ""}`;
+
+function notifyKodularState(state){
+  try{
+    if(window.AppInventor && typeof window.AppInventor.setWebViewString === 'function'){
+      window.AppInventor.setWebViewString(String(state || 'home'));
+    }
+  }catch(e){}
 }
-function pushOverlayHistory(type, id=""){
-  const key = overlayKey(type, id);
-  if(overlayHistoryStack[overlayHistoryStack.length - 1] === key) return;
-  if(!overlayHistoryStack.length){
-    lastScrollYBeforeOverlay = window.scrollY || window.pageYOffset || 0;
+
+let overlayStack = [];
+let ignoreNextPopState = false;
+
+function getCurrentOverlayState(){
+  const last = overlayStack.length ? overlayStack[overlayStack.length - 1] : null;
+  if(!last) return 'home';
+  if(last.type === 'zoom') return 'inside:zoom';
+  if(last.type === 'modal') return 'inside:' + last.id;
+  return 'home';
+}
+
+function updateKodularOverlayState(){
+  notifyKodularState(getCurrentOverlayState());
+}
+
+function pushOverlayState(entry){
+  overlayStack.push(entry);
+  try{
+    history.pushState(
+      {
+        appOverlay: true,
+        overlayType: entry.type || '',
+        overlayId: entry.id || ''
+      },
+      '',
+      location.pathname + location.search
+    );
+  }catch(e){}
+  updateKodularOverlayState();
+}
+
+function removeOverlayState(entry){
+  const target = entry || (overlayStack.length ? overlayStack[overlayStack.length - 1] : null);
+  if(!target){
+    updateKodularOverlayState();
+    return;
   }
-  overlayHistoryStack.push(key);
-  history.pushState({ msOverlay: true, key, scrollY: lastScrollYBeforeOverlay }, "", location.pathname + location.search);
+
+  const index = overlayStack.findIndex((item) => {
+    if(item.type !== target.type) return false;
+    if(item.type === 'zoom') return true;
+    return item.id === target.id;
+  });
+
+  if(index !== -1){
+    overlayStack.splice(index, 1);
+  }
+
+  if(history.length > 1){
+    ignoreNextPopState = true;
+    try{
+      history.back();
+    }catch(e){
+      ignoreNextPopState = false;
+    }
+    setTimeout(() => {
+      ignoreNextPopState = false;
+      updateKodularOverlayState();
+    }, 120);
+  }else{
+    updateKodularOverlayState();
+  }
 }
-function closeTopOverlayFromBack(){
-  const key = overlayHistoryStack.pop();
-  if(!key) return false;
-  const [type, ...rest] = key.split(':');
-  const id = rest.join(':');
-  if(type === 'zoom'){
+
+function closeTopOverlayFromHistory(){
+  const last = overlayStack.length ? overlayStack[overlayStack.length - 1] : null;
+  if(!last) return false;
+  if(last.type === 'zoom'){
     closeZoom(true);
     return true;
   }
-  if(id){
-    closeById(id, true);
+  if(last.type === 'modal'){
+    closeById(last.id, true);
     return true;
   }
   return false;
 }
+
 window.addEventListener('popstate', (event) => {
-  if(overlayHistoryStack.length){
-    closeTopOverlayFromBack();
+  if(ignoreNextPopState){
+    ignoreNextPopState = false;
     return;
   }
-  const restoredToCard = restoreActiveProductPosition();
-  if(restoredToCard) return;
-  const targetScroll = event.state && typeof event.state.scrollY === 'number'
-    ? event.state.scrollY
-    : lastScrollYBeforeOverlay;
-  if(typeof targetScroll === 'number' && !Number.isNaN(targetScroll)){
-    requestAnimationFrame(() => window.scrollTo(0, targetScroll));
+
+  if(event.state && event.state.appOverlay){
+    updateKodularOverlayState();
+    return;
   }
+
+  if(closeTopOverlayFromHistory()){
+    return;
+  }
+
+  updateKodularOverlayState();
 });
 
+/* =========================
+   BACK CONTROL CLEAN
+   ========================= */
 let zoomImages = [];
 let zoomIndex = 0;
 let zoomTouchStartX = 0;
@@ -3692,7 +3776,13 @@ function openZoom(images, startIndex = 0, sourceEl = null){
   overlay.style.display = "flex";
   overlay.style.visibility = "visible";
   document.body.classList.add("modal-open");
-  pushOverlayHistory('zoom');
+
+  const isAlreadyTracked = overlayStack.length && overlayStack[overlayStack.length - 1].type === 'zoom';
+  if(!isAlreadyTracked){
+    pushOverlayState({ type: 'zoom' });
+  }else{
+    updateKodularOverlayState();
+  }
 }
 
 function zoomNext(event){
@@ -3710,11 +3800,6 @@ function zoomPrev(event){
 }
 
 function closeZoom(fromBack = false){
-  if(!fromBack && overlayHistoryStack[overlayHistoryStack.length - 1] === overlayKey('zoom')){
-    history.back();
-    return;
-  }
-
   const overlay = document.getElementById("zoomOverlay");
   if(overlay){
     overlay.classList.remove("show");
@@ -3729,13 +3814,24 @@ function closeZoom(fromBack = false){
     document.body.classList.remove("modal-open");
   }
 
-  if(!overlayHistoryStack.length){
-    if(restoreActiveProductPosition()) return;
-    if(typeof lastScrollYBeforeOverlay === 'number'){
-      requestAnimationFrame(() => window.scrollTo(0, lastScrollYBeforeOverlay));
-    }
+  if(fromBack){
+    const idx = overlayStack.map(item => item.type).lastIndexOf('zoom');
+    if(idx !== -1) overlayStack.splice(idx, 1);
+    updateKodularOverlayState();
+  }else{
+    removeOverlayState({ type: 'zoom' });
+  }
+
+  if(restoreActiveProductPosition()) return;
+  if(typeof lastScrollYBeforeOverlay === 'number'){
+    requestAnimationFrame(() => window.scrollTo(0, lastScrollYBeforeOverlay));
   }
 }
+
+/* =========================
+   BACK CONTROL - لا تعدل
+   END
+   ========================= */
 
 function shareProduct(id){
   const p = allProducts.find(x => x.id === id);
@@ -3749,27 +3845,35 @@ function shareProduct(id){
 }
 function openModal(id){
   const el = document.getElementById(id);
-  if(el && !el.classList.contains("show")){
-    el.classList.add("show");
-    document.body.classList.add("modal-open");
-    pushOverlayHistory('modal', id);
+  if(el && !el.classList.contains('show')){
+    el.classList.add('show');
+    document.body.classList.add('modal-open');
+    const isAlreadyTracked = overlayStack.length && overlayStack[overlayStack.length - 1].type === 'modal' && overlayStack[overlayStack.length - 1].id === id;
+    if(!isAlreadyTracked){
+      pushOverlayState({ type: 'modal', id });
+    }else{
+      updateKodularOverlayState();
+    }
   }
 }
 function closeById(id, fromBack = false){
-  if(!fromBack && overlayHistoryStack[overlayHistoryStack.length - 1] === overlayKey('modal', id)){
-    history.back();
-    return;
-  }
   const el = document.getElementById(id);
-  if(el) el.classList.remove("show");
-  if(!document.querySelector('.modal.show') && !document.getElementById("zoomOverlay")?.classList.contains("show")){
-    document.body.classList.remove("modal-open");
+  if(el) el.classList.remove('show');
+  if(!document.querySelector('.modal.show') && !document.getElementById('zoomOverlay')?.classList.contains('show')){
+    document.body.classList.remove('modal-open');
   }
-  if(!overlayHistoryStack.length){
-    if(restoreActiveProductPosition()) return;
-    if(typeof lastScrollYBeforeOverlay === 'number'){
-      requestAnimationFrame(() => window.scrollTo(0, lastScrollYBeforeOverlay));
-    }
+
+  if(fromBack){
+    const idx = overlayStack.map(item => item.type === 'modal' ? item.id : '').lastIndexOf(id);
+    if(idx !== -1) overlayStack.splice(idx, 1);
+    updateKodularOverlayState();
+  }else{
+    removeOverlayState({ type: 'modal', id });
+  }
+
+  if(restoreActiveProductPosition()) return;
+  if(typeof lastScrollYBeforeOverlay === 'number'){
+    requestAnimationFrame(() => window.scrollTo(0, lastScrollYBeforeOverlay));
   }
 }
 function closeModal(event, id){
