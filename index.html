@@ -2350,9 +2350,6 @@ function updateTopFixedShellSpacer(){
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  if(!history.state){
-    try{ history.replaceState({ __msHome: true }, '', location.pathname + location.search); }catch(e){}
-  }
   applySavedTheme();
 applyCachedData();
   initAdminState();
@@ -2383,7 +2380,6 @@ setTimeout(() => {
   }
 }, Math.max(getSplashDurationMs() + 1500, 10000));
 
-  syncBridgeState();
 });
 
 function getSplashDurationMs(){
@@ -3625,87 +3621,85 @@ function restoreActiveProductPosition(attempt = 0){
   return true;
 }
 
-function getBridgeTarget(){
-  if(window.AppInventor && typeof window.AppInventor.setWebViewString === 'function') return window.AppInventor;
-  if(window.Kodular && typeof window.Kodular.setWebViewString === 'function') return window.Kodular;
-  return null;
-}
 
-function sendBridgeState(value){
+function notifyKodularState(state){
   try{
-    const bridge = getBridgeTarget();
-    if(bridge) bridge.setWebViewString(String(value || ''));
+    if(window.AppInventor && typeof window.AppInventor.setWebViewString === "function"){
+      window.AppInventor.setWebViewString(String(state || "home"));
+    }
   }catch(e){}
 }
 
-function getOpenModalIds(){
-  return Array.from(document.querySelectorAll('.modal.show')).map((modal) => modal.id).filter(Boolean);
+function getBaseUrlWithoutHash(){
+  return location.pathname + location.search;
 }
 
-function getCurrentPageState(){
-  const zoomOverlay = document.getElementById('zoomOverlay');
-  if(zoomOverlay && zoomOverlay.classList.contains('show')) return 'inside:zoom';
-  const openModalIds = getOpenModalIds();
-  if(openModalIds.length) return 'inside:' + openModalIds.join(',');
-  return 'home';
+function getVisibleOverlayState(){
+  const zoomOverlay = document.getElementById("zoomOverlay");
+  if(zoomOverlay && zoomOverlay.classList.contains("show")){
+    return { app:"overlay", kind:"zoom", id:"zoom" };
+  }
+  const modal = document.querySelector(".modal.show");
+  if(modal){
+    return { app:"overlay", kind:"modal", id: modal.id };
+  }
+  return { app:"home" };
 }
 
-function syncBridgeState(){
-  const state = getCurrentPageState();
-  sendBridgeState(state);
-  return state;
+function syncKodularBackState(){
+  const state = getVisibleOverlayState();
+  if(state.app === "home"){
+    notifyKodularState("home");
+  }else if(state.kind === "zoom"){
+    notifyKodularState("inside:zoom");
+  }else{
+    notifyKodularState("inside:" + state.id);
+  }
 }
 
-function isOverlayHistoryState(state){
-  return !!(state && state.__msOverlay === true);
+function ensureHomeHistoryState(){
+  try{
+    const st = history.state || {};
+    if(!st || st.app !== "home"){
+      history.replaceState({ app:"home" }, "", getBaseUrlWithoutHash());
+    }
+  }catch(e){}
+  syncKodularBackState();
 }
 
 function pushOverlayHistory(kind, id){
-  const current = history.state;
-  const overlayKey = String(kind || '') + ':' + String(id || '');
-  if(isOverlayHistoryState(current) && current.overlayKey === overlayKey) return;
-  history.pushState({
-    __msOverlay: true,
-    overlayKind: String(kind || ''),
-    overlayId: String(id || ''),
-    overlayKey
-  }, '', location.pathname + location.search);
+  try{
+    history.pushState(
+      { app:"overlay", kind:String(kind || ""), id:String(id || "") },
+      "",
+      getBaseUrlWithoutHash() + "#" + (kind === "zoom" ? "zoom" : ("modal-" + id))
+    );
+  }catch(e){}
+  syncKodularBackState();
 }
 
-function popOverlayHistoryIfNeeded(){
-  if(isOverlayHistoryState(history.state)){
-    setTimeout(() => {
-      try{ history.back(); }catch(e){}
-    }, 0);
+function closeOverlayVisualOnly(){
+  const zoomOverlay = document.getElementById("zoomOverlay");
+  if(zoomOverlay && zoomOverlay.classList.contains("show")){
+    closeZoom(true, true);
     return true;
   }
+  const modal = document.querySelector(".modal.show");
+  if(modal){
+    closeById(modal.id, true, true);
+    return true;
+  }
+  syncKodularBackState();
   return false;
 }
 
-/* =========================
-   BACK CONTROL - لا تعدل
-   START
-   هذا الجزء مسؤول عن:
-   - رجوع الصور
-   - رجوع النوافذ المنبثقة
-   - إبلاغ كودولار بالحالة الحالية
-   ========================= */
-window.addEventListener('popstate', () => {
-  const zoomOverlay = document.getElementById('zoomOverlay');
-  if(zoomOverlay && zoomOverlay.classList.contains('show')){
-    closeZoom(true);
-    syncBridgeState();
+window.addEventListener("popstate", () => {
+  const state = history.state || { app:"home" };
+  if(state.app === "home"){
+    closeOverlayVisualOnly();
     return;
   }
-
-  const openModal = document.querySelector('.modal.show');
-  if(openModal){
-    closeById(openModal.id, true);
-    syncBridgeState();
-    return;
-  }
-
-  syncBridgeState();
+  syncKodularBackState();
 });
 
 let zoomImages = [];
@@ -3737,9 +3731,7 @@ function openZoom(images, startIndex = 0, sourceEl = null){
   overlay.style.display = "flex";
   overlay.style.visibility = "visible";
   document.body.classList.add("modal-open");
-
-  pushOverlayHistory('zoom', 'zoom');
-  syncBridgeState();
+  pushOverlayHistory("zoom", "zoom");
 }
 
 function zoomNext(event){
@@ -3756,7 +3748,15 @@ function zoomPrev(event){
   renderZoomImage();
 }
 
-function closeZoom(fromBack = false){
+function closeZoom(fromBack = false, skipHistory = false){
+  if(!fromBack && !skipHistory){
+    const st = history.state || {};
+    if(st.app === "overlay" && st.kind === "zoom"){
+      history.back();
+      return;
+    }
+  }
+
   const overlay = document.getElementById("zoomOverlay");
   if(overlay){
     overlay.classList.remove("show");
@@ -3771,27 +3771,23 @@ function closeZoom(fromBack = false){
     document.body.classList.remove("modal-open");
   }
 
-  if(!fromBack){
-    popOverlayHistoryIfNeeded();
-  }
-
-  syncBridgeState();
-
   if(restoreActiveProductPosition()) return;
   if(typeof lastScrollYBeforeOverlay === 'number'){
     requestAnimationFrame(() => window.scrollTo(0, lastScrollYBeforeOverlay));
   }
+  syncKodularBackState();
 }
 
 /* =========================
-   BACK CONTROL - لا تعدل
-   END
+   BACK CONTROL - fixed for kodular/webview
    ========================= */
 
 function shareProduct(id){
   const p = allProducts.find(x => x.id === id);
   if(!p) return;
-  const text = `${p.name}\n${formatPrice(p.price)}\n${p.desc || ""}`;
+  const text = `${p.name}
+${formatPrice(p.price)}
+${p.desc || ""}`;
   if(navigator.share){
     navigator.share({ title: p.name, text }).catch(() => {});
   }else if(navigator.clipboard){
@@ -3803,24 +3799,28 @@ function openModal(id){
   if(el && !el.classList.contains('show')){
     el.classList.add('show');
     document.body.classList.add('modal-open');
-    pushOverlayHistory('modal', id);
-    syncBridgeState();
+    pushOverlayHistory("modal", id);
   }
 }
-function closeById(id, fromBack = false){
+function closeById(id, fromBack = false, skipHistory = false){
+  if(!fromBack && !skipHistory){
+    const st = history.state || {};
+    if(st.app === "overlay" && st.kind === "modal" && st.id === id){
+      history.back();
+      return;
+    }
+  }
+
   const el = document.getElementById(id);
   if(el) el.classList.remove('show');
   if(!document.querySelector('.modal.show') && !document.getElementById('zoomOverlay')?.classList.contains('show')){
     document.body.classList.remove('modal-open');
   }
-  if(!fromBack){
-    popOverlayHistoryIfNeeded();
-  }
-  syncBridgeState();
   if(restoreActiveProductPosition()) return;
   if(typeof lastScrollYBeforeOverlay === 'number'){
     requestAnimationFrame(() => window.scrollTo(0, lastScrollYBeforeOverlay));
   }
+  syncKodularBackState();
 }
 function closeModal(event, id){
   const modal = document.getElementById(id);
@@ -3831,6 +3831,9 @@ function closeModal(event, id){
     closeById(id);
   }
 }
+
+setTimeout(ensureHomeHistoryState, 0);
+
 
 function showToast(message, isError=false){
   const wrap = document.getElementById("toastWrap");
