@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>متجر MS</title>
 
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js">
@@ -2099,41 +2099,18 @@ img{
 </style>
 
 
-<style id="top-gap-fix-v2">
-  html, body{
-    margin:0 !important;
-    padding:0 !important;
-    overflow-x:hidden !important;
-  }
+<style id="final-no-gap-fix">
+html, body {
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow-x: hidden !important;
+  overscroll-behavior: none !important;
+}
 
-  body{
-    padding-top:0 !important;
-  }
-
-  /* Replace fixed header + spacer approach with sticky layout */
-  .top-fixed-shell{
-    position:sticky !important;
-    top:0 !important;
-    left:auto !important;
-    right:auto !important;
-    width:100% !important;
-    margin:0 !important;
-    padding-top:0 !important;
-    z-index:3000 !important;
-  }
-
-  #topFixedSpacer{
-    display:none !important;
-    height:0 !important;
-    margin:0 !important;
-    padding:0 !important;
-  }
-
-  .fixed-top-area,
-  .fixed-sub-top{
-    position:static !important;
-    top:auto !important;
-  }
+body {
+  overscroll-behavior-y: none !important;
+  -webkit-overflow-scrolling: auto !important;
+}
 </style>
 
 </head>
@@ -4388,39 +4365,24 @@ function toggleDescExpand(el){
 </script>
 
 
-<script id="top-gap-fix-v2-js">
-(function(){
-  function disableTopSpacer(){
-    try{
-      var spacer = document.getElementById('topFixedSpacer');
-      if(spacer){
-        spacer.style.display = 'none';
-        spacer.style.height = '0px';
-        spacer.style.margin = '0';
-        spacer.style.padding = '0';
-      }
+<script id="final-no-gap-js">
+(function () {
+  let startY = 0;
 
-      var shell = document.getElementById('topFixedShell');
-      if(shell){
-        shell.style.position = 'sticky';
-        shell.style.top = '0px';
-        shell.style.left = 'auto';
-        shell.style.right = 'auto';
-        shell.style.width = '100%';
-        shell.style.marginTop = '0';
-        shell.style.paddingTop = '0';
-      }
-    }catch(e){}
-  }
+  document.addEventListener('touchstart', function (e) {
+    if (e.touches && e.touches.length) {
+      startY = e.touches[0].clientY;
+    }
+  }, { passive: true });
 
-  var originalFn = window.updateTopFixedShellSpacer;
-  window.updateTopFixedShellSpacer = function(){
-    disableTopSpacer();
-  };
+  document.addEventListener('touchmove', function (e) {
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+    const currentY = e.touches && e.touches.length ? e.touches[0].clientY : 0;
 
-  document.addEventListener('DOMContentLoaded', disableTopSpacer);
-  window.addEventListener('load', disableTopSpacer);
-  window.addEventListener('resize', disableTopSpacer);
+    if (scrollTop <= 0 && currentY > startY) {
+      e.preventDefault();
+    }
+  }, { passive: false });
 })();
 </script>
 
