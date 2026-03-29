@@ -2189,6 +2189,7 @@ img{
       <a class="social-btn" id="whatsappLink" href="https://wa.me/9647712630779" target="_blank"><i class="fab fa-whatsapp"></i></a>
       <a class="social-btn" id="telegramLink" href="https://t.me/" target="_blank"><i class="fab fa-telegram"></i></a>
       <a class="social-btn" id="tiktokLink" href="https://www.tiktok.com/" target="_blank"><i class="fab fa-tiktok"></i></a>
+      <a class="social-btn" id="githubLink" href="https://msstore95.github.io" target="_blank"><i class="fab fa-github"></i></a>
     </div>
 
     <div class="mini-text" id="footerRights" style="white-space: pre-line; line-height:1.8;"></div>
@@ -2414,7 +2415,6 @@ const SUPABASE_URL = "https://fjoszzuknftuhwtbxbhq.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_T6hWw3Vk5joSjFrIkeBklQ_1FBbmzdZ";
 const SUPABASE_BUCKET = "products";
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-const PUBLIC_BASE_URL = "https://msstore95.github.io";
 
 let isAdmin = false, tapCounter = 0, maintenanceTapCounter = 0;
 let allProducts = [], allCategories = [], storeSettings = {}, visitorsCount = 0, selectedCategory = "الكل";
@@ -2953,6 +2953,8 @@ function applyStoreSettings(){
   document.getElementById("whatsappLink").href = "https://wa.me/" + cleanupNumber(storeSettings.whatsapp);
   document.getElementById("telegramLink").href = storeSettings.telegram || "https://t.me/";
   document.getElementById("tiktokLink").href = storeSettings.tiktok || "https://www.tiktok.com/";
+  const githubLinkEl = document.getElementById("githubLink");
+  if(githubLinkEl) githubLinkEl.href = "https://msstore95.github.io";
   document.getElementById("footerRights").innerText = storeSettings.footerRights || "";
   const footerRightsEl = document.getElementById("footerRights");
   if(footerRightsEl) footerRightsEl.style.fontSize = String(storeSettings.footerRightsSize || defaultSettings.footerRightsSize || "12") + "px";
@@ -4246,7 +4248,7 @@ function openModal(id){
     document.body.classList.add('modal-open');
     const modalHash = '#modal-' + id;
     if(location.hash !== modalHash){
-      location.hash = 'modal-' + id;
+      location.hash = modalHash.substring(1);
     }
   }
 }
