@@ -1617,7 +1617,7 @@ body.dark-mode .p-desc.long{
   border-radius:14px !important;
   background:
     radial-gradient(circle at top left, rgba(255,255,255,.12), transparent 28%),
-    linear-gradient(135deg, var(--hero-color-1, #172554) 0%, var(--hero-color-1, #172554) 35%, var(--hero-color-2, #38bdf8) 100%) !important;
+    linear-gradient(135deg, #172554 0%, #1d4ed8 52%, #38bdf8 100%) !important;
   border:1px solid rgba(255,255,255,.14) !important;
   box-shadow:0 12px 28px rgba(29,78,216,.24) !important;
 }
@@ -2098,123 +2098,6 @@ img{
 }
 </style>
 
-
-<style id="notifications-admin-patch-css">
-.notify-badge{
-  position:absolute;
-  top:-4px;
-  left:-4px;
-  min-width:18px;
-  height:18px;
-  padding:0 5px;
-  border-radius:999px;
-  background:#ef4444;
-  color:#fff;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:10px;
-  font-weight:900;
-  line-height:1;
-  box-shadow:0 6px 14px rgba(239,68,68,.28);
-}
-.notification-card{
-  background:var(--bg);
-  border:1px solid var(--border);
-  border-radius:18px;
-  padding:12px;
-}
-.notification-title{
-  font-size:15px;
-  font-weight:900;
-  margin-bottom:6px;
-  color:var(--text);
-}
-.notification-text{
-  font-size:13px;
-  color:var(--muted);
-  line-height:1.8;
-  white-space:pre-line;
-}
-.notification-date{
-  margin-top:8px;
-  font-size:11px;
-  color:var(--muted);
-}
-.empty-notifications{
-  text-align:center;
-  padding:24px 12px;
-  color:var(--muted);
-}
-</style>
-
-
-<style id="hero-premium-upgrade">
-.hero-topline{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  margin-bottom:4px;
-}
-.hero-icon{
-  width:34px;
-  height:34px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  border-radius:12px;
-  background:rgba(255,255,255,.14);
-  border:1px solid rgba(255,255,255,.18);
-  font-size:18px;
-  box-shadow:0 6px 18px rgba(0,0,0,.12);
-}
-.hero-actions{
-  margin-top:10px;
-  display:flex;
-  justify-content:flex-start;
-}
-.hero-cta{
-  border:none;
-  border-radius:999px;
-  padding:8px 14px;
-  min-height:34px;
-  background:rgba(255,255,255,.16);
-  color:#fff;
-  border:1px solid rgba(255,255,255,.18);
-  font-size:11px;
-  font-weight:900;
-  box-shadow:0 8px 18px rgba(0,0,0,.14);
-  backdrop-filter:blur(10px);
-}
-.hero-cta:active{
-  transform:scale(.98);
-}
-.premium-hero{
-  overflow:hidden !important;
-}
-.premium-hero::before{
-  animation: heroShine 4.5s linear infinite !important;
-}
-@keyframes heroShine{
-  0%{ right:-45%; }
-  100%{ right:120%; }
-}
-@media (max-width:640px){
-  .hero-icon{
-    width:30px;
-    height:30px;
-    font-size:16px;
-    border-radius:10px;
-  }
-  .hero-cta{
-    padding:7px 12px;
-    font-size:10px;
-    min-height:32px;
-  }
-}
-</style>
-
 </head>
 <body style="margin:0;background:#0f172a;color:#ffffff;background:#f4f7fb;overflow-x:hidden">
 
@@ -2250,7 +2133,7 @@ img{
       </div>
       <div class="top-actions">
         <button class="icon-btn" onclick="openModal('aboutModal')" title="حول المتجر"><i class="fa-solid fa-circle-info"></i></button>
-        <button class="icon-btn" id="notifyBtn" onclick="openNotificationsModal()" title="التنبيهات" style="position:relative;"><i class="fa-solid fa-bell"></i><span id="notifyBadge" class="notify-badge hidden">0</span></button>
+        <button class="icon-btn" id="themeBtn" onclick="toggleTheme()" title="الوضع"><span id="themeIcon" style="font-size:18px;line-height:1">🌙</span></button>
       </div>
     </div>
     <div class="search-sort-row">
@@ -2273,18 +2156,12 @@ img{
 <div class="fixed-sub-top">
   <section id="adsWrap" class="ads-wrap"><div id="adsStrip" class="ads-strip"></div></section>
 
-  <section class="premium-hero premium-hero-sticky" id="heroBanner">
+  <section class="premium-hero premium-hero-sticky">
     <div class="hero-overlay"></div>
     <div class="hero-content">
-      <div class="hero-topline">
-        <span class="hero-badge">متجر MS</span>
-        <span class="hero-icon" id="heroIcon">✨</span>
-      </div>
+      <span class="hero-badge">متجر MS</span>
       <h1 id="heroTitle">مرحبًا بك في متجر MS، حيث الفخامة تبدأ من أول نظرة</h1>
       <p id="heroDesc">اكتشف تشكيلة أنيقة ومنتجات مختارة بعناية، واطلب بسهولة وسرعة عبر واتساب.</p>
-      <div class="hero-actions">
-        <button class="hero-cta" id="heroButton" onclick="handleHeroButton()">تسوق الآن</button>
-      </div>
     </div>
     <div class="hero-glow hero-glow-1"></div>
     <div class="hero-glow hero-glow-2"></div>
@@ -2352,7 +2229,6 @@ img{
         <button class="tab-btn" onclick="switchAdminTab('tabCategories', this)">الأقسام</button>
         <button class="tab-btn" onclick="switchAdminTab('tabAds', this)">إعلان</button>
         <button class="tab-btn" onclick="switchAdminTab('tabMaintenance', this)">الصيانة</button>
-        <button class="tab-btn" onclick="switchAdminTab('tabNotifications', this)">التنبيهات</button>
       </div>
 
       <div id="tabDashboard" class="tab-content active">
@@ -2418,18 +2294,6 @@ img{
         <div class="row-actions">
           <button class="btn btn-warning" onclick="saveMaintenanceSettings()">حفظ إعدادات الصيانة</button>
         </div>
-      </div>
-
-      <div id="tabNotifications" class="tab-content">
-        <div class="notice">أضف تنبيهًا جديدًا ليظهر للمستخدمين داخل جرس التنبيهات. يظهر رقم فوق الجرس إذا كانت هناك تنبيهات غير مفتوحة.</div>
-        <input type="hidden" id="editingNotificationId" />
-        <div class="field"><label>عنوان التنبيه</label><input type="text" id="notifTitleInput" placeholder="مثال: وصلت منتجات جديدة" /></div>
-        <div class="field"><label>نص التنبيه</label><textarea id="notifMessageInput" placeholder="اكتب نص التنبيه هنا"></textarea></div>
-                <div class="row-actions">
-          <button class="btn btn-primary" onclick="saveNotification()">حفظ التنبيه</button>
-          <button class="btn btn-secondary" onclick="clearNotificationForm()">تفريغ الحقول</button>
-        </div>
-        <div id="adminNotificationsList" class="admin-list" style="margin-top:12px;"></div>
       </div></div>
   </div>
 
@@ -2490,15 +2354,6 @@ img{
         <div class="field"><label>وصف البانر الرئيسي</label><input type="text" id="setHeroDesc" /></div>
       </div>
       <div class="grid-2">
-        <div class="field"><label>لون البانر الرئيسي 1</label><input type="color" id="setHeroColor1" value="#172554" style="background:#172554" oninput="this.style.background=this.value" /></div>
-        <div class="field"><label>لون البانر الرئيسي 2</label><input type="color" id="setHeroColor2" value="#38bdf8" style="background:#38bdf8" oninput="this.style.background=this.value" /></div>
-      </div>
-      <div class="grid-2">
-        <div class="field"><label>أيقونة البانر</label><input type="text" id="setHeroIcon" placeholder="مثال: ✨ أو 🔥" /></div>
-        <div class="field"><label>نص زر البانر</label><input type="text" id="setHeroButtonText" placeholder="مثال: تسوق الآن" /></div>
-      </div>
-      <div class="field"><label>رابط زر البانر</label><input type="text" id="setHeroButtonLink" placeholder="رابط اختياري مثل واتساب أو قسم معين" /></div>
-      <div class="grid-2">
         <div class="field"><label>رقم واتساب الطلبات</label><input type="text" id="setWhatsapp" placeholder="9647xxxxxxxx" /></div>
         <div class="field"><label>رابط تيليجرام</label><input type="text" id="setTelegram" placeholder="https://t.me/username" /></div>
       </div>
@@ -2512,7 +2367,6 @@ img{
           <label>تغيير صورة الشعار</label>
           <input type="file" id="setLogoFile" accept="image/*" />
           <div class="helper">اختَر صورة للشعار، سيتم رفعها وحفظها في المتجر.</div>
-          <div class="row-actions" style="margin-top:8px;"><button type="button" class="btn btn-danger" onclick="removeStoreLogo()">حذف شعار المتجر</button></div>
         </div>
       </div>
       <div class="grid-2">
@@ -2520,7 +2374,6 @@ img{
           <label>صورة / أيقونة رسالة الترحيب</label>
           <input type="file" id="setSplashLogoFile" accept="image/*" />
           <div class="helper">اختَر صورة خاصة برسالة الترحيب، وإذا تركتها فارغة سيُستخدم شعار المتجر.</div>
-          <div class="row-actions" style="margin-top:8px;"><button type="button" class="btn btn-danger" onclick="removeSplashLogo()">حذف شعار شاشة الترحيب</button></div>
         </div>
       </div>
       <div class="grid-2">
@@ -2578,11 +2431,6 @@ let adAutoToggleTimer = null;
 let adIsTemporarilyHidden = false;
 
 const defaultSettings = {
-  heroColor1: "#172554",
-  heroColor2: "#38bdf8",
-  heroIcon: "✨",
-  heroButtonText: "تسوق الآن",
-  heroButtonLink: "",
   storeName: "متجر MS",
   storeSubtitle: "متجر أنيق وفخم",
   storeAbout: "متجر MS يقدم لك تجربة تسوق أنيقة وسهلة.",
@@ -2729,7 +2577,6 @@ function applyCachedData(){
     renderAdsStrip();
     setTimeout(updateTopFixedShellSpacer, 0);
     renderAdminAds();
-  renderAdminNotifications();
   }
   if(typeof cachedVisitors === "number"){
     visitorsCount = cachedVisitors;
@@ -2808,7 +2655,6 @@ applyCachedData();
   listenCategories();
   listenProducts();
   listenAds();
-  listenNotifications();
   setTimeout(updateHeroPinnedState, 120);
   initMaintenanceAccess();
   initImagePicker();
@@ -3049,7 +2895,6 @@ function openAdminPanel(){
   renderAdminProducts();
   renderAdminCategories();
   renderAdminAds();
-  renderAdminNotifications();
   fillSettingsForm();
   fillMaintenanceForm();
   updateStatsCards();
@@ -3079,10 +2924,6 @@ function applyStoreSettings(){
   setText("storeSubTop", storeSettings.storeSubtitle);
   setText("heroTitle", storeSettings.heroTitle);
   setText("heroDesc", storeSettings.heroDesc);
-  setText("heroIcon", storeSettings.heroIcon || defaultSettings.heroIcon || "✨");
-  setText("heroButton", storeSettings.heroButtonText || defaultSettings.heroButtonText || "تسوق الآن");
-  document.documentElement.style.setProperty('--hero-color-1', storeSettings.heroColor1 || defaultSettings.heroColor1 || '#172554');
-  document.documentElement.style.setProperty('--hero-color-2', storeSettings.heroColor2 || defaultSettings.heroColor2 || '#38bdf8');
   setText("footerStoreTitle", storeSettings.storeName);
   setText("aboutModalText", storeSettings.storeAbout);
   setText("splashTitle", storeSettings.storeName);
@@ -3119,15 +2960,6 @@ function fillSettingsForm(){
   setVal("setStoreAbout", storeSettings.storeAbout);
   setVal("setHeroTitle", storeSettings.heroTitle);
   setVal("setHeroDesc", storeSettings.heroDesc);
-  setVal("setHeroColor1", storeSettings.heroColor1 || defaultSettings.heroColor1 || "#172554");
-  setVal("setHeroColor2", storeSettings.heroColor2 || defaultSettings.heroColor2 || "#38bdf8");
-  setVal("setHeroIcon", storeSettings.heroIcon || defaultSettings.heroIcon || "✨");
-  setVal("setHeroButtonText", storeSettings.heroButtonText || defaultSettings.heroButtonText || "تسوق الآن");
-  setVal("setHeroButtonLink", storeSettings.heroButtonLink || defaultSettings.heroButtonLink || "");
-  try{
-    document.getElementById("setHeroColor1").style.background = document.getElementById("setHeroColor1").value;
-    document.getElementById("setHeroColor2").style.background = document.getElementById("setHeroColor2").value;
-  }catch(e){}
   setVal("setWhatsapp", storeSettings.whatsapp);
   setVal("setTelegram", storeSettings.telegram);
   setVal("setTiktok", storeSettings.tiktok);
@@ -3182,11 +3014,6 @@ async function saveStoreSettings(){
     storeAbout: storeSettings.storeAbout || defaultSettings.storeAbout,
     heroTitle: val("setHeroTitle") || defaultSettings.heroTitle,
     heroDesc: val("setHeroDesc") || defaultSettings.heroDesc,
-    heroColor1: val("setHeroColor1") || defaultSettings.heroColor1,
-    heroColor2: val("setHeroColor2") || defaultSettings.heroColor2,
-    heroIcon: val("setHeroIcon") || defaultSettings.heroIcon,
-    heroButtonText: val("setHeroButtonText") || defaultSettings.heroButtonText,
-    heroButtonLink: val("setHeroButtonLink") || defaultSettings.heroButtonLink,
     whatsapp: cleanupNumber(val("setWhatsapp") || defaultSettings.whatsapp),
     telegram: val("setTelegram") || defaultSettings.telegram,
     tiktok: val("setTiktok") || defaultSettings.tiktok,
@@ -3965,7 +3792,6 @@ function listenAds(){
     renderAdsStrip();
     setTimeout(updateTopFixedShellSpacer, 0);
     renderAdminAds();
-  renderAdminNotifications();
   });
 }
 
@@ -4521,406 +4347,6 @@ function toggleDescExpand(el){
   el.classList.toggle("expanded");
 }
 
-</script>
-
-
-  <div id="notificationsModal" class="modal" onclick="closeModal(event,'notificationsModal')">
-    <div class="modal-card" onclick="event.stopPropagation()">
-      <div class="modal-head">
-        <h3 class="modal-title">التنبيهات</h3>
-        <button class="close-btn" onclick="closeById('notificationsModal')"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <div class="notice">هنا تظهر آخر التنبيهات والعروض المضافة من الإدارة.</div>
-      <div id="notificationsModalList" class="admin-list"></div>
-      <div class="row-actions">
-        <button class="btn btn-secondary" onclick="closeById('notificationsModal')">إغلاق</button>
-      </div>
-    </div>
-  </div>
-
-
-<script id="notifications-admin-patch-js">
-let allNotifications = [];
-
-function getReadNotifications(){
-  try{
-    return JSON.parse(localStorage.getItem("ms_read_notifications") || "[]");
-  }catch(e){
-    return [];
-  }
-}
-function setReadNotifications(ids){
-  try{
-    localStorage.setItem("ms_read_notifications", JSON.stringify(ids || []));
-  }catch(e){}
-}
-function isNotificationRead(id){
-  return getReadNotifications().includes(id);
-}
-function markAllNotificationsRead(){
-  const ids = allNotifications.filter(n => n.active).map(n => n.id);
-  setReadNotifications(ids);
-  renderNotificationBadge();
-}
-function renderNotificationBadge(){
-  const badge = document.getElementById("notifyBadge");
-  if(!badge) return;
-  const unread = allNotifications.filter(n => n.active && !isNotificationRead(n.id)).length;
-  if(unread > 0){
-    badge.classList.remove("hidden");
-    badge.textContent = unread > 99 ? "99+" : String(unread);
-  }else{
-    badge.classList.add("hidden");
-    badge.textContent = "0";
-  }
-}
-function formatNotificationDate(ts){
-  try{
-    return new Date(ts || Date.now()).toLocaleString('ar-IQ');
-  }catch(e){
-    return "";
-  }
-}
-function renderNotificationsModal(){
-  const box = document.getElementById("notificationsModalList");
-  if(!box) return;
-  const visibleItems = allNotifications.filter(n => n.active);
-  if(!visibleItems.length){
-    box.innerHTML = '<div class="empty-notifications">لا توجد تنبيهات حالياً</div>';
-    return;
-  }
-  box.innerHTML = visibleItems.map(n => `
-    <div class="notification-card" style="border-right:4px solid #3b82f6;">
-      <div class="notification-title">${escapeHtml(n.title || 'تنبيه')} ${n.pinned ? '📌' : ''}</div>
-      <div class="notification-text">${escapeHtml(n.message || '')}</div>
-      <div class="notification-date">${escapeHtml(formatNotificationDate(n.createdAt))}</div>
-    </div>
-  `).join("");
-}
-function openNotificationsModal(){
-  renderNotificationsModal();
-  openModal('notificationsModal');
-  setTimeout(() => {
-    markAllNotificationsRead();
-  }, 200);
-}
-function clearNotificationForm(){
-  const t = document.getElementById("notifTitleInput");
-  const m = document.getElementById("notifMessageInput");
-  const e = document.getElementById("editingNotificationId");
-  if(t) t.value = "";
-  if(m) m.value = "";
-  if(e) e.value = "";
-}
-async function saveNotification(){
-  const title = (document.getElementById("notifTitleInput")?.value || "").trim();
-  const message = (document.getElementById("notifMessageInput")?.value || "").trim();
-  const editingId = (document.getElementById("editingNotificationId")?.value || "").trim();
-  if(!title || !message){
-    showToast("اكتب عنوان ونص التنبيه", true);
-    return;
-  }
-  try{
-    if(editingId){
-      await db.ref("notifications/" + editingId).update({ title, message });
-      showToast("تم تعديل التنبيه");
-    }else{
-      await db.ref("notifications").push({
-        title,
-        message,
-        pinned: false,
-        active: true,
-        createdAt: Date.now()
-      });
-      showToast("تم حفظ التنبيه بنجاح");
-    }
-    clearNotificationForm();
-  }catch(err){
-    console.error(err);
-    showToast("فشل حفظ التنبيه", true);
-  }
-}
-
-
-function editNotification(id){
-  const item = allNotifications.find(n => n.id === id);
-  if(!item) return;
-  const t = document.getElementById("notifTitleInput");
-  const m = document.getElementById("notifMessageInput");
-  const e = document.getElementById("editingNotificationId");
-  if(t) t.value = item.title || "";
-  if(m) m.value = item.message || "";
-  if(e) e.value = item.id;
-  showToast("تم تحميل التنبيه للتعديل");
-}
-async function togglePinNotification(id){
-  try{
-    const item = allNotifications.find(n => n.id === id);
-    if(!item) return;
-    await db.ref("notifications/" + id).update({ pinned: !item.pinned });
-    showToast(!item.pinned ? "تم تثبيت التنبيه" : "تم إلغاء التثبيت");
-  }catch(err){
-    console.error(err);
-    showToast("فشل تنفيذ العملية", true);
-  }
-}
-async function toggleNotificationActive(id){
-  try{
-    const item = allNotifications.find(n => n.id === id);
-    if(!item) return;
-    await db.ref("notifications/" + id).update({ active: !item.active });
-    showToast(item.active ? "تم تعطيل التنبيه" : "تم تفعيل التنبيه");
-  }catch(err){
-    console.error(err);
-    showToast("فشل تنفيذ العملية", true);
-  }
-}
-async function deleteNotification(id){
-  if(!confirm("حذف هذا التنبيه؟")) return;
-  try{
-    await db.ref("notifications/" + id).remove();
-    showToast("تم حذف التنبيه");
-  }catch(err){
-    console.error(err);
-    showToast("فشل حذف التنبيه", true);
-  }
-}
-function renderAdminNotifications(){
-  const box = document.getElementById("adminNotificationsList");
-  if(!box) return;
-  if(!allNotifications.length){
-    box.innerHTML = '<div class="empty-notifications">لا توجد تنبيهات مضافة</div>';
-    return;
-  }
-  box.innerHTML = allNotifications.map(n => `
-    <div class="admin-item" style="border-right:4px solid #3b82f6;">
-      <div class="admin-item-name">${escapeHtml(n.title || 'تنبيه')}</div>
-      <div class="notification-text">${escapeHtml(n.message || '')}</div>
-      <div class="admin-item-meta" style="margin-top:8px;">
-        <span>${escapeHtml(formatNotificationDate(n.createdAt))}</span>
-        <span>${n.pinned ? 'مثبت' : 'عادي'}</span>
-        <span>${n.active ? 'مفعّل' : 'معطّل'}</span>
-        <span>${isNotificationRead(n.id) ? 'مفتوح' : 'غير مفتوح'}</span>
-      </div>
-      <div class="admin-item-actions">
-        <button class="admin-small-btn btn-secondary" onclick="editNotification('${n.id}')">تعديل</button>
-        <button class="admin-small-btn btn-warning" onclick="togglePinNotification('${n.id}')">${n.pinned ? 'إلغاء التثبيت' : 'تثبيت'}</button>
-        <button class="admin-small-btn btn-secondary" onclick="toggleNotificationActive('${n.id}')">${n.active ? 'تعطيل' : 'تفعيل'}</button>
-        <button class="admin-small-btn btn-danger" onclick="deleteNotification('${n.id}')">حذف</button>
-      </div>
-    </div>
-  `).join("");
-}
-function listenNotifications(){
-  db.ref("notifications").on("value", snap => {
-    allNotifications = [];
-    snap.forEach(child => {
-      const v = child.val() || {};
-      allNotifications.push({
-        id: child.key,
-        title: v.title || "تنبيه",
-        message: v.message || "",
-        pinned: !!v.pinned,
-        active: v.active !== false,
-        createdAt: v.createdAt || 0
-      });
-    });
-    allNotifications.sort((a,b) => (Number(b.pinned) - Number(a.pinned)) || ((b.createdAt || 0) - (a.createdAt || 0)));
-    renderNotificationBadge();
-    renderNotificationsModal();
-    renderAdminNotifications();
-  });
-}
-</script>
-
-
-<script id="banner-color-admin-patch">
-(function(){
-  const origRenderAdminAds = window.renderAdminAds;
-  window.renderAdminAds = function(){
-    if(typeof origRenderAdminAds === 'function') origRenderAdminAds();
-    try{
-      const colorInput = document.getElementById('adColorInput');
-      if(colorInput){
-        const color = (window.currentAd && currentAd.color) || (window.storeSettings && storeSettings.adColor) || '#2563eb';
-        colorInput.value = color;
-        colorInput.style.background = color;
-      }
-    }catch(e){}
-  };
-
-  const origPreviewSingleAd = window.previewSingleAd;
-  window.previewSingleAd = function(){
-    if(typeof origPreviewSingleAd === 'function') origPreviewSingleAd();
-    try{
-      const colorInput = document.getElementById('adColorInput');
-      if(colorInput) colorInput.style.background = colorInput.value;
-    }catch(e){}
-  };
-
-  const origSaveSingleAd = window.saveSingleAd;
-  window.saveSingleAd = async function(){
-    if(typeof origSaveSingleAd === 'function'){
-      return await origSaveSingleAd();
-    }
-  };
-})();
-</script>
-
-
-<script id="final-banner-notifications-js">
-function handleHeroButton(){
-  const link = (storeSettings.heroButtonLink || "").trim();
-  if(link){
-    if(/^https?:\/\//i.test(link)){
-      window.open(link, "_blank");
-      return;
-    }
-    if(link.startsWith("#")){
-      location.hash = link;
-      return;
-    }
-  }
-  const wa = document.getElementById("whatsappLink");
-  if(wa && wa.href) window.open(wa.href, "_blank");
-}
-
-function clearLogoFileInputs(){
-  const a = document.getElementById("setLogoFile");
-  const b = document.getElementById("setSplashLogoFile");
-  if(a) a.value = "";
-  if(b) b.value = "";
-}
-async function removeStoreLogo(){
-  try{
-    await db.ref("settings/store/logoUrl").set("");
-    showToast("تم حذف شعار المتجر");
-  }catch(err){
-    console.error(err);
-    showToast("فشل حذف الشعار", true);
-  }
-}
-async function removeSplashLogo(){
-  try{
-    await db.ref("settings/store/splashLogoUrl").set("");
-    showToast("تم حذف شعار شاشة الترحيب");
-  }catch(err){
-    console.error(err);
-    showToast("فشل حذف الشعار", true);
-  }
-}
-
-function clearNotificationForm(){
-  const t = document.getElementById("notifTitleInput");
-  const m = document.getElementById("notifMessageInput");
-  const e = document.getElementById("editingNotificationId");
-  if(t) t.value = "";
-  if(m) m.value = "";
-  if(e) e.value = "";
-}
-
-function editNotification(id){
-  const item = allNotifications.find(n => n.id === id);
-  if(!item) return;
-  const t = document.getElementById("notifTitleInput");
-  const m = document.getElementById("notifMessageInput");
-  const e = document.getElementById("editingNotificationId");
-  if(t) t.value = item.title || "";
-  if(m) m.value = item.message || "";
-  if(e) e.value = item.id;
-  showToast("تم تحميل التنبيه للتعديل");
-}
-
-async function saveNotification(){
-  const title = (document.getElementById("notifTitleInput")?.value || "").trim();
-  const message = (document.getElementById("notifMessageInput")?.value || "").trim();
-  const editingId = (document.getElementById("editingNotificationId")?.value || "").trim();
-  if(!title || !message){
-    showToast("اكتب عنوان ونص التنبيه", true);
-    return;
-  }
-  try{
-    if(editingId){
-      await db.ref("notifications/" + editingId).update({ title, message });
-      showToast("تم تعديل التنبيه");
-    }else{
-      await db.ref("notifications").push({
-        title,
-        message,
-        pinned:false,
-        active:true,
-        createdAt:Date.now()
-      });
-      showToast("تم حفظ التنبيه");
-    }
-    clearNotificationForm();
-  }catch(err){
-    console.error(err);
-    showToast("فشل حفظ التنبيه", true);
-  }
-}
-
-async function togglePinNotification(id){
-  try{
-    const item = allNotifications.find(n => n.id === id);
-    if(!item) return;
-    await db.ref("notifications/" + id).update({ pinned: !item.pinned });
-    showToast(!item.pinned ? "تم تثبيت التنبيه" : "تم إلغاء التثبيت");
-  }catch(err){
-    console.error(err);
-    showToast("فشل تنفيذ العملية", true);
-  }
-}
-
-async function toggleNotificationActive(id){
-  try{
-    const item = allNotifications.find(n => n.id === id);
-    if(!item) return;
-    await db.ref("notifications/" + id).update({ active: !item.active });
-    showToast(item.active ? "تم تعطيل التنبيه" : "تم تفعيل التنبيه");
-  }catch(err){
-    console.error(err);
-    showToast("فشل تنفيذ العملية", true);
-  }
-}
-
-async function deleteNotification(id){
-  if(!confirm("حذف هذا التنبيه؟")) return;
-  try{
-    await db.ref("notifications/" + id).remove();
-    showToast("تم حذف التنبيه");
-  }catch(err){
-    console.error(err);
-    showToast("فشل حذف التنبيه", true);
-  }
-}
-
-function renderAdminNotifications(){
-  const box = document.getElementById("adminNotificationsList");
-  if(!box) return;
-  if(!allNotifications.length){
-    box.innerHTML = '<div class="empty-notifications">لا توجد تنبيهات مضافة</div>';
-    return;
-  }
-  box.innerHTML = allNotifications.map(n => `
-    <div class="admin-item" style="border-right:4px solid #3b82f6;">
-      <div class="admin-item-name">${escapeHtml(n.title || 'تنبيه')}</div>
-      <div class="notification-text">${escapeHtml(n.message || '')}</div>
-      <div class="admin-item-meta" style="margin-top:8px;">
-        <span>${escapeHtml(formatNotificationDate(n.createdAt))}</span>
-        <span>${n.pinned ? 'مثبت' : 'عادي'}</span>
-        <span>${n.active ? 'مفعّل' : 'معطّل'}</span>
-        <span>${isNotificationRead(n.id) ? 'مفتوح' : 'غير مفتوح'}</span>
-      </div>
-      <div class="admin-item-actions">
-        <button class="admin-small-btn btn-secondary" onclick="editNotification('${n.id}')">تعديل</button>
-        <button class="admin-small-btn btn-warning" onclick="togglePinNotification('${n.id}')">${n.pinned ? 'إلغاء التثبيت' : 'تثبيت'}</button>
-        <button class="admin-small-btn btn-secondary" onclick="toggleNotificationActive('${n.id}')">${n.active ? 'تعطيل' : 'تفعيل'}</button>
-        <button class="admin-small-btn btn-danger" onclick="deleteNotification('${n.id}')">حذف</button>
-      </div>
-    </div>
-  `).join("");
-}
 </script>
 
 </body>
