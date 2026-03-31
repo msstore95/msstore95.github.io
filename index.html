@@ -2132,7 +2132,7 @@ img{
         </div>
       </div>
       <div class="top-actions">
-        <button class="icon-btn" onclick="openModal('aboutModal')" title="حول المتجر"><i class="fa-solid fa-circle-info"></i></button>
+        <button class="icon-btn" onclick="openModal('aboutMenu')" title="حول المتجر"><i class="fa-solid fa-circle-info"></i></button>
         <button class="icon-btn" id="themeBtn" onclick="toggleTheme()" title="الوضع"><span id="themeIcon" style="font-size:18px;line-height:1">🌙</span></button>
       </div>
     </div>
@@ -4348,6 +4348,28 @@ function toggleDescExpand(el){
 }
 
 </script>
+
+
+<div id="aboutMenu" class="modal" onclick="closeModal(event,'aboutMenu')">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <h3 class="modal-title">حول</h3>
+      <button class="close-btn" onclick="closeById('aboutMenu')">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div class="row-actions">
+      <button class="btn btn-primary" onclick="openModal('aboutModal')">
+        حول المتجر
+      </button>
+
+      <button class="btn btn-secondary" onclick="window.open('https://msstore95.github.io/privacy.html','_blank')">
+        سياسة الخصوصية
+      </button>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
