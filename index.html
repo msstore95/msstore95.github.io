@@ -5325,5 +5325,177 @@ document.addEventListener("click", function(e){
 </script>
 
 
+
+<style id="description-stable-hotfix">
+.card .p-desc,
+.card .p-desc.long,
+.card .p-desc.short{
+  display:block !important;
+  visibility:visible !important;
+  opacity:1 !important;
+  width:100% !important;
+  box-sizing:border-box !important;
+  min-height:58px !important;
+  max-height:58px !important;
+  height:58px !important;
+  overflow-y:auto !important;
+  overflow-x:hidden !important;
+  white-space:normal !important;
+  text-overflow:initial !important;
+  -webkit-line-clamp:unset !important;
+  -webkit-box-orient:initial !important;
+  padding:8px 10px !important;
+  margin:0 0 10px !important;
+  border-radius:12px !important;
+  border:1px solid rgba(148,163,184,.18) !important;
+  background:rgba(255,255,255,.05) !important;
+  color:var(--muted) !important;
+  line-height:1.45 !important;
+  font-size:11px !important;
+  text-align:right !important;
+  direction:rtl !important;
+  unicode-bidi:plaintext !important;
+  cursor:default !important;
+  position:relative !important;
+  z-index:1 !important;
+}
+body.dark-mode .card .p-desc,
+body.dark-mode .card .p-desc.long,
+body.dark-mode .card .p-desc.short{
+  background:rgba(255,255,255,.03) !important;
+  border-color:rgba(148,163,184,.14) !important;
+}
+.card .p-desc::-webkit-scrollbar,
+.card .p-desc.long::-webkit-scrollbar,
+.card .p-desc.short::-webkit-scrollbar{width:4px !important;}
+.card .p-desc::-webkit-scrollbar-thumb,
+.card .p-desc.long::-webkit-scrollbar-thumb,
+.card .p-desc.short::-webkit-scrollbar-thumb{background:rgba(148,163,184,.45) !important;border-radius:999px !important;}
+.card .p-desc.expanded,
+.card .p-desc.long.expanded,
+.card .p-desc.short.expanded{
+  min-height:58px !important;
+  max-height:58px !important;
+  height:58px !important;
+  overflow-y:auto !important;
+  overflow-x:hidden !important;
+}
+</style>
+<script id="description-stable-hotfix-script">
+(function(){
+  function normalizeProductDescription(product){
+    var raw = '';
+    if(product){
+      if(typeof product.desc === 'string') raw = product.desc;
+      else if(typeof product.description === 'string') raw = product.description;
+      else if(product.desc != null) raw = String(product.desc);
+      else if(product.description != null) raw = String(product.description);
+    }
+    raw = String(raw || '').replace(/\u200f|\u200e|\u200b|\ufeff/g, '').trim();
+    return raw || 'لا يوجد وصف';
+  }
+
+  window.normalizeProductDescription = normalizeProductDescription;
+
+  window.markProductImageLoaded = function(img){
+    if(!img) return;
+    img.classList.add('real-ready');
+    img.style.opacity = '1';
+    img.style.visibility = 'visible';
+    var wrapper = img.closest('.gallery-wrapper');
+    if(wrapper){
+      wrapper.classList.remove('img-loading');
+      wrapper.classList.remove('loading');
+      wrapper.classList.remove('is-switching');
+      wrapper.classList.add('img-loaded');
+    }
+  };
+
+  window.handleProductImageError = function(img){
+    if(!img) return;
+    img.src = placeholderImage(img.alt || 'صورة');
+    img.removeAttribute('data-src');
+    window.markProductImageLoaded(img);
+  };
+
+  window.loadRealProductImage = function(img){
+    if(!img) return;
+    var realSrc = img.getAttribute('data-src');
+    if(!realSrc){
+      window.markProductImageLoaded(img);
+      return;
+    }
+    var realImage = new Image();
+    realImage.onload = function(){
+      img.src = realSrc;
+      img.removeAttribute('data-src');
+      window.markProductImageLoaded(img);
+    };
+    realImage.onerror = function(){
+      window.handleProductImageError(img);
+    };
+    realImage.src = realSrc;
+  };
+
+  window.scheduleRealImageLoading = function(){
+    var imgs = Array.prototype.slice.call(document.querySelectorAll('img[data-src]'));
+    if(!imgs.length) return;
+
+    if(window.__msDescImageObserver && typeof window.__msDescImageObserver.disconnect === 'function'){
+      window.__msDescImageObserver.disconnect();
+    }
+
+    if('IntersectionObserver' in window){
+      window.__msDescImageObserver = new IntersectionObserver(function(entries, observer){
+        entries.forEach(function(entry){
+          if(entry.isIntersecting){
+            var img = entry.target;
+            window.loadRealProductImage(img);
+            observer.unobserve(img);
+          }
+        });
+      }, { rootMargin: '160px 0px' });
+      imgs.forEach(function(img){ window.__msDescImageObserver.observe(img); });
+    }else{
+      imgs.forEach(function(img){ window.loadRealProductImage(img); });
+    }
+  };
+
+  window.buildProductCard = function(p){
+    var card = document.createElement('div');
+    card.className = 'card';
+    card.setAttribute('data-product-id', p.id);
+    var firstImage = (p.images && p.images.length ? p.images[0] : '') || placeholderImage(p.name);
+    var adminControls = isAdmin ? '\n      <button class="admin-delete-btn" onclick="deleteProduct(\'' + p.id + '\');event.stopPropagation();"><i class="fa-solid fa-trash"></i></button>\n      <button class="admin-edit-btn" onclick="editProduct(\'' + p.id + '\');event.stopPropagation();"><i class="fa-solid fa-pen"></i></button>\n    ' : '';
+    var featuredBadge = p.featured ? '<span class="badge featured">مميز</span>' : '';
+    var isOutOfStock = isProductUnavailable(p);
+    var descText = normalizeProductDescription(p);
+    var qty = getProductQuantity(p);
+    var soldText = qty <= 0 ? 'مباع / غير متوفر' : 'غير متوفر حالياً';
+    var actionButtons = isOutOfStock
+      ? '<div class="product-actions-dual single-action"><button type="button" class="btn btn-order btn-disabled-order" disabled><i class="fa-solid fa-ban"></i><span>' + soldText + '</span></button></div>'
+      : '<div class="product-actions-dual"><button type="button" class="btn btn-order btn-buy-now" onclick="handleOrderClick(\'' + escapeJsString(p.id) + '\')"><i class="fa-solid fa-bolt"></i><span>اطلب الآن</span></button><button type="button" class="btn btn-order btn-cart" onclick="addToCart(\'' + escapeJsString(p.id) + '\')" title="أضف للسلة" aria-label="أضف للسلة"><i class="fa-solid fa-cart-plus"></i><span>أضف للسلة</span></button></div>';
+
+    card.innerHTML = '\n      ' + adminControls + '\n      <div class="card-top-badges">' + featuredBadge + '</div>\n      <div class="gallery-wrapper img-loading">\n        <img class="gallery-img" src="' + escapeAttr(placeholderImage(p.name)) + '" data-src="' + escapeAttr(firstImage) + '" alt="' + escapeAttr(p.name) + '" data-product-id="' + escapeAttr(p.id) + '" data-index="0" data-images=\'' + escapeAttr(encodeJsArray(p.images && p.images.length ? p.images : [firstImage])) + '\' onclick="openZoomFromElement(this,event)" onerror="handleProductImageError(this)" />\n        <img class="gallery-fade-img" src="' + escapeAttr(firstImage) + '" alt="" aria-hidden="true" />\n        ' + ((p.images && p.images.length > 1) ? ('<div class="gallery-dots">' + p.images.map(function(_,i){ return '<span class="gallery-dot ' + (i===0?'active':'') + '" data-index="' + i + '"></span>'; }).join('') + '</div>') : '') + '\n      </div>\n      <div class="product-info">\n        <h3 class="p-name">' + escapeHtml(p.name) + '</h3>\n        <p class="p-desc long">' + escapeHtml(descText) + '</p>\n        <div class="meta-row">\n          <span class="stock ' + (p.stock === 'متوفر' ? 'in' : 'out') + '">' + escapeHtml(p.stock) + '</span>\n          <span class="section-note">' + escapeHtml(p.category) + '</span>\n        </div>\n        <div class="price-tag">' + formatPrice(p.price) + '</div>\n        <div class="card-actions">\n          ' + actionButtons + '\n        </div>\n      </div>';
+    return card;
+  };
+
+  if(typeof window.startCardSlideshows === 'function'){
+    var originalStart = window.startCardSlideshows;
+    window.startCardSlideshows = function(){
+      try{ originalStart(); }catch(e){ console.error(e); }
+      document.querySelectorAll('.gallery-img[data-product-id]').forEach(function(img){
+        img.style.opacity = '1';
+        img.style.visibility = 'visible';
+      });
+      document.querySelectorAll('.card .p-desc').forEach(function(desc){
+        desc.style.visibility = 'visible';
+        desc.style.opacity = '1';
+      });
+    };
+  }
+})();
+</script>
+
 </body>
 </html>
