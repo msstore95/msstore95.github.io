@@ -4157,24 +4157,82 @@ function getGuestUserData(){
   }
 }
 
-async function restoreGuestUserDataFromRemote(forceRefresh){
+function normalizeGuestPhone(phone){
+  return String(phone || "").replace(/\D/g, "");
+}
+
+async function restoreGuestUserDataFromRemote(forceRefresh, preferredPhone){
   try{
     const localData = getGuestUserData();
     if(!forceRefresh && isGuestUserPayloadComplete(localData)){
       return localData;
     }
-    const deviceId = getGuestDeviceId();
-    const snap = await db.ref("guestUsers/" + deviceId).once("value");
-    if(!snap.exists()) return null;
 
-    const remoteData = normalizeGuestUserData(snap.val() || {});
+    const deviceId = getGuestDeviceId();
+    const deviceSnap = await db.ref("guestUsers/" + deviceId).once("value");
+    if(deviceSnap.exists()){
+      const remoteData = normalizeGuestUserData(deviceSnap.val() || {});
+      if(isGuestUserPayloadComplete(remoteData)){
+        setGuestUserData({
+          name: remoteData.name || "",
+          address: remoteData.address || "",
+          phone: remoteData.phone || "",
+          updatedAt: (deviceSnap.val() || {}).updatedAt || Date.now()
+        });
+
+        hideGuestUserInlineWarn();
+        fillGuestUserModal();
+        updateGuestUserBtn();
+        return remoteData;
+      }
+    }
+
+    const localPhone = normalizeGuestPhone(preferredPhone || localData.phone || localStorage.getItem("ms_guest_last_phone") || "");
+    if(!localPhone) return null;
+
+    const allUsersSnap = await db.ref("guestUsers").once("value");
+    const allUsers = allUsersSnap.val() || {};
+
+    let foundKey = null;
+    let foundRaw = null;
+
+    Object.keys(allUsers).some((key) => {
+      const candidate = allUsers[key] || {};
+      if(normalizeGuestPhone(candidate.phone) === localPhone){
+        foundKey = key;
+        foundRaw = candidate;
+        return true;
+      }
+      return false;
+    });
+
+    if(!foundRaw) return null;
+
+    const remoteData = normalizeGuestUserData(foundRaw);
     if(!isGuestUserPayloadComplete(remoteData)) return null;
+
+    if(foundKey !== deviceId){
+      try{
+        await db.ref("guestUsers/" + deviceId).update({
+          name: remoteData.name || "",
+          address: remoteData.address || "",
+          phone: remoteData.phone || "",
+          isOnline: !!foundRaw.isOnline,
+          lastSeen: foundRaw.lastSeen || firebase.database.ServerValue.TIMESTAMP,
+          createdAt: foundRaw.createdAt || firebase.database.ServerValue.TIMESTAMP,
+          updatedAt: firebase.database.ServerValue.TIMESTAMP,
+          ua: navigator.userAgent || ""
+        });
+      }catch(copyErr){
+        console.error(copyErr);
+      }
+    }
 
     setGuestUserData({
       name: remoteData.name || "",
       address: remoteData.address || "",
       phone: remoteData.phone || "",
-      updatedAt: remoteData.updatedAt || Date.now()
+      updatedAt: foundRaw.updatedAt || Date.now()
     });
 
     hideGuestUserInlineWarn();
@@ -4188,7 +4246,11 @@ async function restoreGuestUserDataFromRemote(forceRefresh){
 }
 
 function setGuestUserData(data){
-  localStorage.setItem("ms_guest_user_data", JSON.stringify(normalizeGuestUserData(data || {})));
+  const normalized = normalizeGuestUserData(data || {});
+  localStorage.setItem("ms_guest_user_data", JSON.stringify(normalized));
+  if(normalized.phone){
+    localStorage.setItem("ms_guest_last_phone", normalized.phone);
+  }
 }
 
 function clearGuestUserData(){
