@@ -955,6 +955,11 @@ body{background:radial-gradient(circle at top right, rgba(96,165,250,.10), trans
 #themeBtn,.theme-btn,[data-theme-toggle]{display:none !important;}
 </style>
 
+
+<style id="hide-guidance-texts">
+.notice,.helper,.preview-note{display:none !important;}
+</style>
+
 </head>
 <body style="margin:0;color:#ffffff;background:#0b1220;overflow-x:hidden" class="dark-mode">
 
@@ -1235,6 +1240,7 @@ body{background:radial-gradient(circle at top right, rgba(96,165,250,.10), trans
         <div class="row-actions">
           <button class="btn btn-primary" id="scanProductFilesBtn" onclick="scanProductBucketFiles()"><i class="fa-solid fa-magnifying-glass"></i> فحص الملفات القديمة</button>
           <button class="btn btn-secondary" id="toggleSelectProductFilesBtn" onclick="toggleSelectAllProductFiles()"><i class="fa-regular fa-square-check"></i> تحديد الكل</button>
+          <button class="btn btn-success" id="refreshAllImagesBtn" onclick="refreshAllProductImages()"><i class="fa-solid fa-rotate"></i> تحديث كل الصور</button>
           <button class="btn btn-danger" id="deleteSelectedProductFilesBtn" onclick="deleteSelectedProductFiles()"><i class="fa-solid fa-trash"></i> حذف المحدد</button>
         </div>
         <div id="productFilesSummary" class="notice" style="margin-top:12px;">اضغطي على "فحص الملفات القديمة" حتى نطلع لك الملفات الزائدة داخل تخزين المنتجات.</div>
@@ -3345,7 +3351,7 @@ async function uploadMedia(file, folderPrefix = "product"){
   const { error } = await supabaseClient.storage
     .from(SUPABASE_BUCKET)
     .upload(fileName, file, {
-      cacheControl: "3600",
+      cacheControl: "31536000",
       upsert: false,
       contentType: contentType
     });
@@ -5593,6 +5599,98 @@ body.dark-mode .card .p-desc.short{
     };
   }
 })();
+</script>
+
+
+<script id="refresh-all-product-images-script">
+async function refreshAllProductImages(){
+  const btn = document.getElementById("refreshAllImagesBtn");
+  if(btn && btn.disabled) return;
+
+  if(!confirm("سيتم إعادة رفع كل صور المنتجات الحالية. هل تريد المتابعة؟")) return;
+
+  const originalHtml = btn ? btn.innerHTML : "";
+  const originalText = btn ? btn.textContent : "";
+
+  try{
+    if(btn){
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري التحديث...';
+    }
+
+    const snap = await db.ref("products").once("value");
+    const products = snap.val() || {};
+    const entries = Object.entries(products);
+
+    if(!entries.length){
+      alert("لا توجد منتجات");
+      return;
+    }
+
+    let done = 0;
+    let updatedProducts = 0;
+
+    for(const [id, product] of entries){
+      const sourceImages =
+        Array.isArray(product?.images) ? product.images.filter(Boolean) :
+        (product?.images && typeof product.images === "object") ? Object.values(product.images).filter(Boolean) :
+        Array.isArray(product?.imgs) ? product.imgs.filter(Boolean) :
+        (typeof product?.image === "string" && product.image.trim()) ? [product.image.trim()] :
+        (typeof product?.img === "string" && product.img.trim()) ? [product.img.trim()] : [];
+
+      if(!sourceImages.length){
+        done++;
+        if(btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> ' + done + ' / ' + entries.length;
+        continue;
+      }
+
+      const newImages = [];
+      let changed = false;
+
+      for(const imageUrl of sourceImages){
+        try{
+          const response = await fetch(imageUrl, { cache: "no-store" });
+          if(!response.ok) throw new Error("FETCH_FAILED");
+
+          const blob = await response.blob();
+          const extFromType = String(blob.type || "").split("/").pop().toLowerCase();
+          const safeExt = ["jpg","jpeg","png","webp","gif"].includes(extFromType) ? extFromType : "jpg";
+          const file = new File([blob], "product_" + Date.now() + "_" + Math.random().toString(36).slice(2,8) + "." + safeExt, {
+            type: blob.type || ("image/" + safeExt)
+          });
+
+          const newUrl = await uploadMedia(file, "product");
+          newImages.push(newUrl);
+          changed = true;
+        }catch(err){
+          console.error("REFRESH_PRODUCT_IMAGE_ERROR", id, imageUrl, err);
+          newImages.push(imageUrl);
+        }
+      }
+
+      if(changed){
+        const patch = { images: newImages, image: newImages[0] || "" };
+        if(Array.isArray(product?.imgs)) patch.imgs = newImages;
+        if(typeof product?.img === "string") patch.img = newImages[0] || "";
+        await db.ref("products/" + id).update(patch);
+        updatedProducts++;
+      }
+
+      done++;
+      if(btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> ' + done + ' / ' + entries.length;
+    }
+
+    alert("تم تحديث صور " + updatedProducts + " منتج");
+  }catch(err){
+    console.error("REFRESH_ALL_PRODUCT_IMAGES_ERROR", err);
+    alert("تعذر تحديث الصور");
+  }finally{
+    if(btn){
+      btn.disabled = false;
+      btn.innerHTML = originalHtml || originalText || "تحديث كل الصور";
+    }
+  }
+}
 </script>
 
 </body>
