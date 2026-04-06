@@ -10,7 +10,6 @@
 
 </script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
   <style>
@@ -1141,7 +1140,7 @@ body{background:radial-gradient(circle at top right, rgba(96,165,250,.10), trans
         <div class="row-actions">
           <button class="btn btn-primary" onclick="resetProductForm(); openModal('productModal')"><i class="fa-solid fa-plus"></i> إضافة منتج</button>
           <button class="btn btn-warning" onclick="openModal('settingsModal')"><i class="fa-solid fa-store"></i> إعدادات المتجر</button>
-          <button class="btn btn-secondary" onclick="openModal('passwordModal')"><i class="fa-solid fa-key"></i> معلومات دخول الإدارة</button>
+          <button class="btn btn-secondary" onclick="openModal('passwordModal')"><i class="fa-solid fa-key"></i> تغيير رمز الإدارة</button>
           <button class="btn btn-danger" onclick="logoutAdmin()"><i class="fa-solid fa-right-from-bracket"></i> خروج من الإدارة</button>
         </div>
       </div>
@@ -1400,10 +1399,10 @@ body{background:radial-gradient(circle at top right, rgba(96,165,250,.10), trans
 
   <div id="passwordModal" class="modal" onclick="closeModal(event,'passwordModal')">
     <div class="modal-card" onclick="event.stopPropagation()">
-      <div class="modal-head"><h3 class="modal-title">معلومات دخول الإدارة</h3><button class="close-btn" onclick="closeById('passwordModal')"><i class="fa-solid fa-xmark"></i></button></div>
-      <div class="field"><label>ملاحظة</label><input type="text" id="oldPin" value="يتم الدخول الآن ببريد Firebase وكلمة المرور" readonly /></div>
-      <div class="field"><label>إجراء التغيير</label><input type="text" id="newPin" value="لتغيير كلمة المرور استخدم Firebase Authentication" readonly /></div>
-      <div class="row-actions"><button class="btn btn-primary" onclick="changeAdminPin()">تم</button></div></div>
+      <div class="modal-head"><h3 class="modal-title">تغيير رمز الإدارة</h3><button class="close-btn" onclick="closeById('passwordModal')"><i class="fa-solid fa-xmark"></i></button></div>
+      <div class="field"><label>الرمز الحالي</label><input type="password" id="oldPin" /></div>
+      <div class="field"><label>الرمز الجديد</label><input type="password" id="newPin" /></div>
+      <div class="row-actions"><button class="btn btn-primary" onclick="changeAdminPin()">حفظ الرمز الجديد</button></div></div>
   </div>
 
 <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
@@ -1420,7 +1419,6 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-const auth = firebase.auth();
 const SUPABASE_URL = "https://fjoszzuknftuhwtbxbhq.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_T6hWw3Vk5joSjFrIkeBklQ_1FBbmzdZ";
 const SUPABASE_BUCKET = "products";
@@ -1944,75 +1942,54 @@ function updateThemeIcon(){
 
 
 function initAdminState(){
-  auth.onAuthStateChanged(user => {
-    isAdmin = !!user;
-    try{
-      if(user){
-        localStorage.setItem("msAdmin","true");
-        localStorage.setItem("msAdminEmail", user.email || "");
-      }else{
-        localStorage.setItem("msAdmin","false");
-        localStorage.removeItem("msAdminEmail");
-      }
-    }catch(e){}
-    updateAdminUI();
-  });
+  isAdmin = localStorage.getItem("msAdmin") === "true";
+  updateAdminUI();
 }
 function updateAdminUI(){
-  const fab = document.getElementById("fabAdmin");
-  if(fab) fab.classList.toggle("show", isAdmin);
+  document.getElementById("fabAdmin").classList.toggle("show", isAdmin);
   renderProducts();
   try{ applyBannerColorsNow(); }catch(e){}
   if(isAdmin) renderAdminProducts();
   applyMaintenanceMode();
 }
 
-async function promptAdminLogin(){
-  try{
-    if(auth.currentUser){
-      isAdmin = true;
-      updateAdminUI();
-      openAdminPanel();
-      return;
-    }
-    const suggestedEmail = localStorage.getItem("msAdminEmail") || "";
-    const email = (prompt("أدخل بريد الإدارة الإلكتروني", suggestedEmail) || "").trim();
-    if(!email) return;
-    const password = prompt("أدخل كلمة مرور الإدارة");
-    if(password === null || password === "") return;
-    await auth.signInWithEmailAndPassword(email, password);
-    showToast("تم تسجيل الدخول بنجاح");
-    openAdminPanel();
-  }catch(error){
-    console.error(error);
-    let msg = "فشل تسجيل الدخول";
-    const code = String(error && error.code || "");
-    if(code.includes("wrong-password")) msg = "كلمة المرور غير صحيحة";
-    else if(code.includes("user-not-found")) msg = "هذا البريد غير موجود";
-    else if(code.includes("invalid-email")) msg = "البريد الإلكتروني غير صحيح";
-    else if(code.includes("too-many-requests")) msg = "تم إيقاف المحاولات مؤقتًا، حاول لاحقًا";
-    else if(code.includes("network-request-failed")) msg = "تحقق من الإنترنت وحاول مرة ثانية";
-    showToast(msg, true);
-  }
-}
-
 document.getElementById("brandTapArea").onclick = function(){
+  if(this.dataset.adminTapBound === "true") return;
   tapCounter++;
   if(tapCounter >= 8){
     tapCounter = 0;
-    promptAdminLogin();
+    const pin = prompt("أدخل رمز الإدارة");
+    if(pin === null) return;
+    const savedPin = storeSettings.adminPin || defaultSettings.adminPin;
+    if(pin === savedPin){
+      isAdmin = true;
+      localStorage.setItem("msAdmin","true");
+      updateAdminUI();
+      openAdminPanel();
+    }else{
+      showToast("رمز الإدارة غير صحيح", true);
+    }
   }
 };
 
 function initMaintenanceAccess(){
   const wrench = document.getElementById("maintenanceWrench");
-  if(!wrench) return;
   wrench.addEventListener("click", () => {
     maintenanceTapCounter++;
     if(maintenanceTapCounter >= 8){
       maintenanceTapCounter = 0;
-      document.getElementById("maintenanceOverlay").classList.remove("show");
-      promptAdminLogin();
+      const pin = prompt("أدخل رمز الإدارة");
+      if(pin === null) return;
+      const savedPin = storeSettings.adminPin || defaultSettings.adminPin;
+      if(pin === savedPin){
+        isAdmin = true;
+        localStorage.setItem("msAdmin","true");
+        updateAdminUI();
+        document.getElementById("maintenanceOverlay").classList.remove("show");
+        openAdminPanel();
+      }else{
+        showToast("رمز الإدارة غير صحيح", true);
+      }
     }
   });
 }
@@ -2021,17 +1998,12 @@ function applyMaintenanceMode(){
   const overlay = document.getElementById("maintenanceOverlay");
   const msg = document.getElementById("maintenanceText");
   if(msg) msg.textContent = storeSettings.maintenanceMessage || defaultSettings.maintenanceMessage;
-  if(overlay){
-    if(storeSettings.maintenanceMode && !isAdmin) overlay.classList.add("show");
-    else overlay.classList.remove("show");
-  }
+  if(storeSettings.maintenanceMode && !isAdmin) overlay.classList.add("show");
+  else overlay.classList.remove("show");
 }
 
 function openAdminPanel(){
-  if(!isAdmin){
-    showToast("سجل دخول الإدارة أولاً", true);
-    return;
-  }
+  if(!isAdmin){ alert("يجب تسجيل الدخول كإدارة أولاً"); return; }
   openModal("adminPanel");
   renderAdminProducts();
   renderAdminCategories();
@@ -2049,22 +2021,14 @@ function openAdminPanel(){
   if(dash) dash.classList.add("active");
   const firstBtn = document.querySelector(".panel-tabs .tab-btn");
   if(firstBtn) firstBtn.classList.add("active");
-  const overlay = document.getElementById("maintenanceOverlay");
-  if(overlay) overlay.classList.remove("show");
+  document.getElementById("maintenanceOverlay").classList.remove("show");
 }
-async function logoutAdmin(){
-  if(!confirm("هل تريد تسجيل الخروج من الإدارة؟")) return;
-  try{
-    await auth.signOut();
-  }catch(error){
-    console.error(error);
-    showToast("تعذر تسجيل الخروج", true);
-    return;
-  }
+function logoutAdmin(){
+  if(!confirm("هل تريد الخروج من وضع الإدارة؟")) return;
   isAdmin = false;
+  localStorage.setItem("msAdmin","false");
   closeById("adminPanel");
   updateAdminUI();
-  showToast("تم تسجيل الخروج");
 }
 
 function listenStoreSettings(){
@@ -2187,9 +2151,12 @@ async function saveStoreSettings(){
   closeById("settingsModal");
 }
 async function changeAdminPin(){
-  setVal("oldPin","");
-  setVal("newPin","");
-  showToast("تم اعتماد تسجيل دخول Firebase للإدارة. غيّر كلمة المرور من Firebase Authentication.", true);
+  const oldPin = val("oldPin"), newPin = val("newPin");
+  if(oldPin !== (storeSettings.adminPin || defaultSettings.adminPin)){ showToast("الرمز الحالي غير صحيح", true); return; }
+  if(!newPin){ alert("أدخل رمزًا جديدًا"); return; }
+  await db.ref("settings/store/adminPin").set(newPin);
+  setVal("oldPin",""); setVal("newPin","");
+  showToast("تم تغيير رمز الإدارة بنجاح");
   closeById("passwordModal");
 }
 
