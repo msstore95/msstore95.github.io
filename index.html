@@ -6076,17 +6076,5 @@ function scrollToProduct(){
 }
 </script>
 
-
-<script>
-// FIX: prevent jump to top when clicking products/links with #
-document.addEventListener("DOMContentLoaded", function(){
-  document.querySelectorAll('a[href="#"]').forEach(function(el){
-    el.addEventListener('click', function(e){
-      e.preventDefault();
-    });
-  });
-});
-</script>
-
 </body>
 </html>
