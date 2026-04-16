@@ -4824,7 +4824,7 @@ function openProductDetails(productId, sourceEl){
   const cleanId = encodeURIComponent(String(productId));
   const nextHash = '#product-' + cleanId;
   if(location.hash !== nextHash){
-    history.pushState({ productId: String(productId) }, '', nextHash);
+    location.hash = nextHash;
   }
   const positionedNearTrigger = placeProductPageNearTrigger(sourceEl);
   if(!positionedNearTrigger){
