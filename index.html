@@ -3821,14 +3821,18 @@ function clearZoomHash(){
   clearOverlayHash('#zoom');
 }
 
-function syncBackStateWithLocation(){
+function syncBackStateWithLocation(state = history.state){
   const hash = location.hash || '';
   if(hash === '#zoom'){
     return;
   }
-  if(hash.startsWith('#product-')){
-    const productId = decodeURIComponent(hash.replace('#product-', ''));
-    if(productId && activeProductDetailsId !== String(productId)){
+
+  const stateProductId = state && state.__msView === 'product' ? String(state.productId || '') : '';
+  const hashProductId = hash.startsWith('#product-') ? decodeURIComponent(hash.replace('#product-', '')) : '';
+  const productId = stateProductId || hashProductId;
+
+  if(productId){
+    if(activeProductDetailsId !== String(productId)){
       renderProductPage(productId);
     }
     document.body.classList.add('product-view');
@@ -3840,13 +3844,14 @@ function syncBackStateWithLocation(){
     requestAnimationFrame(() => scrollToProductPage(false));
     return;
   }
+
   if(document.body.classList.contains('product-view')){
     closeProductPage(true);
   }
 }
 
-window.addEventListener('popstate', () => {
-  syncBackStateWithLocation();
+window.addEventListener('popstate', (event) => {
+  syncBackStateWithLocation(event.state);
 });
 
 window.addEventListener('hashchange', () => {
@@ -3862,6 +3867,10 @@ window.addEventListener('hashchange', () => {
     }
   });
   syncBackStateWithLocation();
+});
+
+window.addEventListener('load', () => {
+  syncBackStateWithLocation(history.state);
 });
 
 let zoomImages = [];
@@ -4823,8 +4832,9 @@ function openProductDetails(productId, sourceEl){
   if(page) page.classList.add('show');
   const cleanId = encodeURIComponent(String(productId));
   const nextHash = '#product-' + cleanId;
-  if(location.hash !== nextHash){
-    location.hash = nextHash;
+  const currentState = history.state || {};
+  if(currentState.__msView !== 'product' || String(currentState.productId || '') !== String(productId) || location.hash !== nextHash){
+    history.pushState({ ...currentState, __msView: 'product', productId: String(productId) }, '', location.pathname + location.search + nextHash);
   }
   const positionedNearTrigger = placeProductPageNearTrigger(sourceEl);
   if(!positionedNearTrigger){
