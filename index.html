@@ -964,8 +964,19 @@ body{background:radial-gradient(circle at top right, rgba(96,165,250,.10), trans
 
 <style id="inline-product-page-style">
 .product-page{display:none;padding:10px 12px 18px;}
-.product-page.show{display:block;}
-.product-page-card{background:var(--card);border:1px solid var(--border);border-radius:24px;box-shadow:var(--shadow);overflow:hidden;}
+.product-page.show{
+  display:block;
+  position:fixed;
+  top:var(--product-page-top, 0px);
+  left:0;
+  right:0;
+  bottom:0;
+  z-index:3400;
+  overflow:auto;
+  -webkit-overflow-scrolling:touch;
+  background:var(--bg);
+}
+.product-page-card{background:var(--card);border:1px solid var(--border);border-radius:24px;box-shadow:var(--shadow);overflow:hidden;max-width:980px;margin:0 auto 20px;}
 .product-page-head{display:flex;align-items:center;gap:10px;padding:12px;border-bottom:1px solid var(--border);}
 .product-page-back{width:42px;height:42px;border:none;border-radius:14px;background:var(--bg);color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:var(--shadow);flex-shrink:0;}
 .product-page-head-text{min-width:0;flex:1;}
@@ -994,6 +1005,7 @@ body{background:radial-gradient(circle at top right, rgba(96,165,250,.10), trans
 body.product-view #productsContainer,
 body.product-view #emptyState,
 body.product-view .footer{display:none !important;}
+body.product-view{overflow:hidden !important;}
 @media (max-width:640px){
   .product-page{padding:8px 12px 16px;}
   .product-page-card{border-radius:20px;}
@@ -3181,11 +3193,11 @@ function buildProductCard(p){
     ${adminControls}
     <div class="card-top-badges">${featuredBadge}</div>
     <div class="gallery-wrapper img-loading">
-      <img class="gallery-img" src="${escapeAttr(placeholderImage(p.name))}" data-src="${escapeAttr(firstImage)}" alt="${escapeAttr(p.name)}" data-product-id="${escapeAttr(p.id)}" data-index="0" data-images='${escapeAttr(encodeJsArray(p.images && p.images.length ? p.images : [firstImage]))}' onclick="openProductDetails('${escapeJsString(p.id)}');event.stopPropagation();" onerror="handleProductImageError(this)" />
+      <img class="gallery-img" src="${escapeAttr(placeholderImage(p.name))}" data-src="${escapeAttr(firstImage)}" alt="${escapeAttr(p.name)}" data-product-id="${escapeAttr(p.id)}" data-index="0" data-images='${escapeAttr(encodeJsArray(p.images && p.images.length ? p.images : [firstImage]))}' onclick="openProductDetails('${escapeJsString(p.id)}', this);event.stopPropagation();" onerror="handleProductImageError(this)" />
       <img class="gallery-fade-img" src="${escapeAttr(firstImage)}" alt="" aria-hidden="true" />
       ${(p.images && p.images.length > 1) ? `<div class="gallery-dots">${p.images.map((_,i)=>`<span class="gallery-dot ${i===0?'active':''}" data-index="${i}"></span>`).join('')}</div>` : ""}
     </div>
-    <div class="product-info" onclick="openProductDetails('${escapeJsString(p.id)}')">
+    <div class="product-info" onclick="openProductDetails('${escapeJsString(p.id)}', this)">
       <h3 class="p-name">${escapeHtml(p.name)}</h3>
       <p class="p-desc ${descMode}">${escapeHtml(p.desc || "لا يوجد وصف")}</p>
       <div class="meta-row">
@@ -3821,6 +3833,12 @@ function clearZoomHash(){
   clearOverlayHash('#zoom');
 }
 
+window.addEventListener('resize', () => {
+  if(document.body.classList.contains('product-view')){
+    syncProductPageLayout();
+  }
+});
+
 window.addEventListener('hashchange', () => {
   const hash = location.hash || '';
   const zoomOverlay = document.getElementById('zoomOverlay');
@@ -3838,7 +3856,11 @@ window.addEventListener('hashchange', () => {
     if(productId && activeProductDetailsId !== String(productId)){
       renderProductPage(productId);
       document.body.classList.add('product-view');
-      document.getElementById('productPage')?.classList.add('show');
+      const page = document.getElementById('productPage');
+      if(page){
+        page.classList.add('show');
+        page.style.marginTop = '0px';
+      }
       requestAnimationFrame(() => scrollToProductPage(false));
     }
   }else if(document.body.classList.contains('product-view')){
@@ -4744,7 +4766,7 @@ function renderProductPage(productId){
         <h3 class="product-page-related-title">قد يعجبك أيضًا</h3>
         ${related.length ? `<div class="related-products-strip">${related.map(item => {
             const img = (item.images && item.images.length ? item.images[0] : "") || placeholderImage(item.name);
-            return `<div class="related-mini-card" onclick="openProductDetails('${escapeJsString(item.id)}')">
+            return `<div class="related-mini-card" onclick="openProductDetails('${escapeJsString(item.id)}', this)">
               <img src="${escapeAttr(img)}" alt="${escapeAttr(item.name)}" onerror="this.src='${escapeJsString(placeholderImage(item.name))}'" />
               <div class="related-mini-name">${escapeHtml(item.name || "")}</div>
               <div class="related-mini-price">${formatPrice(item.price)}</div>
@@ -4781,7 +4803,23 @@ function changeProductPageImage(step){
   syncProductPageImage();
 }
 
-function openProductDetails(productId){
+function placeProductPageNearTrigger(sourceEl){
+  const page = document.getElementById('productPage');
+  if(!page) return false;
+  page.style.marginTop = '0px';
+
+  const card = sourceEl && sourceEl.closest ? sourceEl.closest('.card') : null;
+  if(!card) return false;
+
+  const cardTop = window.pageYOffset + card.getBoundingClientRect().top;
+  const pageTop = window.pageYOffset + page.getBoundingClientRect().top;
+  const offset = Math.max(0, cardTop - pageTop - 8);
+
+  page.style.marginTop = offset + 'px';
+  return true;
+}
+
+function openProductDetails(productId, sourceEl){
   lastProductListScrollY = window.scrollY || window.pageYOffset || 0;
   renderProductPage(productId);
   document.body.classList.add('product-view');
@@ -4792,26 +4830,30 @@ function openProductDetails(productId){
   if(location.hash !== nextHash){
     history.pushState({ productId: String(productId) }, '', nextHash);
   }
-  requestAnimationFrame(() => scrollToProductPage());
+  const positionedNearTrigger = placeProductPageNearTrigger(sourceEl);
+  if(!positionedNearTrigger){
+    requestAnimationFrame(() => scrollToProductPage(false));
+  }
 }
 
 function scrollToProductPage(smooth = true){
   const page = document.getElementById('productPage');
-  if(!page) return;
-  const fixedShell = document.querySelector('.top-fixed-shell');
-  const extraGap = 10;
-  const headerOffset = fixedShell ? fixedShell.getBoundingClientRect().height : 0;
-  const targetTop = Math.max(0, window.pageYOffset + page.getBoundingClientRect().top - headerOffset - extraGap);
-  window.scrollTo({
-    top: targetTop,
-    behavior: smooth ? 'smooth' : 'auto'
-  });
+  if(!page || !page.classList.contains('show')) return;
+  syncProductPageLayout();
+  try{
+    page.scrollTo({ top: 0, behavior: smooth ? 'smooth' : 'auto' });
+  }catch(e){
+    page.scrollTop = 0;
+  }
 }
 
 function closeProductPage(fromBack = false){
   document.body.classList.remove('product-view');
   const page = document.getElementById('productPage');
-  if(page) page.classList.remove('show');
+  if(page){
+    page.classList.remove('show');
+    page.style.marginTop = '0px';
+  }
   activeProductDetailsId = '';
   if(!fromBack){
     clearOverlayHash(location.hash && location.hash.startsWith('#product-') ? location.hash : undefined);
@@ -5948,7 +5990,7 @@ body.dark-mode .card .p-desc.short{
       ? '<div class="product-actions-dual single-action"><button type="button" class="btn btn-order btn-disabled-order" disabled><i class="fa-solid fa-ban"></i><span>' + soldText + '</span></button></div>'
       : '<div class="product-actions-dual"><button type="button" class="btn btn-order btn-buy-now" onclick="handleOrderClick(\'' + escapeJsString(p.id) + '\');event.stopPropagation();"><i class="fa-solid fa-bolt"></i><span>اطلب الآن</span></button><button type="button" class="btn btn-order btn-cart" onclick="addToCart(\'' + escapeJsString(p.id) + '\');event.stopPropagation();" title="أضف للسلة" aria-label="أضف للسلة"><i class="fa-solid fa-cart-plus"></i><span>أضف للسلة</span></button></div>';
 
-    card.innerHTML = '\n      ' + adminControls + '\n      <div class="card-top-badges">' + featuredBadge + '</div>\n      <div class="gallery-wrapper img-loading">\n        <img class="gallery-img" src="' + escapeAttr(placeholderImage(p.name)) + '" data-src="' + escapeAttr(firstImage) + '" alt="' + escapeAttr(p.name) + '" data-product-id="' + escapeAttr(p.id) + '" data-index="0" data-images=\'' + escapeAttr(encodeJsArray(p.images && p.images.length ? p.images : [firstImage])) + '\' onclick="openProductDetails('${escapeJsString(p.id)}');event.stopPropagation();" onerror="handleProductImageError(this)" />\n        <img class="gallery-fade-img" src="' + escapeAttr(firstImage) + '" alt="" aria-hidden="true" />\n        ' + ((p.images && p.images.length > 1) ? ('<div class="gallery-dots">' + p.images.map(function(_,i){ return '<span class="gallery-dot ' + (i===0?'active':'') + '" data-index="' + i + '"></span>'; }).join('') + '</div>') : '') + '\n      </div>\n      <div class="product-info" onclick="openProductDetails('${escapeJsString(p.id)}')">\n        <h3 class="p-name">' + escapeHtml(p.name) + '</h3>\n        <p class="p-desc long">' + escapeHtml(descText) + '</p>\n        <div class="meta-row">\n          <span class="stock ' + (p.stock === 'متوفر' ? 'in' : 'out') + '">' + escapeHtml(p.stock) + '</span>\n          <span class="section-note">' + escapeHtml(p.category) + '</span>\n        </div>\n        <div class="price-tag">' + formatPrice(p.price) + '</div>\n        <div class="card-actions">\n          ' + actionButtons + '\n        </div>\n      </div>';
+    card.innerHTML = '\n      ' + adminControls + '\n      <div class="card-top-badges">' + featuredBadge + '</div>\n      <div class="gallery-wrapper img-loading">\n        <img class="gallery-img" src="' + escapeAttr(placeholderImage(p.name)) + '" data-src="' + escapeAttr(firstImage) + '" alt="' + escapeAttr(p.name) + '" data-product-id="' + escapeAttr(p.id) + '" data-index="0" data-images=\'' + escapeAttr(encodeJsArray(p.images && p.images.length ? p.images : [firstImage])) + '\' onclick="openProductDetails('${escapeJsString(p.id)}', this);event.stopPropagation();" onerror="handleProductImageError(this)" />\n        <img class="gallery-fade-img" src="' + escapeAttr(firstImage) + '" alt="" aria-hidden="true" />\n        ' + ((p.images && p.images.length > 1) ? ('<div class="gallery-dots">' + p.images.map(function(_,i){ return '<span class="gallery-dot ' + (i===0?'active':'') + '" data-index="' + i + '"></span>'; }).join('') + '</div>') : '') + '\n      </div>\n      <div class="product-info" onclick="openProductDetails('${escapeJsString(p.id)}', this)">\n        <h3 class="p-name">' + escapeHtml(p.name) + '</h3>\n        <p class="p-desc long">' + escapeHtml(descText) + '</p>\n        <div class="meta-row">\n          <span class="stock ' + (p.stock === 'متوفر' ? 'in' : 'out') + '">' + escapeHtml(p.stock) + '</span>\n          <span class="section-note">' + escapeHtml(p.category) + '</span>\n        </div>\n        <div class="price-tag">' + formatPrice(p.price) + '</div>\n        <div class="card-actions">\n          ' + actionButtons + '\n        </div>\n      </div>';
     return card;
   };
 
