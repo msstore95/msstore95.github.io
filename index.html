@@ -960,8 +960,71 @@ body{background:radial-gradient(circle at top right, rgba(96,165,250,.10), trans
 .notice,.helper,.preview-note{display:none !important;}
 </style>
 
+
+
+<style id="inline-product-page-style">
+.product-page{display:none;padding:10px 12px 18px;}
+.product-page.show{display:block;}
+.product-page-card{background:var(--card);border:1px solid var(--border);border-radius:24px;box-shadow:var(--shadow);overflow:hidden;}
+.product-page-head{display:flex;align-items:center;gap:10px;padding:12px;border-bottom:1px solid var(--border);}
+.product-page-back{width:42px;height:42px;border:none;border-radius:14px;background:var(--bg);color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:var(--shadow);flex-shrink:0;}
+.product-page-head-text{min-width:0;flex:1;}
+.product-page-kicker{font-size:11px;color:var(--muted);font-weight:800;margin-bottom:3px;}
+.product-page-title{font-size:18px;font-weight:900;line-height:1.4;word-break:break-word;}
+.product-page-body{padding:12px;}
+.product-page-gallery{position:relative;background:#fff;border:1px solid var(--border);border-radius:20px;overflow:hidden;aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;}
+.product-page-gallery img{width:100%;height:100%;object-fit:contain;background:#fff;display:block;cursor:zoom-in;}
+.product-page-gallery-arrow{position:absolute;top:50%;transform:translateY(-50%);width:38px;height:38px;border:none;border-radius:50%;background:rgba(15,23,42,.72);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2;}
+.product-page-gallery-arrow.prev{right:10px;}
+.product-page-gallery-arrow.next{left:10px;}
+.product-page-gallery-arrow.hidden{display:none;}
+.product-page-dots{display:flex;gap:6px;justify-content:center;align-items:center;padding:10px 0 2px;}
+.product-page-dot{width:7px;height:7px;border-radius:999px;background:rgba(148,163,184,.45);cursor:pointer;transition:.2s ease;}
+.product-page-dot.active{width:18px;background:var(--accent);}
+.product-page-meta{padding-top:8px;}
+.product-page-category{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:rgba(37,99,235,.10);color:var(--accent);font-size:12px;font-weight:800;margin-bottom:10px;}
+.product-page-name{font-size:24px;font-weight:900;line-height:1.5;margin:0 0 8px;}
+.product-page-price{font-size:24px;font-weight:900;color:var(--success);margin-bottom:10px;}
+.product-page-desc{font-size:14px;line-height:1.9;color:var(--muted);white-space:pre-line;background:var(--bg);border:1px solid var(--border);border-radius:18px;padding:14px;}
+.product-page-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;}
+.product-page-actions .btn{flex:1;min-width:150px;}
+.product-page-related{margin-top:18px;padding-top:16px;border-top:1px solid var(--border);}
+.product-page-related-title{font-size:18px;font-weight:900;margin:0 0 12px;}
+.product-page-related .related-products-strip{padding-bottom:2px;}
+body.product-view #productsContainer,
+body.product-view #emptyState,
+body.product-view .footer{display:none !important;}
+@media (max-width:640px){
+  .product-page{padding:8px 12px 16px;}
+  .product-page-card{border-radius:20px;}
+  .product-page-name{font-size:20px;}
+  .product-page-price{font-size:21px;}
+  .product-page-desc{font-size:13px;padding:12px;}
+  .product-page-actions .btn{min-width:unset;}
+}
+</style>
+
+<style id="related-products-style">
+.related-modal-media{width:100%;aspect-ratio:1/1;border-radius:18px;overflow:hidden;background:#fff;border:1px solid var(--border);margin-bottom:14px;}
+.related-modal-media img{width:100%;height:100%;object-fit:contain;background:#fff;display:block;}
+.related-modal-category{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:rgba(37,99,235,.10);color:var(--accent);font-size:12px;font-weight:800;margin-bottom:10px;}
+.related-modal-desc{font-size:14px;line-height:1.8;color:var(--muted);margin:10px 0 14px;white-space:pre-line;}
+.related-products-box{margin-top:16px;padding-top:14px;border-top:1px solid var(--border);}
+.related-products-title{font-size:16px;font-weight:900;margin:0 0 10px;}
+.related-products-strip{display:flex;gap:12px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;}
+.related-products-strip::-webkit-scrollbar{display:none;}
+.related-mini-card{min-width:180px;max-width:180px;background:var(--bg);border:1px solid var(--border);border-radius:18px;padding:10px;cursor:pointer;box-shadow:var(--shadow);}
+.related-mini-card img{width:100%;aspect-ratio:1/1;object-fit:contain;background:#fff;border-radius:14px;margin-bottom:8px;border:1px solid var(--border);}
+.related-mini-name{font-size:13px;font-weight:900;line-height:1.4;height:36px;overflow:hidden;}
+.related-mini-price{font-size:14px;font-weight:900;color:var(--success);margin:6px 0;}
+.related-mini-category{font-size:11px;color:var(--muted);}
+.related-modal-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;}
+.related-modal-actions .btn{flex:1;min-width:140px;}
+</style>
+
 </head>
-<body style="margin:0;color:#ffffff;background:#0b1220;overflow-x:hidden" class="dark-mode">
+<body
+><div id='product-view'></div> style="margin:0;color:#ffffff;background:#0b1220;overflow-x:hidden" class="dark-mode">
 
   <div id="splashScreen" style="position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;flex-direction:column;background:linear-gradient(135deg,#0f172a,#1d4ed8,#0ea5e9);color:#fff;text-align:center;padding:20px;transition:.45s ease;">
     <div class="logo" id="splashLogoBox">MS</div>
@@ -1063,6 +1126,18 @@ body{background:radial-gradient(circle at top right, rgba(96,165,250,.10), trans
 </div>
 </div>
   <div id="topFixedSpacer"></div>
+<section id="productPage" class="product-page">
+  <div class="product-page-card">
+    <div class="product-page-head">
+      <button type="button" class="product-page-back" onclick="closeProductPage()"><i class="fa-solid fa-arrow-right"></i></button>
+      <div class="product-page-head-text">
+        <div class="product-page-kicker">تفاصيل المنتج</div>
+        <div class="product-page-title" id="productPageHeadTitle">المنتج</div>
+      </div>
+    </div>
+    <div class="product-page-body" id="productPageContent"></div>
+  </div>
+</section>
 <main id="productsContainer" class="products"></main>
 
   <div id="emptyState" class="empty-state hidden">
@@ -1407,6 +1482,17 @@ body{background:radial-gradient(circle at top right, rgba(96,165,250,.10), trans
 
 <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+
+<div id="productDetailsModal" class="modal" onclick="closeModal(event,'productDetailsModal')">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <h3 class="modal-title">تفاصيل المنتج</h3>
+      <button class="close-btn" onclick="closeById('productDetailsModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div id="productDetailsContent"></div>
+  </div>
+</div>
 
 <script>
 const firebaseConfig = {
@@ -3090,16 +3176,16 @@ function buildProductCard(p){
   const soldText = qty <= 0 ? "مباع / غير متوفر" : "غير متوفر حالياً";
   const actionButtons = isOutOfStock
     ? `<div class="product-actions-dual single-action"><button type="button" class="btn btn-order btn-disabled-order" disabled><i class="fa-solid fa-ban"></i><span>${soldText}</span></button></div>`
-    : `<div class="product-actions-dual"><button type="button" class="btn btn-order btn-buy-now" onclick="handleOrderClick('${escapeJsString(p.id)}')"><i class="fa-solid fa-bolt"></i><span>اطلب الآن</span></button><button type="button" class="btn btn-order btn-cart" onclick="addToCart('${escapeJsString(p.id)}')" title="أضف للسلة" aria-label="أضف للسلة"><i class="fa-solid fa-cart-plus"></i><span>أضف للسلة</span></button></div>`;
+    : `<div class="product-actions-dual"><button type="button" class="btn btn-order btn-buy-now" onclick="handleOrderClick('${escapeJsString(p.id)}');event.stopPropagation();"><i class="fa-solid fa-bolt"></i><span>اطلب الآن</span></button><button type="button" class="btn btn-order btn-cart" onclick="addToCart('${escapeJsString(p.id)}');event.stopPropagation();" title="أضف للسلة" aria-label="أضف للسلة"><i class="fa-solid fa-cart-plus"></i><span>أضف للسلة</span></button></div>`;
   card.innerHTML = `
     ${adminControls}
     <div class="card-top-badges">${featuredBadge}</div>
     <div class="gallery-wrapper img-loading">
-      <img class="gallery-img" src="${escapeAttr(placeholderImage(p.name))}" data-src="${escapeAttr(firstImage)}" alt="${escapeAttr(p.name)}" data-product-id="${escapeAttr(p.id)}" data-index="0" data-images='${escapeAttr(encodeJsArray(p.images && p.images.length ? p.images : [firstImage]))}' onclick="openZoomFromElement(this,event)" onerror="handleProductImageError(this)" />
+      <img class="gallery-img" src="${escapeAttr(placeholderImage(p.name))}" data-src="${escapeAttr(firstImage)}" alt="${escapeAttr(p.name)}" data-product-id="${escapeAttr(p.id)}" data-index="0" data-images='${escapeAttr(encodeJsArray(p.images && p.images.length ? p.images : [firstImage]))}' onclick="openProductDetails('${escapeJsString(p.id)}');event.stopPropagation();" onerror="handleProductImageError(this)" />
       <img class="gallery-fade-img" src="${escapeAttr(firstImage)}" alt="" aria-hidden="true" />
       ${(p.images && p.images.length > 1) ? `<div class="gallery-dots">${p.images.map((_,i)=>`<span class="gallery-dot ${i===0?'active':''}" data-index="${i}"></span>`).join('')}</div>` : ""}
     </div>
-    <div class="product-info">
+    <div class="product-info" onclick="openProductDetails('${escapeJsString(p.id)}')">
       <h3 class="p-name">${escapeHtml(p.name)}</h3>
       <p class="p-desc ${descMode}">${escapeHtml(p.desc || "لا يوجد وصف")}</p>
       <div class="meta-row">
@@ -3747,6 +3833,17 @@ window.addEventListener('hashchange', () => {
       closeById(modal.id, true);
     }
   });
+  if(hash.startsWith('#product-')){
+    const productId = decodeURIComponent(hash.replace('#product-', ''));
+    if(productId && activeProductDetailsId !== String(productId)){
+      renderProductPage(productId);
+      document.body.classList.add('product-view');
+      document.getElementById('productPage')?.classList.add('show');
+      requestAnimationFrame(() => scrollToProductPage(false));
+    }
+  }else if(document.body.classList.contains('product-view')){
+    closeProductPage(true);
+  }
 });
 
 let zoomImages = [];
@@ -4537,6 +4634,194 @@ async function proceedOrderForProduct(productId){
   showToast(getProductQuantity(reservedProduct) > 0 ? "تم حجز القطعة وتجهيز الطلب" : "تم بيع آخر قطعة من هذا المنتج");
 }
 
+
+let activeProductDetailsId = "";
+let productPageImageIndex = 0;
+let lastProductListScrollY = 0;
+
+function getProductById(productId){
+  return (Array.isArray(allProducts) ? allProducts.find(x => String(x.id) === String(productId)) : null) || null;
+}
+
+function normalizeRelatedText(value){
+  return String(value || "")
+    .toLowerCase()
+    .trim()
+    .replace(/[ً-ٰٟ]/g, "")
+    .replace(/[أإآٱ]/g, "ا")
+    .replace(/ة/g, "ه")
+    .replace(/ى/g, "ي")
+    .replace(/ؤ/g, "و")
+    .replace(/ئ/g, "ي")
+    .replace(/\s+/g, " ");
+}
+
+function getRelatedProducts(product, limit = 8){
+  if(!product) return [];
+  const items = Array.isArray(allProducts) ? allProducts : [];
+  const normalizedCategory = normalizeRelatedText(product.category);
+  const productWords = normalizeRelatedText((product.name || "") + " " + (product.desc || ""))
+    .split(/[^\p{L}\p{N}]+/u)
+    .filter(Boolean);
+
+  const prepared = items
+    .filter(item => item && String(item.id) !== String(product.id) && item.active !== false)
+    .map(item => {
+      const itemCategory = normalizeRelatedText(item.category);
+      const itemName = normalizeRelatedText(item.name);
+      const itemDesc = normalizeRelatedText(item.desc);
+      const sameCategory = !!normalizedCategory && itemCategory === normalizedCategory;
+      let score = sameCategory ? 100 : 0;
+
+      if(productWords.some(word => word.length > 2 && itemName.includes(word))) score += 2;
+      if(productWords.some(word => word.length > 3 && itemDesc.includes(word))) score += 1;
+
+      const priceA = Number(product.price) || 0;
+      const priceB = Number(item.price) || 0;
+      if(priceA > 0 && priceB > 0){
+        const diffRatio = Math.abs(priceA - priceB) / priceA;
+        if(diffRatio <= 0.15) score += 2;
+        else if(diffRatio <= 0.35) score += 1;
+      }
+      if(item.featured) score += 0.5;
+      return { item, score, sameCategory };
+    });
+
+  const sameCategoryItems = prepared
+    .filter(entry => entry.sameCategory)
+    .sort((a,b) => (Number(b.item.featured) - Number(a.item.featured)) || ((b.item.createdAt||0) - (a.item.createdAt||0)))
+    .map(entry => entry.item);
+
+  if(sameCategoryItems.length){
+    return sameCategoryItems;
+  }
+
+  return prepared
+    .filter(entry => entry.score > 0)
+    .sort((a,b) => b.score - a.score || (Number(b.item.featured) - Number(a.item.featured)) || ((b.item.createdAt||0) - (a.item.createdAt||0)))
+    .slice(0, limit)
+    .map(entry => entry.item);
+}
+
+function renderProductPage(productId){
+  const product = getProductById(productId);
+  const content = document.getElementById("productPageContent");
+  const headTitle = document.getElementById("productPageHeadTitle");
+  if(!content) return;
+  if(!product){
+    content.innerHTML = '<div class="empty-state" style="margin:0;">تعذر العثور على المنتج</div>';
+    if(headTitle) headTitle.textContent = 'المنتج غير موجود';
+    return;
+  }
+
+  activeProductDetailsId = String(product.id);
+  productPageImageIndex = 0;
+  const images = (Array.isArray(product.images) && product.images.length ? product.images : [placeholderImage(product.name)]).filter(Boolean);
+  const unavailable = isProductUnavailable(product);
+  const soldText = getProductQuantity(product) <= 0 ? "مباع / غير متوفر" : "غير متوفر حالياً";
+  const related = getRelatedProducts(product, 8);
+  if(headTitle) headTitle.textContent = product.name || 'المنتج';
+
+  content.innerHTML = `
+    <div class="product-page-gallery">
+      <button type="button" class="product-page-gallery-arrow prev ${images.length > 1 ? '' : 'hidden'}" onclick="changeProductPageImage(-1)"><i class="fa-solid fa-chevron-right"></i></button>
+      <img id="productPageMainImage" src="${escapeAttr(images[0])}" alt="${escapeAttr(product.name)}" data-images='${escapeAttr(encodeJsArray(images))}' data-index="0" onclick="openZoomFromElement(this, event)" onerror="this.src='${escapeJsString(placeholderImage(product.name))}'" />
+      <button type="button" class="product-page-gallery-arrow next ${images.length > 1 ? '' : 'hidden'}" onclick="changeProductPageImage(1)"><i class="fa-solid fa-chevron-left"></i></button>
+    </div>
+    ${images.length > 1 ? `<div class="product-page-dots">${images.map((_,i)=>`<span class="product-page-dot ${i===0?'active':''}" onclick="setProductPageImage(${i})"></span>`).join('')}</div>` : ''}
+    <div class="product-page-meta">
+      <div class="product-page-category"><i class="fa-solid fa-layer-group"></i><span>${escapeHtml(product.category || "بدون قسم")}</span></div>
+      <h1 class="product-page-name">${escapeHtml(product.name || "")}</h1>
+      <div class="product-page-price">${formatPrice(product.price)}</div>
+      <div class="product-page-desc">${escapeHtml(product.desc || "لا يوجد وصف لهذا المنتج")}</div>
+      <div class="product-page-actions">
+        ${unavailable
+          ? `<button type="button" class="btn btn-order btn-disabled-order" disabled><i class="fa-solid fa-ban"></i><span>${soldText}</span></button>`
+          : `<button type="button" class="btn btn-order btn-buy-now" onclick="handleOrderClick('${escapeJsString(product.id)}');event.stopPropagation();"><i class="fa-solid fa-bolt"></i><span>اطلب الآن</span></button>
+             <button type="button" class="btn btn-order btn-cart" onclick="addToCart('${escapeJsString(product.id)}');event.stopPropagation();showToast('تمت إضافة المنتج إلى السلة');"><i class="fa-solid fa-cart-plus"></i><span>أضف للسلة</span></button>`}
+      </div>
+      <div class="product-page-related">
+        <h3 class="product-page-related-title">قد يعجبك أيضًا</h3>
+        ${related.length ? `<div class="related-products-strip">${related.map(item => {
+            const img = (item.images && item.images.length ? item.images[0] : "") || placeholderImage(item.name);
+            return `<div class="related-mini-card" onclick="openProductDetails('${escapeJsString(item.id)}')">
+              <img src="${escapeAttr(img)}" alt="${escapeAttr(item.name)}" onerror="this.src='${escapeJsString(placeholderImage(item.name))}'" />
+              <div class="related-mini-name">${escapeHtml(item.name || "")}</div>
+              <div class="related-mini-price">${formatPrice(item.price)}</div>
+              <div class="related-mini-category">${escapeHtml(item.category || "")}</div>
+            </div>`;
+          }).join("")}</div>` : `<div class="helper">لا توجد منتجات مشابهة حالياً.</div>`}
+      </div>
+    </div>
+  `;
+}
+
+function syncProductPageImage(){
+  const img = document.getElementById('productPageMainImage');
+  if(!img) return;
+  let images = [];
+  try{ images = JSON.parse((img.getAttribute('data-images') || '[]').replace(/&quot;/g,'"')); }catch(e){ images = []; }
+  if(!Array.isArray(images) || !images.length) return;
+  if(productPageImageIndex < 0) productPageImageIndex = images.length - 1;
+  if(productPageImageIndex >= images.length) productPageImageIndex = 0;
+  img.src = images[productPageImageIndex] || images[0];
+  img.setAttribute('data-index', String(productPageImageIndex));
+  document.querySelectorAll('.product-page-dot').forEach((dot, idx) => {
+    dot.classList.toggle('active', idx === productPageImageIndex);
+  });
+}
+
+function setProductPageImage(index){
+  productPageImageIndex = Number(index) || 0;
+  syncProductPageImage();
+}
+
+function changeProductPageImage(step){
+  productPageImageIndex += Number(step) || 0;
+  syncProductPageImage();
+}
+
+function openProductDetails(productId){
+  lastProductListScrollY = window.scrollY || window.pageYOffset || 0;
+  renderProductPage(productId);
+  document.body.classList.add('product-view');
+  const page = document.getElementById('productPage');
+  if(page) page.classList.add('show');
+  const cleanId = encodeURIComponent(String(productId));
+  const nextHash = '#product-' + cleanId;
+  if(location.hash !== nextHash){
+    history.pushState({ productId: String(productId) }, '', nextHash);
+  }
+  requestAnimationFrame(() => scrollToProductPage());
+}
+
+function scrollToProductPage(smooth = true){
+  const page = document.getElementById('productPage');
+  if(!page) return;
+  const fixedShell = document.querySelector('.top-fixed-shell');
+  const extraGap = 10;
+  const headerOffset = fixedShell ? fixedShell.getBoundingClientRect().height : 0;
+  const targetTop = Math.max(0, window.pageYOffset + page.getBoundingClientRect().top - headerOffset - extraGap);
+  window.scrollTo({
+    top: targetTop,
+    behavior: smooth ? 'smooth' : 'auto'
+  });
+}
+
+function closeProductPage(fromBack = false){
+  document.body.classList.remove('product-view');
+  const page = document.getElementById('productPage');
+  if(page) page.classList.remove('show');
+  activeProductDetailsId = '';
+  if(!fromBack){
+    clearOverlayHash(location.hash && location.hash.startsWith('#product-') ? location.hash : undefined);
+  }
+  document.documentElement.classList.add('no-smooth-scroll');
+  requestAnimationFrame(() => {
+    window.scrollTo(0, lastProductListScrollY || 0);
+    setTimeout(() => document.documentElement.classList.remove('no-smooth-scroll'), 80);
+  });
+}
 async function handleOrderClick(productId){
   const product = (Array.isArray(allProducts) ? allProducts.find(x => String(x.id) === String(productId)) : null);
   if(!product){
@@ -5661,9 +5946,9 @@ body.dark-mode .card .p-desc.short{
     var soldText = qty <= 0 ? 'مباع / غير متوفر' : 'غير متوفر حالياً';
     var actionButtons = isOutOfStock
       ? '<div class="product-actions-dual single-action"><button type="button" class="btn btn-order btn-disabled-order" disabled><i class="fa-solid fa-ban"></i><span>' + soldText + '</span></button></div>'
-      : '<div class="product-actions-dual"><button type="button" class="btn btn-order btn-buy-now" onclick="handleOrderClick(\'' + escapeJsString(p.id) + '\')"><i class="fa-solid fa-bolt"></i><span>اطلب الآن</span></button><button type="button" class="btn btn-order btn-cart" onclick="addToCart(\'' + escapeJsString(p.id) + '\')" title="أضف للسلة" aria-label="أضف للسلة"><i class="fa-solid fa-cart-plus"></i><span>أضف للسلة</span></button></div>';
+      : '<div class="product-actions-dual"><button type="button" class="btn btn-order btn-buy-now" onclick="handleOrderClick(\'' + escapeJsString(p.id) + '\');event.stopPropagation();"><i class="fa-solid fa-bolt"></i><span>اطلب الآن</span></button><button type="button" class="btn btn-order btn-cart" onclick="addToCart(\'' + escapeJsString(p.id) + '\');event.stopPropagation();" title="أضف للسلة" aria-label="أضف للسلة"><i class="fa-solid fa-cart-plus"></i><span>أضف للسلة</span></button></div>';
 
-    card.innerHTML = '\n      ' + adminControls + '\n      <div class="card-top-badges">' + featuredBadge + '</div>\n      <div class="gallery-wrapper img-loading">\n        <img class="gallery-img" src="' + escapeAttr(placeholderImage(p.name)) + '" data-src="' + escapeAttr(firstImage) + '" alt="' + escapeAttr(p.name) + '" data-product-id="' + escapeAttr(p.id) + '" data-index="0" data-images=\'' + escapeAttr(encodeJsArray(p.images && p.images.length ? p.images : [firstImage])) + '\' onclick="openZoomFromElement(this,event)" onerror="handleProductImageError(this)" />\n        <img class="gallery-fade-img" src="' + escapeAttr(firstImage) + '" alt="" aria-hidden="true" />\n        ' + ((p.images && p.images.length > 1) ? ('<div class="gallery-dots">' + p.images.map(function(_,i){ return '<span class="gallery-dot ' + (i===0?'active':'') + '" data-index="' + i + '"></span>'; }).join('') + '</div>') : '') + '\n      </div>\n      <div class="product-info">\n        <h3 class="p-name">' + escapeHtml(p.name) + '</h3>\n        <p class="p-desc long">' + escapeHtml(descText) + '</p>\n        <div class="meta-row">\n          <span class="stock ' + (p.stock === 'متوفر' ? 'in' : 'out') + '">' + escapeHtml(p.stock) + '</span>\n          <span class="section-note">' + escapeHtml(p.category) + '</span>\n        </div>\n        <div class="price-tag">' + formatPrice(p.price) + '</div>\n        <div class="card-actions">\n          ' + actionButtons + '\n        </div>\n      </div>';
+    card.innerHTML = '\n      ' + adminControls + '\n      <div class="card-top-badges">' + featuredBadge + '</div>\n      <div class="gallery-wrapper img-loading">\n        <img class="gallery-img" src="' + escapeAttr(placeholderImage(p.name)) + '" data-src="' + escapeAttr(firstImage) + '" alt="' + escapeAttr(p.name) + '" data-product-id="' + escapeAttr(p.id) + '" data-index="0" data-images=\'' + escapeAttr(encodeJsArray(p.images && p.images.length ? p.images : [firstImage])) + '\' onclick="openProductDetails('${escapeJsString(p.id)}');event.stopPropagation();" onerror="handleProductImageError(this)" />\n        <img class="gallery-fade-img" src="' + escapeAttr(firstImage) + '" alt="" aria-hidden="true" />\n        ' + ((p.images && p.images.length > 1) ? ('<div class="gallery-dots">' + p.images.map(function(_,i){ return '<span class="gallery-dot ' + (i===0?'active':'') + '" data-index="' + i + '"></span>'; }).join('') + '</div>') : '') + '\n      </div>\n      <div class="product-info" onclick="openProductDetails('${escapeJsString(p.id)}')">\n        <h3 class="p-name">' + escapeHtml(p.name) + '</h3>\n        <p class="p-desc long">' + escapeHtml(descText) + '</p>\n        <div class="meta-row">\n          <span class="stock ' + (p.stock === 'متوفر' ? 'in' : 'out') + '">' + escapeHtml(p.stock) + '</span>\n          <span class="section-note">' + escapeHtml(p.category) + '</span>\n        </div>\n        <div class="price-tag">' + formatPrice(p.price) + '</div>\n        <div class="card-actions">\n          ' + actionButtons + '\n        </div>\n      </div>';
     return card;
   };
 
@@ -5774,6 +6059,33 @@ async function refreshAllProductImages(){
     }
   }
 }
+</script>
+
+
+<script>
+document.addEventListener("click", function(e){
+  const link = e.target.closest("a[href='#']");
+  if(link){ e.preventDefault(); }
+});
+
+function scrollToProduct(){
+  const el = document.getElementById("product-view");
+  if(el){
+    el.scrollIntoView({behavior:"smooth"});
+  }
+}
+</script>
+
+
+<script>
+// FIX: prevent jump to top when clicking products/links with #
+document.addEventListener("DOMContentLoaded", function(){
+  document.querySelectorAll('a[href="#"]').forEach(function(el){
+    el.addEventListener('click', function(e){
+      e.preventDefault();
+    });
+  });
+});
 </script>
 
 </body>
