@@ -6,14 +6,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>متجر MS</title>
   <!-- PWA Manifest -->
-  <link rel="manifest" href="manifest.json" />
+  <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="#1d4ed8" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="متجر MS" />
-  <link rel="apple-touch-icon" href="icons/icon-192.png" />
-  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
-  <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512.png" />
 
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -1057,7 +1057,7 @@ body.product-view .footer{display:none !important;}
   <header class="header">
     <div class="topbar">
       <div class="brand" id="brandTapArea" >
-        <div class="brand-badge" id="headerLogoBox"><img src="icons/icon-192.png" alt="MS" onerror="this.style.display='none'"></div>
+        <div class="brand-badge" id="headerLogoBox"><img src="/icons/icon-192.png" alt="MS" onerror="this.style.display='none'"></div>
         <div class="brand-text">
           <div class="brand-title" id="storeTitleTop">متجر MS</div>
           <div class="brand-sub" id="storeSubTop">متجر أنيق وفخم</div>
@@ -6412,14 +6412,14 @@ body.dark-mode #pwa-ios-hint{background:#1e293b;border-color:#243041;color:#94a3
 <div id="pwa-install-banner" aria-label="تثبيت التطبيق">
   <div id="pwa-install-banner-inner">
     <div id="pwa-install-banner-icon">
-      <img src="icons/icon-192.png" alt="MS" onerror="this.style.display='none'">
+      <img src="/icons/icon-192.png" alt="MS" onerror="this.style.display='none'">
     </div>
     <div id="pwa-install-banner-text">
       <strong>متجر MS</strong>
       <span id="pwa-install-banner-hint">ثبّت التطبيق للوصول السريع</span>
     </div>
     <div id="pwa-install-banner-actions">
-      <button type="button" id="pwa-install-banner-btn" onclick="window.__triggerPWAInstall && window.__triggerPWAInstall()">تثبيت</button>
+      <button id="pwa-install-banner-btn" onclick="window.__triggerPWAInstall && window.__triggerPWAInstall()">تثبيت</button>
       <button id="pwa-install-banner-close" onclick="window.__dismissInstallBanner()" aria-label="إغلاق">✕</button>
     </div>
   </div>
@@ -6454,7 +6454,7 @@ body.dark-mode #pwa-ios-hint{background:#1e293b;border-color:#243041;color:#94a3
   var installClickWait  = false;
 
   function showBanner() {
-    if (isStandalone) return;
+    if (isStandalone || isDismissed()) return;
     var el = document.getElementById('pwa-install-banner');
     if (!el) return;
     var mode = isSafari ? 'ios' : 'android';
@@ -6484,68 +6484,38 @@ body.dark-mode #pwa-ios-hint{background:#1e293b;border-color:#243041;color:#94a3
   };
 
   window.__triggerPWAInstall = function () {
-    var hint = document.getElementById('pwa-ios-hint');
-    var btn  = document.getElementById('pwa-install-banner-btn');
-    var sub  = document.getElementById('pwa-install-banner-hint');
-
     /* iOS: show tap-share instructions */
     if (isSafari && !isStandalone) {
+      var hint = document.getElementById('pwa-ios-hint');
+      var btn  = document.getElementById('pwa-install-banner-btn');
+      var sub  = document.getElementById('pwa-install-banner-hint');
       if (hint) hint.style.display = 'block';
       if (btn)  btn.style.display  = 'none';
       if (sub)  sub.textContent    = 'أضف التطبيق إلى شاشتك الرئيسية';
       return;
     }
-
     /* Android / Chrome with ready prompt */
     if (deferredPrompt) {
-      try {
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then(function (r) {
-          if (r && r.outcome === 'accepted') {
-            hideBanner();
-            localStorage.removeItem(DISMISS_KEY);
-          } else {
-            if (sub) sub.textContent = 'لم يتم التثبيت، اضغط تثبيت مرة أخرى';
-          }
-          deferredPrompt = null;
-        });
-      } catch (err) {
-        if (sub) sub.textContent = 'تعذر فتح نافذة التثبيت، افتح الصفحة من Chrome';
-      }
+      hideBanner();
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(function (r) {
+        if (r.outcome !== 'accepted') localStorage.setItem(DISMISS_KEY, String(Date.now()));
+        deferredPrompt = null;
+      });
       return;
     }
-
-    /* Prompt not ready or browser does not support it: give visible feedback instead of doing nothing */
+    /* Prompt not yet ready — queue and fire the moment it arrives */
     installClickWait = true;
-    if (sub) sub.textContent = 'التثبيت غير جاهز بعد. افتح الصفحة من Chrome واضغط ⋮ ثم اختر تثبيت التطبيق أو إضافة إلى الشاشة الرئيسية';
-    if (hint) {
-      hint.style.display = 'block';
-      hint.innerHTML = 'إن لم تظهر نافذة التثبيت: اضغط قائمة المتصفح ⋮ ثم اختر <strong>إضافة إلى الشاشة الرئيسية</strong> أو <strong>تثبيت التطبيق</strong>.';
-    }
-    try {
-      if (typeof showToast === 'function') showToast('إذا لم تظهر نافذة التثبيت استخدم قائمة Chrome ⋮ ثم تثبيت التطبيق');
-    } catch(e) {}
   };
-
-  /* Make the install button respond even if inline onclick is blocked by the browser/WebView */
-  document.addEventListener('click', function (ev) {
-    var target = ev.target;
-    if (target && target.id === 'pwa-install-banner-btn') {
-      ev.preventDefault();
-      ev.stopPropagation();
-      window.__triggerPWAInstall();
-    }
-  }, true);
 
   /* Capture Chrome install prompt */
   window.addEventListener('beforeinstallprompt', function (e) {
     e.preventDefault();
     deferredPrompt = e;
-    var btnReady = document.getElementById('pwa-install-banner-btn');
-    if (btnReady) { btnReady.disabled = false; btnReady.style.opacity = '1'; }
-    installClickWait = false;
-    var sub = document.getElementById('pwa-install-banner-hint');
-    if (sub) sub.textContent = 'التثبيت جاهز الآن، اضغط زر تثبيت';
+    if (installClickWait) {
+      installClickWait = false;
+      window.__triggerPWAInstall();
+    }
   });
 
   window.addEventListener('appinstalled', function () {
@@ -6604,7 +6574,7 @@ body.dark-mode #pwa-ios-hint{background:#1e293b;border-color:#243041;color:#94a3
     if (b) b.classList.add('show');
   }
 
-  navigator.serviceWorker.register('sw.js', { scope: './' })
+  navigator.serviceWorker.register('/sw.js', { scope: '/' })
     .then(function (reg) {
       reg.addEventListener('updatefound', function () {
         newWorker = reg.installing;
