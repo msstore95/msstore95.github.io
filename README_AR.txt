@@ -1,8 +1,25 @@
-طريقة الرفع على GitHub:
-1) افتح مستودع msstore95 على GitHub.
-2) اضغط Add file ثم Upload files.
-3) اسحب كل الملفات والمجلدات الموجودة داخل هذا الملف المضغوط، وليس الملف المضغوط نفسه.
-4) وافق على استبدال index.html و manifest.json إذا طلب منك.
-5) اضغط Commit changes.
-6) افتح الموقع من Chrome: https://msstore95.github.io
-7) انتظر دقيقة ثم حدث الصفحة.
+إصلاح إشعارات متجر MS
+
+ارفع هذه الملفات إلى GitHub:
+
+1) firebase-messaging-sw.js
+استبدل القديم. لازم يكون بجانب index.html مباشرة.
+
+2) firebase-notifications.js
+ارفعه بجانب index.html.
+
+3) main.tsx
+إذا مشروعك React/Vite استبدل main.tsx بهذا الملف.
+أو فقط أضف داخله:
+import "./firebase-notifications.js";
+
+إذا ما تريد تعدل main.tsx:
+افتح index.html وأضف قبل </body>:
+<script src="./firebase-notifications.js"></script>
+
+بعد الرفع:
+- احذف تطبيق MS من الهاتف.
+- امسح بيانات موقع msstore95.github.io من Chrome.
+- افتح الموقع من Chrome.
+- اضغط تفعيل الإشعارات ووافق.
+- جرّب إرسال إشعار من Firebase Messaging.
