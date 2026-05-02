@@ -1,6 +1,5 @@
-// Firebase Web Push setup for MS Store
-import { initializeApp } from "firebase/app";
-import { getMessaging, getToken, onMessage } from "firebase/messaging";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDakH4F8s6tmdSVTFENXMInK5oQABPSSVo",
@@ -13,15 +12,14 @@ const firebaseConfig = {
   measurementId: "G-QCWRTL41RZ"
 };
 
-const VAPID_KEY = "BKx-21HHw2rOX8airGQK5PeOy_lqj56tZl3P-wckQ1RBoTW5s8RZ0nWUcSw8Xu5vzv6bRJ0o8oJ-_rKU1RT7SyU";
+// 👇 هذا المفتاح اللي جبناه من Firebase
+const VAPID_KEY = "BKx-21HHwArOX8ainGQK5Pe0y_1qi56tZl3P-wckQ1RBoTW5s8RZ0nWUcSw8Xu5vzv6bRJ0o8oJ-_rKU1RT7SyU";
 
 const app = initializeApp(firebaseConfig);
 const messaging = getMessaging(app);
 
-async function registerNotifications() {
+async function startFCM() {
   try {
-    if (!("Notification" in window)) return;
-
     const permission = await Notification.requestPermission();
     if (permission !== "granted") return;
 
@@ -32,25 +30,16 @@ async function registerNotifications() {
       serviceWorkerRegistration: registration
     });
 
-    console.log("FCM TOKEN:", token);
-    localStorage.setItem("ms_fcm_token", token);
+    console.log("TOKEN:", token);
   } catch (err) {
-    console.error("FCM error:", err);
+    console.log(err);
   }
 }
 
-registerNotifications();
+startFCM();
 
 onMessage(messaging, (payload) => {
-  const title = payload.notification?.title || payload.data?.title || "متجر MS";
-  const body = payload.notification?.body || payload.data?.body || "وصل إشعار جديد";
-
-  if (Notification.permission === "granted") {
-    new Notification(title, {
-      body,
-      icon: "/icon-192.png",
-      badge: "/icon-192.png",
-      data: payload.data || {}
-    });
-  }
+  new Notification(payload.notification.title, {
+    body: payload.notification.body,
+  });
 });
