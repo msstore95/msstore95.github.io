@@ -14,13 +14,21 @@ firebase.initializeApp({
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage(function(payload) {
-  const title = (payload.notification && payload.notification.title) || (payload.data && payload.data.title) || "متجر MS";
+  const title =
+    payload.notification?.title ||
+    payload.data?.title ||
+    "متجر MS";
+
   const options = {
-    body: (payload.notification && payload.notification.body) || (payload.data && payload.data.body) || "وصل إشعار جديد",
+    body:
+      payload.notification?.body ||
+      payload.data?.body ||
+      "وصل إشعار جديد",
     icon: "/icon-192.png",
     badge: "/icon-192.png",
     data: payload.data || {}
   };
+
   self.registration.showNotification(title, options);
 });
 
