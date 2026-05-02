@@ -5,6 +5,15 @@
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>متجر MS</title>
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#1d4ed8" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="متجر MS" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512.png" />
 
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -970,8 +979,8 @@ body{background:radial-gradient(circle at top right, rgba(96,165,250,.10), trans
 .product-page-kicker{font-size:11px;color:var(--muted);font-weight:800;margin-bottom:3px;}
 .product-page-title{font-size:18px;font-weight:900;line-height:1.4;word-break:break-word;}
 .product-page-body{padding:12px;}
-.product-page-gallery{position:relative;background:#fff;border:1px solid var(--border);border-radius:20px;overflow:hidden;aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;}
-.product-page-gallery img{width:100%;height:100%;object-fit:contain;background:#fff;display:block;cursor:zoom-in;}
+.product-page-gallery{position:relative;background:#fff;border:1px solid var(--border);border-radius:20px;overflow:hidden;aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;touch-action:pan-y;}
+.product-page-gallery img{width:100%;height:100%;object-fit:contain;background:#fff;display:block;cursor:zoom-in;touch-action:pan-y;}
 .product-page-gallery-arrow{position:absolute;top:50%;transform:translateY(-50%);width:38px;height:38px;border:none;border-radius:50%;background:rgba(15,23,42,.72);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2;}
 .product-page-gallery-arrow.prev{right:10px;}
 .product-page-gallery-arrow.next{left:10px;}
@@ -1345,7 +1354,20 @@ body.product-view .footer{display:none !important;}
       </div>
 
       <div id="tabNotifications" class="tab-content">
-        
+
+        <!-- Push status card -->
+        <div id="pushStatusCard" style="background:var(--bg);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:14px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+            <div>
+              <div style="font-size:14px;font-weight:900;margin-bottom:4px;">الإشعارات الفورية (Push)</div>
+              <div id="pushSubCount" style="font-size:12px;color:var(--muted);">جاري التحقق...</div>
+            </div>
+            <button id="enablePushBtn" class="btn btn-primary" onclick="adminEnablePush()" style="font-size:12px;padding:10px 14px;">
+              <i class="fa-solid fa-bell"></i> تفعيل على هذا الجهاز
+            </button>
+          </div>
+        </div>
+
         <div class="field">
           <label>عنوان الإشعار</label>
           <input type="text" id="adminNotifTitle" placeholder="مثال: تنبيه مهم" />
@@ -1355,8 +1377,11 @@ body.product-view .footer{display:none !important;}
           <textarea id="adminNotifBody" placeholder="اكتب نص الإشعار هنا"></textarea>
         </div>
         <div class="row-actions">
-          <button class="btn btn-success" onclick="sendAdminNotification()">إرسال الإشعار</button>
+          <button class="btn btn-success" onclick="sendAdminNotification()" id="sendNotifBtn">
+            <i class="fa-solid fa-paper-plane"></i> إرسال الإشعار
+          </button>
         </div>
+        <div id="sendNotifResult" style="margin-top:10px;display:none;"></div>
         <div id="adminNotificationsList" class="admin-list" style="margin-top:12px;"></div>
       </div>
 
@@ -1990,7 +2015,12 @@ function hideSplash(forceImmediate){
   const fadeOut = () => {
     splash.style.opacity = "0";
     splash.style.pointerEvents = "none";
-    setTimeout(() => { splash.style.display = "none"; }, 450);
+    splash.style.touchAction = "auto";
+    splash.style.visibility = "hidden";
+    document.body.classList.remove('splash-lock');
+    setTimeout(() => {
+      splash.style.display = "none";
+    }, 450);
   };
 
   if(forceImmediate){
@@ -2148,6 +2178,14 @@ function applyStoreSettings(){
   });
   applyLogo("headerLogoBox", storeSettings.logoUrl, storeSettings.storeName || "MS");
   applyLogo("splashLogoBox", storeSettings.splashLogoUrl || storeSettings.logoUrl, storeSettings.storeName || "MS");
+  // Sync real store logo into the PWA install banner icon
+  (function(){
+    var realLogo = storeSettings.logoUrl || (storeSettings.splashLogoUrl);
+    if (realLogo) {
+      var bannerImg = document.querySelector('#pwa-install-banner-icon img');
+      if (bannerImg) bannerImg.src = realLogo;
+    }
+  })();
   applyHeroBanner();
   applyMaintenanceMode();
 }
@@ -3302,32 +3340,49 @@ function initCardImageSwipe(){
   let startX = 0;
   let startY = 0;
   let activeImg = null;
+  let activeProductPage = false;
 
   document.addEventListener("touchstart", (e) => {
+    /* ── product card gallery ── */
     const img = e.target.closest(".gallery-img[data-product-id]");
-    if(!img) return;
-    activeImg = img;
-    const t = e.touches[0];
-    startX = t.clientX;
-    startY = t.clientY;
+    if(img){
+      activeImg = img;
+      activeProductPage = false;
+      const t = e.touches[0];
+      startX = t.clientX;
+      startY = t.clientY;
+      return;
+    }
+    /* ── product detail page gallery ── */
+    const pgImg = e.target.closest(".product-page-gallery img, .product-page-gallery");
+    if(pgImg && e.touches.length === 1){
+      activeImg = pgImg;
+      activeProductPage = true;
+      const t = e.touches[0];
+      startX = t.clientX;
+      startY = t.clientY;
+    }
   }, { passive: true });
 
   document.addEventListener("touchend", (e) => {
     if(!activeImg) return;
     const changed = e.changedTouches && e.changedTouches[0];
-    if(!changed){
-      activeImg = null;
-      return;
-    }
+    if(!changed){ activeImg = null; activeProductPage = false; return; }
     const dx = changed.clientX - startX;
     const dy = changed.clientY - startY;
-    const productId = activeImg.getAttribute("data-product-id");
 
     if(Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)){
-      if(dx < 0) changeCardImage(productId, 1);
-      else changeCardImage(productId, -1);
+      if(activeProductPage){
+        /* product detail page: dx<0 → next image, dx>0 → prev image */
+        changeProductPageImage(dx < 0 ? 1 : -1);
+      } else {
+        const productId = activeImg.getAttribute("data-product-id");
+        if(dx < 0) changeCardImage(productId, 1);
+        else changeCardImage(productId, -1);
+      }
     }
     activeImg = null;
+    activeProductPage = false;
   }, { passive: true });
 }
 
@@ -3899,6 +3954,9 @@ function clampZoomPan(){
 function setupPinchZoom(){
   const gal = document.getElementById("zGal");
   if(!gal) return;
+  /* Guard: only register listeners once — prevents accumulation on every image render */
+  if(gal.dataset.pinchZoomBound === "true") return;
+  gal.dataset.pinchZoomBound = "true";
 
   gal.ontouchstart = null;
   gal.ontouchmove = null;
@@ -5619,18 +5677,50 @@ function sendAdminNotification(){
       setVal("adminNotifBody", "");
       showToast("تم تعديل الإشعار");
     }).catch(err=>{
-      console.error(err);
       showToast("تعذر تعديل الإشعار", true);
     });
     return;
   }
+  // Save to Firebase DB (in-app notification)
   targetRef.set(payload).then(()=>{
     setVal("adminNotifTitle", "");
     setVal("adminNotifBody", "");
     showToast("تم إرسال الإشعار");
   }).catch(err=>{
-    console.error(err);
     showToast("تعذر إرسال الإشعار", true);
+  });
+
+  // Also send real Web Push to all subscribed devices via API
+  const sendBtn = document.getElementById("sendNotifBtn");
+  const resultBox = document.getElementById("sendNotifResult");
+  if(sendBtn) sendBtn.disabled = true;
+  if(resultBox){ resultBox.style.display="none"; }
+
+  const adminPin = storeSettings.adminPin || defaultSettings.adminPin || "";
+  fetch("/api/push/send", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ title, body, adminPin })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if(sendBtn) sendBtn.disabled = false;
+    if(resultBox){
+      resultBox.style.display = "block";
+      if(data.ok){
+        resultBox.innerHTML = `<div style="background:rgba(22,163,74,.1);color:var(--success);border:1px solid rgba(22,163,74,.2);border-radius:12px;padding:10px 14px;font-size:13px;font-weight:800;">
+          <i class="fa-solid fa-circle-check"></i> تم إرسال الإشعار الفوري إلى ${data.sent} جهاز${data.failed ? ` (${data.failed} فشل)` : ""}
+        </div>`;
+      } else {
+        resultBox.innerHTML = `<div style="background:rgba(220,38,38,.08);color:var(--danger);border:1px solid rgba(220,38,38,.15);border-radius:12px;padding:10px 14px;font-size:13px;font-weight:800;">
+          <i class="fa-solid fa-circle-xmark"></i> ${data.error || "تعذر إرسال الإشعار الفوري"}
+        </div>`;
+      }
+      setTimeout(()=>{ resultBox.style.display="none"; }, 6000);
+    }
+  })
+  .catch(()=>{
+    if(sendBtn) sendBtn.disabled = false;
   });
 }
 
@@ -5782,9 +5872,137 @@ document.addEventListener("DOMContentLoaded", function(){
   renderUserNotifications();
   renderAdminNotificationsReal();
   renderAdminSuggestions();
+
+  // Auto-subscribe user to push if already granted
+  if(Notification.permission === "granted") {
+    initPushSubscription(false);
+  }
 });
 
+window.adminEnablePush = adminEnablePush;
+
 </script>
+
+<!-- ── Web Push Subscription ─────────────────────────────────────────── -->
+<script>
+var _vapidPublicKey = null;
+
+async function getVapidPublicKey(){
+  if(_vapidPublicKey) return _vapidPublicKey;
+  try{
+    const r = await fetch("/api/push/vapid-public-key");
+    const d = await r.json();
+    _vapidPublicKey = d.publicKey;
+    return _vapidPublicKey;
+  } catch(e){ return null; }
+}
+
+function urlBase64ToUint8Array(base64String){
+  const padding = "=".repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const raw = atob(base64);
+  const output = new Uint8Array(raw.length);
+  for(let i = 0; i < raw.length; ++i) output[i] = raw.charCodeAt(i);
+  return output;
+}
+
+async function initPushSubscription(requestPermission){
+  if(!("serviceWorker" in navigator) || !("PushManager" in window)) return;
+  try{
+    const vapidKey = await getVapidPublicKey();
+    if(!vapidKey) return;
+
+    const reg = await navigator.serviceWorker.ready;
+
+    if(requestPermission){
+      const perm = await Notification.requestPermission();
+      if(perm !== "granted"){
+        showToast("لم يتم السماح بالإشعارات", true);
+        updatePushBtnState("denied");
+        return;
+      }
+    }
+
+    let sub = await reg.pushManager.getSubscription();
+    if(!sub){
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(vapidKey)
+      });
+    }
+
+    const deviceId = (typeof getGuestDeviceId === "function" ? getGuestDeviceId() : null)
+      || localStorage.getItem("ms_guest_device_id") || null;
+
+    await fetch("/api/push/subscribe", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ subscription: sub.toJSON(), deviceId })
+    });
+
+    updatePushBtnState("granted");
+    if(requestPermission) showToast("تم تفعيل الإشعارات الفورية ✓");
+    updatePushSubCount();
+  } catch(e){
+    if(requestPermission) showToast("تعذر تفعيل الإشعارات", true);
+  }
+}
+
+function updatePushBtnState(state){
+  const btn = document.getElementById("enablePushBtn");
+  const countEl = document.getElementById("pushSubCount");
+  if(!btn) return;
+  if(state === "granted"){
+    btn.innerHTML = '<i class="fa-solid fa-bell"></i> مفعّل على هذا الجهاز';
+    btn.style.background = "linear-gradient(135deg,#16a34a,#22c55e)";
+    btn.disabled = false;
+    if(countEl) countEl.textContent = "هذا الجهاز مشترك في الإشعارات الفورية";
+  } else if(state === "denied"){
+    btn.innerHTML = '<i class="fa-solid fa-bell-slash"></i> محظورة في المتصفح';
+    btn.style.background = "linear-gradient(135deg,#ef4444,#dc2626)";
+    btn.disabled = true;
+    if(countEl) countEl.textContent = "يرجى السماح بالإشعارات من إعدادات المتصفح";
+  } else {
+    btn.innerHTML = '<i class="fa-solid fa-bell"></i> تفعيل على هذا الجهاز';
+    btn.disabled = false;
+    if(countEl) countEl.textContent = "اضغط لتلقي الإشعارات الفورية على هذا الجهاز";
+  }
+}
+
+async function updatePushSubCount(){
+  // Load count from Firebase
+  try{
+    const snap = await db.ref("push_subscriptions").once("value");
+    let count = 0;
+    snap.forEach(() => count++);
+    const countEl = document.getElementById("pushSubCount");
+    if(countEl && Notification.permission === "granted"){
+      countEl.textContent = `${count} جهاز مشترك في الإشعارات الفورية`;
+    }
+  } catch(e){}
+}
+
+async function adminEnablePush(){
+  await initPushSubscription(true);
+  await updatePushSubCount();
+}
+
+// Init push state on load
+document.addEventListener("DOMContentLoaded", function(){
+  if(!("Notification" in window)){
+    updatePushBtnState("denied");
+    return;
+  }
+  if(Notification.permission === "granted"){
+    updatePushBtnState("granted");
+  } else if(Notification.permission === "denied"){
+    updatePushBtnState("denied");
+  } else {
+    updatePushBtnState("default");
+  }
+});
+</script>
+
 <script>
 function applyBannerColorsNow(){
   applyHeroBanner();
@@ -6092,10 +6310,9 @@ function scrollToProduct(){
 }
 </script>
 
-</body>
-</html>
 
-<!-- Supabase Config Injected -->
+<!-- Supabase -->
+
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
@@ -6107,3 +6324,256 @@ window.supabase = createClient(supabaseUrl, supabaseKey)
 console.log('✅ Supabase connected to OLD project')
 </script>
 
+<!-- PWA Update Banner -->
+<style>
+#pwa-update-banner{
+  display:none;
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+  z-index:2147483647;
+  background:linear-gradient(135deg,#1d4ed8,#0ea5e9);
+  color:#fff;padding:12px 22px;border-radius:16px;
+  box-shadow:0 8px 28px rgba(29,78,216,.45);
+  font-family:'Tajawal',sans-serif;font-size:14px;font-weight:700;
+  flex-direction:row;align-items:center;gap:12px;
+  min-width:260px;justify-content:space-between;
+  direction:rtl;
+}
+#pwa-update-banner.show{display:flex;}
+</style>
+<div id="pwa-update-banner">
+  <span>⚡ تحديث جديد متاح!</span>
+  <button onclick="window.__swApplyUpdate && window.__swApplyUpdate()" style="background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.35);color:#fff;padding:6px 14px;border-radius:10px;font-family:'Tajawal',sans-serif;font-size:13px;font-weight:800;cursor:pointer;">تحديث الآن</button>
+  <button onclick="(function(){var b=document.getElementById('pwa-update-banner');b.classList.remove('show');localStorage.setItem('pwa-update-seen-at',localStorage.getItem('pwa-update-found-at')||'');})()" style="background:transparent;border:none;color:rgba(255,255,255,.7);font-size:18px;cursor:pointer;padding:0 2px;line-height:1;">✕</button>
+</div>
+
+<!-- PWA Install Banner (slide-up, non-blocking) -->
+<style>
+#pwa-install-banner{
+  position:fixed;bottom:0;left:0;right:0;z-index:2147483646;
+  transform:translateY(110%);transition:transform .35s cubic-bezier(.34,1.56,.64,1);
+  pointer-events:none;
+}
+#pwa-install-banner.visible{transform:translateY(0);pointer-events:auto;}
+#pwa-install-banner-inner{
+  margin:0 12px 12px;
+  background:#fff;
+  border:1px solid rgba(0,0,0,.08);
+  border-radius:20px;
+  box-shadow:0 8px 32px rgba(15,23,42,.18);
+  display:flex;align-items:center;gap:12px;
+  padding:12px 14px;
+  direction:rtl;
+}
+body.dark-mode #pwa-install-banner-inner{
+  background:#1e293b;border-color:rgba(255,255,255,.08);
+  box-shadow:0 8px 32px rgba(0,0,0,.45);
+}
+#pwa-install-banner-icon{
+  width:46px;height:46px;border-radius:14px;flex-shrink:0;
+  background:linear-gradient(135deg,#0f172a,#1e293b);
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;font-weight:900;color:#f5c842;
+  font-family:'Arial Black',Arial,sans-serif;letter-spacing:-1px;overflow:hidden;
+}
+#pwa-install-banner-icon img{width:100%;height:100%;object-fit:cover;border-radius:14px;}
+#pwa-install-banner-text{flex:1;min-width:0;}
+#pwa-install-banner-text strong{display:block;font-size:14px;font-weight:900;color:var(--text,#0f172a);}
+#pwa-install-banner-text span{display:block;font-size:11px;color:var(--muted,#64748b);margin-top:1px;}
+#pwa-install-banner-actions{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+#pwa-install-banner-btn{
+  background:linear-gradient(135deg,#1d4ed8,#0ea5e9);color:#fff;
+  border:none;border-radius:12px;padding:9px 14px;
+  font-family:'Tajawal',sans-serif;font-size:13px;font-weight:800;
+  cursor:pointer;white-space:nowrap;
+}
+#pwa-install-banner-close{
+  width:30px;height:30px;border:none;background:transparent;
+  color:var(--muted,#64748b);font-size:18px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;border-radius:8px;padding:0;
+}
+</style>
+
+<div id="pwa-install-banner" aria-label="تثبيت التطبيق">
+  <div id="pwa-install-banner-inner">
+    <div id="pwa-install-banner-icon">
+      <img src="/icons/icon-192.png" alt="MS" onerror="this.style.display='none';this.parentElement.textContent='MS'">
+    </div>
+    <div id="pwa-install-banner-text">
+      <strong>متجر MS</strong>
+      <span id="pwa-install-banner-hint">ثبّت التطبيق للوصول السريع</span>
+    </div>
+    <div id="pwa-install-banner-actions">
+      <button id="pwa-install-banner-btn" onclick="window.__triggerPWAInstall && window.__triggerPWAInstall()">تثبيت</button>
+      <button id="pwa-install-banner-close" onclick="window.__dismissInstallBanner()" aria-label="إغلاق">✕</button>
+    </div>
+  </div>
+  <!-- iOS step-by-step hint (hidden by default) -->
+  <div id="pwa-ios-hint" style="display:none;padding:8px 14px 10px;font-size:12px;color:var(--muted,#64748b);line-height:1.7;border-top:1px solid var(--border,#e5e7eb);text-align:center;">
+    اضغط على <strong>زر المشاركة</strong> <span style="font-size:15px">⬆️</span> في الأسفل، ثم اختر <strong>«إضافة إلى الشاشة الرئيسية»</strong>
+  </div>
+</div>
+
+<script>
+(function() {
+  // ─── PWA Install Prompt ──────────────────────────────────────────────────
+  var deferredInstallPrompt = null;
+  var DISMISS_KEY = 'pwa-install-dismissed-at';
+  var DISMISS_TTL = 3 * 24 * 60 * 60 * 1000; // re-show after 3 days
+
+  /* Detect platform */
+  var ua = navigator.userAgent || '';
+  var isIOS = /iP(hone|od|ad)/.test(ua);
+  var isSafari = isIOS && /Safari/.test(ua) && !/CriOS|FxiOS|OPiOS/.test(ua);
+  var isAndroid = /Android/.test(ua);
+  var isStandalone = (window.navigator.standalone === true) ||
+                     window.matchMedia('(display-mode: standalone)').matches ||
+                     window.matchMedia('(display-mode: fullscreen)').matches;
+
+  function isDismissed() {
+    var ts = parseInt(localStorage.getItem(DISMISS_KEY) || '0', 10);
+    return ts && (Date.now() - ts < DISMISS_TTL);
+  }
+
+  function showInstallBanner(mode) {
+    if (isStandalone) return;           // already installed
+    if (isDismissed()) return;          // user dismissed recently
+    var banner = document.getElementById('pwa-install-banner');
+    if (!banner) return;
+
+    if (mode === 'ios') {
+      /* iOS Safari: hide the install button, show step-by-step hint */
+      var btn = document.getElementById('pwa-install-banner-btn');
+      var hint = document.getElementById('pwa-ios-hint');
+      var sub = document.getElementById('pwa-install-banner-hint');
+      if (btn) btn.style.display = 'none';
+      if (sub) sub.textContent = 'أضف التطبيق إلى شاشتك الرئيسية';
+      if (hint) hint.style.display = 'block';
+    }
+    banner.classList.add('visible');
+  }
+
+  function hideInstallBanner() {
+    var banner = document.getElementById('pwa-install-banner');
+    if (banner) banner.classList.remove('visible');
+  }
+
+  window.__dismissInstallBanner = function() {
+    hideInstallBanner();
+    localStorage.setItem(DISMISS_KEY, String(Date.now()));
+  };
+
+  /* ── Android / Chrome: native install prompt ── */
+  window.addEventListener('beforeinstallprompt', function(e) {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    setTimeout(function() { showInstallBanner('android'); }, 2500);
+  });
+
+  window.__triggerPWAInstall = function() {
+    if (!deferredInstallPrompt) return;
+    hideInstallBanner();
+    deferredInstallPrompt.prompt();
+    deferredInstallPrompt.userChoice.then(function(result) {
+      if (result.outcome !== 'accepted') {
+        localStorage.setItem(DISMISS_KEY, String(Date.now()));
+      }
+      deferredInstallPrompt = null;
+    });
+  };
+
+  window.addEventListener('appinstalled', function() {
+    hideInstallBanner();
+    localStorage.removeItem(DISMISS_KEY);
+    deferredInstallPrompt = null;
+  });
+
+  /* ── iOS Safari: show banner after short delay ── */
+  if (isSafari && !isStandalone) {
+    setTimeout(function() { showInstallBanner('ios'); }, 3000);
+  }
+
+  // ─── Service Worker & Update Logic ───────────────────────────────────────
+  if (!('serviceWorker' in navigator)) return;
+
+  var newWorker = null;
+
+  window.__swApplyUpdate = function() {
+    if (newWorker) newWorker.postMessage({ type: 'SKIP_WAITING' });
+  };
+
+  function showUpdateBanner() {
+    var foundAt = localStorage.getItem('pwa-update-found-at');
+    var seenAt  = localStorage.getItem('pwa-update-seen-at');
+    // Only show if this update has never been seen/dismissed
+    if (!foundAt || foundAt === seenAt) return;
+    var banner = document.getElementById('pwa-update-banner');
+    if (banner) banner.classList.add('show');
+  }
+
+  navigator.serviceWorker.register('/sw.js', { scope: '/' })
+    .then(function(reg) {
+      reg.addEventListener('updatefound', function() {
+        newWorker = reg.installing;
+        newWorker.addEventListener('statechange', function() {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            // Record that a real new SW version is ready
+            localStorage.setItem('pwa-update-found-at', String(Date.now()));
+            showUpdateBanner();
+          }
+        });
+      });
+      setInterval(function() { reg.update(); }, 3600000);
+    })
+    .catch(function(err) { console.warn('SW registration failed:', err); });
+
+  navigator.serviceWorker.addEventListener('controllerchange', function() {
+    window.location.reload();
+  });
+
+  // ─── Push Notification Permission ────────────────────────────────────────
+  window.__requestPushPermission = function() {
+    if (!('Notification' in window)) return;
+    if (Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+  };
+
+  var ready = document.readyState;
+  if (ready === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+      setTimeout(window.__requestPushPermission, 3000);
+    });
+  } else {
+    setTimeout(window.__requestPushPermission, 3000);
+  }
+})();
+</script>
+
+<style>
+/* ─── PWA Scroll Fix (iOS Safari + Android) ────────────────────────────────
+   iOS Safari: when both html+body have overflow:hidden it locks the window.
+   Fix: make html fixed-size, body the real scroll container.
+   Android: overscroll-behavior prevents pull-to-refresh.
+ ──────────────────────────────────────────────────────────────────────────── */
+html{
+  height:100% !important;
+  overflow:hidden !important;
+  overscroll-behavior:none !important;
+}
+body{
+  height:100% !important;
+  overflow-x:hidden !important;
+  overflow-y:auto !important;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:none !important;
+  touch-action:auto !important;
+}
+/* Re-lock during splash and modals */
+body.splash-lock{overflow:hidden !important;touch-action:none !important;}
+body.modal-open{overflow:hidden !important;}
+/* Splash: no touch while visible, auto once hidden */
+#splashScreen[style*="display: none"]{touch-action:auto !important;}
+</style>
+
+</body>
+</html>
