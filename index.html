@@ -6574,7 +6574,7 @@ body.dark-mode #pwa-ios-hint{background:#1e293b;border-color:#243041;color:#94a3
     if (b) b.classList.add('show');
   }
 
-  navigator.serviceWorker.register('/sw.js', { scope: '/' })
+  navigator.serviceWorker.register('/firebase-messaging-sw.js')
     .then(function (reg) {
       reg.addEventListener('updatefound', function () {
         newWorker = reg.installing;
