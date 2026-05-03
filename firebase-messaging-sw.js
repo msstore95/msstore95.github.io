@@ -15,13 +15,13 @@ const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage(function(payload) {
   const title =
-    payload.notification?.title ||
-    payload.data?.title ||
+    (payload.notification && payload.notification.title) ||
+    (payload.data && payload.data.title) ||
     "إشعار جديد";
 
   const body =
-    payload.notification?.body ||
-    payload.data?.body ||
+    (payload.notification && payload.notification.body) ||
+    (payload.data && payload.data.body) ||
     "وصل إشعار جديد";
 
   self.registration.showNotification(title, {
