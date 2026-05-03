@@ -26,3 +26,7 @@ async function startFCM() {
   } catch (err) { console.error(err); }
 }
 startFCM();
+
+onMessage(messaging, (payload) => {
+  new Notification(payload.notification.title, { body: payload.notification.body, icon: '/icons/icon-192.png' });
+});
