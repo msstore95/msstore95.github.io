@@ -19,13 +19,20 @@ const messaging = getMessaging(app);
 
 async function startFCM() {
   try {
-    if (!("Notification" in window)) return;
-    if (!("serviceWorker" in navigator)) return;
+    if (!("Notification" in window)) {
+      alert("هذا المتصفح لا يدعم الإشعارات");
+      return;
+    }
+
+    if (!("serviceWorker" in navigator)) {
+      alert("هذا المتصفح لا يدعم Service Worker");
+      return;
+    }
 
     const permission = await Notification.requestPermission();
 
     if (permission !== "granted") {
-      alert("لازم توافق على الإشعارات حتى تشتغل");
+      alert("لازم تضغط سماح حتى تشتغل الإشعارات");
       return;
     }
 
@@ -36,10 +43,11 @@ async function startFCM() {
       serviceWorkerRegistration: registration
     });
 
-    console.log("TOKEN:", token);
+    alert("TOKEN: " + token);
     localStorage.setItem("fcm_token", token);
 
   } catch (err) {
+    alert("FCM ERROR: " + err.message);
     console.error("FCM ERROR:", err);
   }
 }
