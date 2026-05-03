@@ -30,7 +30,6 @@ async function startFCM() {
     }
 
     const permission = await Notification.requestPermission();
-
     if (permission !== "granted") {
       alert("لازم تضغط سماح حتى تشتغل الإشعارات");
       return;
@@ -43,12 +42,17 @@ async function startFCM() {
       serviceWorkerRegistration: registration
     });
 
-    alert("TOKEN: " + token);
-    localStorage.setItem("fcm_token", token);
+    if (!token) {
+      alert("ما طلع Token. جرّب تحدث الصفحة أو امسح الكاش.");
+      return;
+    }
 
+    localStorage.setItem("fcm_token", token);
+    console.log("TOKEN:", token);
+    alert("TOKEN: " + token);
   } catch (err) {
-    alert("FCM ERROR: " + err.message);
     console.error("FCM ERROR:", err);
+    alert("FCM ERROR: " + (err && err.message ? err.message : err));
   }
 }
 
