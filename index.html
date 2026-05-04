@@ -1528,86 +1528,43 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-const SUPABASE_URL = "https://ejgyplqruchrggqemygi.supabase.co";
+const SUPABASE_URL = "https://xibvtesonrdvptcjtdwf.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_9eJPTP5I1bzzjMjmqCRS3w_YoM_m7we";
-const SUPABASE_BUCKET = "منتجات";
+const SUPABASE_BUCKET = "products";
 
-/* Cloudflare Worker Cache Proxy
-   مهم: لازم كود الـ Worker عندك يكون موجّه لنفس SUPABASE_URL أعلاه */
-const CLOUDFLARE_WORKER_URL = "https://lucky-firefly-fb5c.mustafa10sadi.workers.dev";
+/* تم إلغاء Cloudflare مؤقتاً
+   الصور الآن ترجع مباشرة من Supabase حتى تبقى آمنة وما تخترب. */
+const CLOUDFLARE_WORKER_URL = "";
 const KNOWN_SUPABASE_ORIGINS = [
   SUPABASE_URL,
   "https://ejgyplqruchrggqemygi.supabase.co",
-  "https://xibvtesonrdvptcjtdwf.supabase.co",
-  "https://hvnrwgjllajgjreegspp.supabase.co"
+  "https://hvnrwgjllajgjreegspp.supabase.co",
+  "https://xibvtesonrdvptcjtdwf.supabase.co"
 ];
-const STORAGE_BUCKET_CANDIDATES = [SUPABASE_BUCKET, "منتجات", "products"];
-
-function isBadImageValue(url){
-  const clean = String(url || "").trim();
-  if(!clean) return true;
-  if(clean === "محدد شيء" || clean === "لا يوجد" || clean === "undefined" || clean === "null") return true;
-  // هذه هي الصورة الزرقاء البديلة، لا نخزنها ولا نرفعها مرة ثانية
-  if(clean.startsWith("data:image/svg+xml") && clean.includes("MS%20Store")) return true;
-  return false;
-}
-
-function normalizeStoragePath(raw){
-  let clean = String(raw || "").trim();
-  if(!clean || isBadImageValue(clean)) return "";
-  clean = clean.replace(/^\/+/, "");
-  clean = clean.replace(/^storage\/v1\/object\/public\//, "");
-  for(const bucket of STORAGE_BUCKET_CANDIDATES){
-    const b = String(bucket || "").replace(/^\/+|\/+$/g, "");
-    if(b && clean.startsWith(b + "/")) return clean;
-  }
-  // إذا كانت القيمة اسم ملف فقط مثل product_123.jpg، نخليها داخل باكيت المنتجات
-  if(/^product_[^/]+\.(jpe?g|png|webp|gif|avif)$/i.test(clean)){
-    return SUPABASE_BUCKET + "/" + clean;
-  }
-  return clean;
-}
 
 function toCloudflareUrl(url){
   const clean = String(url || "").trim();
-  if(isBadImageValue(clean)) return "";
+  if(!clean) return clean;
 
-  const workerBase = CLOUDFLARE_WORKER_URL.replace(/\/+$/, "");
-  if(clean.startsWith(workerBase + "/storage/v1/")) return clean;
-
-  if(clean.startsWith("/storage/v1/")) return workerBase + clean;
-
-  for(const origin of KNOWN_SUPABASE_ORIGINS){
-    const base = String(origin || "").replace(/\/+$/, "");
-    if(base && clean.startsWith(base + "/storage/v1/")){
-      return workerBase + clean.slice(base.length);
+  // إذا القيمة مجرد اسم ملف صورة، ابني رابط Supabase مباشر
+  if(!/^https?:\/\//i.test(clean) && !clean.startsWith("data:")){
+    const fileName = clean.replace(/^\/+/, "");
+    if(/\.(jpg|jpeg|png|webp|gif|avif)(\?|#|$)/i.test(fileName)){
+      return SUPABASE_URL.replace(/\/+$/, "") + "/storage/v1/object/public/" + SUPABASE_BUCKET.replace(/^\/+|\/+$/g, "") + "/" + fileName;
     }
   }
 
-  const path = normalizeStoragePath(clean);
-  if(path && !/^https?:\/\//i.test(path) && !path.startsWith("data:")){
-    return workerBase + "/storage/v1/object/public/" + path;
+  // إذا بقا رابط Cloudflare قديم داخل Firebase، رجّعه إلى Supabase مباشر
+  const workerMatch = clean.match(/^https:\/\/[^\/]+\.workers\.dev\/(.*)$/i);
+  if(workerMatch){
+    let path = decodeURIComponent(workerMatch[1] || "").replace(/^\/+/, "");
+    if(path.startsWith("storage/v1/object/public/")){
+      return SUPABASE_URL.replace(/\/+$/, "") + "/" + path;
+    }
+    return SUPABASE_URL.replace(/\/+$/, "") + "/storage/v1/object/public/" + SUPABASE_BUCKET.replace(/^\/+|\/+$/g, "") + "/" + path;
   }
 
-  return clean;
-}
-
-function toSupabasePublicUrl(url){
-  const clean = String(url || "").trim();
-  if(isBadImageValue(clean)) return "";
-  const workerBase = CLOUDFLARE_WORKER_URL.replace(/\/+$/, "");
-  if(clean.startsWith(workerBase + "/storage/v1/")){
-    return SUPABASE_URL.replace(/\/+$/, "") + clean.slice(workerBase.length);
-  }
-  if(clean.startsWith("/storage/v1/")) return SUPABASE_URL.replace(/\/+$/, "") + clean;
-  for(const origin of KNOWN_SUPABASE_ORIGINS){
-    const base = String(origin || "").replace(/\/+$/, "");
-    if(base && clean.startsWith(base + "/storage/v1/")) return clean;
-  }
-  const path = normalizeStoragePath(clean);
-  if(path && !/^https?:\/\//i.test(path) && !path.startsWith("data:")){
-    return SUPABASE_URL.replace(/\/+$/, "") + "/storage/v1/object/public/" + path;
-  }
+  // أي رابط Supabase يبقى كما هو بدون تحويل
   return clean;
 }
 
@@ -2786,7 +2743,7 @@ async function scanProductBucketFiles(){
   }
   if(summaryEl) summaryEl.textContent = "جاري فحص ملفات المنتجات...";
   try{
-    const files = await listSupabaseFilesSafe(SUPABASE_BUCKET);
+    const files = await listSupabaseFilesSafe("products");
     const usedPaths = collectUsedProductStoragePaths();
     scannedProductFiles = files.filter(file => !usedPaths.has(file.path));
     selectedProductFiles = new Set();
@@ -3110,7 +3067,7 @@ function normalizeProduct(id, p){
   else if(typeof p.image === "string" && p.image.trim()) images = [p.image.trim()];
   else if(typeof p.img === "string" && p.img.trim()) images = [p.img.trim()];
 
-  // تحويل روابط صور Supabase القديمة والجديدة إلى رابط Cloudflare تلقائياً عند العرض
+  // إرجاع الصور إلى Supabase مباشرة بدون Cloudflare
   images = images.map(toCloudflareUrl).filter(Boolean);
 
   let quantity = Number(p.quantity);
@@ -6292,7 +6249,7 @@ async function refreshAllProductImages(){
   const btn = document.getElementById("refreshAllImagesBtn");
   if(btn && btn.disabled) return;
 
-  if(!confirm("سيتم تحويل روابط صور المنتجات إلى Cloudflare بدون إعادة رفع وبدون حذف الصور. هل تريد المتابعة؟")) return;
+  if(!confirm("سيتم تحويل روابط الصور القديمة إلى روابط Supabase مباشرة بدون Cloudflare. هل تريد المتابعة؟")) return;
 
   const originalHtml = btn ? btn.innerHTML : "";
   const originalText = btn ? btn.textContent : "";
@@ -6300,7 +6257,7 @@ async function refreshAllProductImages(){
   try{
     if(btn){
       btn.disabled = true;
-      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري تحويل الروابط...';
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري التصحيح...';
     }
 
     const snap = await db.ref("products").once("value");
@@ -6314,7 +6271,6 @@ async function refreshAllProductImages(){
 
     let done = 0;
     let updatedProducts = 0;
-    let skippedProducts = 0;
 
     for(const [id, product] of entries){
       const sourceImages =
@@ -6324,25 +6280,10 @@ async function refreshAllProductImages(){
         (typeof product?.image === "string" && product.image.trim()) ? [product.image.trim()] :
         (typeof product?.img === "string" && product.img.trim()) ? [product.img.trim()] : [];
 
-      const cleanImages = sourceImages
-        .map(x => String(x || "").trim())
-        .filter(x => x && !isBadImageValue(x));
+      const newImages = sourceImages.map(toCloudflareUrl).filter(Boolean);
+      const changed = JSON.stringify(sourceImages) !== JSON.stringify(newImages);
 
-      const newImages = cleanImages
-        .map(toCloudflareUrl)
-        .filter(Boolean);
-
-      if(!newImages.length){
-        skippedProducts++;
-        done++;
-        if(btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> ' + done + ' / ' + entries.length;
-        continue;
-      }
-
-      const oldJoined = cleanImages.join("|");
-      const newJoined = newImages.join("|");
-
-      if(oldJoined !== newJoined || !Array.isArray(product?.images)){
+      if(changed && newImages.length){
         const patch = { images: newImages, image: newImages[0] || "" };
         if(Array.isArray(product?.imgs)) patch.imgs = newImages;
         if(typeof product?.img === "string") patch.img = newImages[0] || "";
@@ -6354,10 +6295,10 @@ async function refreshAllProductImages(){
       if(btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> ' + done + ' / ' + entries.length;
     }
 
-    alert("تم تحويل روابط صور " + updatedProducts + " منتج إلى Cloudflare. المنتجات التي ما بيها رابط صالح: " + skippedProducts);
+    alert("تم تصحيح روابط صور " + updatedProducts + " منتج");
   }catch(err){
     console.error("REFRESH_ALL_PRODUCT_IMAGES_ERROR", err);
-    alert("تعذر تحويل روابط الصور");
+    alert("تعذر تصحيح الصور");
   }finally{
     if(btn){
       btn.disabled = false;
