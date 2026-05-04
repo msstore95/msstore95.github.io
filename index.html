@@ -1323,6 +1323,7 @@ body.product-view .footer{display:none !important;}
           <button class="btn btn-primary" id="scanProductFilesBtn" onclick="scanProductBucketFiles()"><i class="fa-solid fa-magnifying-glass"></i> فحص الملفات القديمة</button>
           <button class="btn btn-secondary" id="toggleSelectProductFilesBtn" onclick="toggleSelectAllProductFiles()"><i class="fa-regular fa-square-check"></i> تحديد الكل</button>
           <button class="btn btn-success" id="refreshAllImagesBtn" onclick="refreshAllProductImages()"><i class="fa-solid fa-rotate"></i> تحديث كل الصور</button>
+          <button class="btn btn-primary" id="openGithubMigrateBtn" onclick="openGithubMigrateActions()"><i class="fa-brands fa-github"></i> نقل الصور إلى GitHub</button>
           <button class="btn btn-danger" id="deleteSelectedProductFilesBtn" onclick="deleteSelectedProductFiles()"><i class="fa-solid fa-trash"></i> حذف المحدد</button>
         </div>
         <div id="productFilesSummary" class="notice" style="margin-top:12px;">اضغطي على "فحص الملفات القديمة" حتى نطلع لك الملفات الزائدة داخل تخزين المنتجات.</div>
@@ -6243,6 +6244,14 @@ body.dark-mode .card .p-desc.short{
 })();
 </script>
 
+
+
+<script id="github-migrate-actions-helper">
+function openGithubMigrateActions(){
+  alert("راح يفتح GitHub Actions. اضغط على Migrate Supabase Images to GitHub ثم Run workflow. هذا آمن وما يحط توكن داخل الموقع.");
+  window.open("https://github.com/msstore95/msstore95.github.io/actions/workflows/migrate-supabase-images.yml", "_blank");
+}
+</script>
 
 <script id="refresh-all-product-images-script">
 async function refreshAllProductImages(){

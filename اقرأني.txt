@@ -1,0 +1,24 @@
+# نقل الصور من Supabase إلى GitHub بضغطة واحدة
+
+## ماذا يفعل؟
+- يقرأ منتجاتك من Firebase Realtime Database.
+- يحمل الصور من روابط Supabase.
+- يرفعها داخل مجلد `images` في GitHub.
+- يبدل روابط الصور داخل Firebase إلى روابط GitHub Pages.
+- لا يحذف أي صورة من Supabase.
+
+## طريقة الاستخدام من الموبايل
+1. افتح مستودعك في GitHub.
+2. ارفع هذه الملفات كما هي مع الحفاظ على المجلدات:
+   - `.github/workflows/migrate-supabase-images.yml`
+   - `scripts/migrate-supabase-images-to-github.js`
+   - `index.html` اختياري، إذا تريد زر يفتح صفحة التشغيل.
+3. بعد الرفع اضغط Commit changes.
+4. افتح تبويب Actions.
+5. اختار `Migrate Supabase Images to GitHub`.
+6. اضغط `Run workflow`.
+
+## ملاحظة مهمة
+إذا فشل بسبب صلاحية GitHub، افتح:
+Settings → Actions → General → Workflow permissions
+واختار: Read and write permissions.
