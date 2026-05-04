@@ -1530,11 +1530,11 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const SUPABASE_URL = "https://ejgyplqruchrggqemygi.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_9eJPTP5I1bzzjMjmqCRS3w_YoM_m7we";
-const SUPABASE_BUCKET = "منتجات";
+const SUPABASE_BUCKET = "products";
 
 /* Cloudflare Worker Cache Proxy
    مهم: لازم كود الـ Worker عندك يكون موجّه لنفس SUPABASE_URL أعلاه */
-const CLOUDFLARE_WORKER_URL = "https://lucky-firefly-fb5c.mustafa10sadi.workers.dev";
+const CLOUDFLARE_WORKER_URL = ""; // مؤقتاً مباشر من Supabase حتى ترجع الصور
 const KNOWN_SUPABASE_ORIGINS = [
   SUPABASE_URL,
   "https://ejgyplqruchrggqemygi.supabase.co",
@@ -1546,9 +1546,10 @@ function toCloudflareUrl(url){
   const clean = String(url || "").trim();
   if(!clean) return clean;
 
-  if(clean.startsWith(CLOUDFLARE_WORKER_URL)) return clean;
+  const workerBase = String(CLOUDFLARE_WORKER_URL || "").replace(/\/+$/, "");
+  if(!workerBase) return clean; // إذا Worker مطفي، خلي الرابط الأصلي حتى الصور ترجع فوراً
 
-  const workerBase = CLOUDFLARE_WORKER_URL.replace(/\/+$/, "");
+  if(clean.startsWith(workerBase)) return clean;
 
   if(clean.startsWith("/storage/v1/")){
     return workerBase + clean;
@@ -1564,87 +1565,28 @@ function toCloudflareUrl(url){
   return clean;
 }
 
-/* إصلاح الصور القديمة:
-   إذا كان Firebase يحتوي على images: "محدد شيء" أو placeholder،
-   هذا الكود يبحث داخل Supabase bucket ويربط الصورة حسب وقت إنشاء المنتج. */
-let productStorageFilesReady = false;
-let productStorageFilesLoading = null;
-let productStorageFiles = [];
-let rawProductsMap = {};
-
-function isBadProductImageValue(value){
+function isBrokenImageValue(value){
   const clean = String(value || "").trim();
   if(!clean) return true;
-  if(clean === "محدد شيء" || clean === "لا يوجد" || clean === "undefined" || clean === "null") return true;
-  if(clean.startsWith("data:image/svg+xml")) return true;
+  if(clean === "محدد شيء") return true;
+  if(clean === "undefined" || clean === "null" || clean === "[object Object]") return true;
+  if(clean.startsWith("data:image/svg")) return true; // هذا Placeholder مو صورة منتج
   return false;
 }
 
-function getTimestampFromProductFileName(name){
-  const m = String(name || "").match(/(?:^|\/)product_(\d{10,})_/);
-  return m ? Number(m[1]) : 0;
-}
-
-function makeSupabasePublicUrl(path){
-  const cleanPath = String(path || "").replace(/^\/+/, "");
-  if(!cleanPath) return "";
-  const encodedBucket = encodeURIComponent(SUPABASE_BUCKET);
-  const encodedPath = cleanPath.split("/").map(encodeURIComponent).join("/");
-  return `${SUPABASE_URL.replace(/\/+$/, "")}/storage/v1/object/public/${encodedBucket}/${encodedPath}`;
-}
-
-function fileToDisplayUrl(file){
-  if(!file || !file.path) return "";
-  return toCloudflareUrl(makeSupabasePublicUrl(file.path));
-}
-
-async function loadProductStorageFiles(){
-  if(productStorageFilesReady) return productStorageFiles;
-  if(productStorageFilesLoading) return productStorageFilesLoading;
-
-  productStorageFilesLoading = (async () => {
-    try{
-      const files = await listSupabaseFilesSafe("");
-      productStorageFiles = (files || [])
-        .filter(f => /\.(jpe?g|png|webp|gif)$/i.test(String(f.name || f.path || "")))
-        .map(f => ({...f, ts: getTimestampFromProductFileName(f.path || f.name)}))
-        .filter(f => f.ts > 0)
-        .sort((a,b) => a.ts - b.ts);
-      productStorageFilesReady = true;
-      return productStorageFiles;
-    }catch(err){
-      console.error("LOAD_PRODUCT_STORAGE_FILES_ERROR", err);
-      productStorageFiles = [];
-      productStorageFilesReady = true;
-      return productStorageFiles;
+function normalizeRawImages(value){
+  let images = [];
+  if(Array.isArray(value)) images = value;
+  else if(value && typeof value === "object") images = Object.values(value);
+  else if(typeof value === "string") {
+    const t = value.trim();
+    if(t.startsWith("[") && t.endsWith("]")){
+      try{ const parsed = JSON.parse(t); if(Array.isArray(parsed)) images = parsed; else images = [t]; }catch(e){ images = [t]; }
+    }else{
+      images = [t];
     }
-  })();
-
-  return productStorageFilesLoading;
-}
-
-function findImagesForProductByStorage(product){
-  const createdAt = Number(product && product.createdAt);
-  if(!Number.isFinite(createdAt) || !productStorageFiles.length) return [];
-
-  const windowMs = 10 * 60 * 1000; // عشر دقائق حول وقت إنشاء المنتج
-  const candidates = productStorageFiles
-    .map(file => ({ file, diff: Math.abs(Number(file.ts || 0) - createdAt) }))
-    .filter(row => row.diff <= windowMs)
-    .sort((a,b) => a.diff - b.diff || String(a.file.name).localeCompare(String(b.file.name)));
-
-  return candidates.slice(0, 5).map(row => fileToDisplayUrl(row.file)).filter(Boolean);
-}
-
-function rebuildProductsAfterStorageFilesLoad(){
-  if(!rawProductsMap || !Object.keys(rawProductsMap).length) return;
-  productsMap = {};
-  Object.entries(rawProductsMap).forEach(([id, raw]) => {
-    productsMap[id] = normalizeProduct(id, raw || {});
-  });
-  syncProductsFromMap();
-  renderProducts();
-  if(isAdmin) renderAdminProducts();
+  }
+  return images.map(x => String(x || "").trim()).filter(x => !isBrokenImageValue(x));
 }
 
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
@@ -2722,6 +2664,102 @@ async function listSupabaseFilesSafe(folder){
   return all;
 }
 
+
+let autoRepairBrokenImagesStarted = false;
+let autoRepairBrokenImagesDone = false;
+
+function productNeedsImageRepairRaw(product){
+  if(!product) return false;
+  const raw = []
+    .concat(normalizeRawImages(product.images))
+    .concat(normalizeRawImages(product.imgs))
+    .concat(normalizeRawImages(product.image))
+    .concat(normalizeRawImages(product.img));
+  return raw.length === 0;
+}
+
+function publicUrlForStoragePath(path){
+  const cleanPath = String(path || "").replace(/^\/+/, "");
+  if(!cleanPath) return "";
+  try{
+    const { data } = supabaseClient.storage.from(SUPABASE_BUCKET).getPublicUrl(cleanPath);
+    return (data && data.publicUrl) ? data.publicUrl : "";
+  }catch(e){
+    return `${SUPABASE_URL.replace(/\/+$/, "")}/storage/v1/object/public/${encodeURIComponent(SUPABASE_BUCKET)}/${cleanPath.split('/').map(encodeURIComponent).join('/')}`;
+  }
+}
+
+async function getAllProductStorageFilesForRepair(){
+  const result = [];
+  const add = (arr) => {
+    (arr || []).forEach(file => {
+      if(!file || !file.path) return;
+      if(!/\.(jpe?g|png|webp|gif)$/i.test(file.name || file.path)) return;
+      result.push(file);
+    });
+  };
+  try{ add(await listSupabaseFilesSafe("")); }catch(e){ console.warn("LIST_ROOT_FAILED", e); }
+  try{ add(await listSupabaseFilesSafe("products")); }catch(e){ console.warn("LIST_PRODUCTS_FOLDER_FAILED", e); }
+  const seen = new Set();
+  return result.filter(file => {
+    if(seen.has(file.path)) return false;
+    seen.add(file.path);
+    return true;
+  });
+}
+
+async function autoRepairBrokenProductImagesFromSupabase(){
+  if(autoRepairBrokenImagesDone) return;
+  const snap = await db.ref("products").once("value");
+  const rawProducts = snap.val() || {};
+  const entries = Object.entries(rawProducts);
+  const brokenEntries = entries.filter(([id, product]) => productNeedsImageRepairRaw(product));
+  if(!brokenEntries.length){
+    autoRepairBrokenImagesDone = true;
+    return;
+  }
+
+  const files = await getAllProductStorageFilesForRepair();
+  if(!files.length) return;
+
+  const byCreatedAt = new Map();
+  files.forEach(file => {
+    const name = String(file.name || file.path || "");
+    const match = name.match(/product_(\d{10,})_/);
+    if(match && !byCreatedAt.has(match[1])) byCreatedAt.set(match[1], file);
+  });
+
+  const updates = {};
+  let fixed = 0;
+  for(const [id, product] of brokenEntries){
+    const createdAt = String(product && product.createdAt || "").trim();
+    const file = byCreatedAt.get(createdAt);
+    if(!file) continue;
+    const url = publicUrlForStoragePath(file.path);
+    if(!url) continue;
+    updates[`products/${id}/images`] = [url];
+    updates[`products/${id}/image`] = url;
+    fixed++;
+  }
+
+  if(fixed > 0){
+    await db.ref().update(updates);
+    showToast(`تم إصلاح صور ${fixed} منتج تلقائياً`);
+  }
+  autoRepairBrokenImagesDone = true;
+}
+
+function scheduleAutoRepairBrokenProductImages(){
+  if(autoRepairBrokenImagesStarted) return;
+  autoRepairBrokenImagesStarted = true;
+  setTimeout(() => {
+    autoRepairBrokenProductImagesFromSupabase().catch(err => {
+      console.error("AUTO_REPAIR_IMAGES_FAILED", err);
+      autoRepairBrokenImagesStarted = false;
+    });
+  }, 800);
+}
+
 function collectUsedProductStoragePaths(){
   const used = new Set();
   const addPath = (raw) => {
@@ -2822,7 +2860,7 @@ async function scanProductBucketFiles(){
   }
   if(summaryEl) summaryEl.textContent = "جاري فحص ملفات المنتجات...";
   try{
-    const files = await listSupabaseFilesSafe("products");
+    const files = await getAllProductStorageFilesForRepair();
     const usedPaths = collectUsedProductStoragePaths();
     scannedProductFiles = files.filter(file => !usedPaths.has(file.path));
     selectedProductFiles = new Set();
@@ -3114,18 +3152,12 @@ function renderAdminCategories(){
 function listenProducts(){
   const ref = db.ref("products");
 
-  // تحميل قائمة ملفات الصور من Supabase بالخلفية حتى ترجع الصور القديمة تلقائياً
-  loadProductStorageFiles().then(rebuildProductsAfterStorageFilesLoad);
-
   ref.on("value", snap => {
     productsMap = {};
     allProducts = [];
-    rawProductsMap = {};
 
     snap.forEach(child => {
-      const raw = child.val() || {};
-      rawProductsMap[child.key] = raw;
-      const p = normalizeProduct(child.key, raw);
+      const p = normalizeProduct(child.key, child.val() || {});
       productsMap[child.key] = p;
     });
 
@@ -3134,6 +3166,7 @@ function listenProducts(){
   try{ applyBannerColorsNow(); }catch(e){}
     if(isAdmin) renderAdminProducts();
     updateStatsCards();
+    scheduleAutoRepairBrokenProductImages();
 
     if(!productsFirstPaintDone){
       productsFirstPaintDone = true;
@@ -3145,44 +3178,14 @@ function listenProducts(){
 }
 
 function normalizeProduct(id, p){
-  let images = [];
-  const pushImage = (value) => {
-    if(value && typeof value === "object"){
-      value = value.url || value.src || value.publicUrl || value.path || "";
-    }
-    const clean = String(value || "").trim();
-    if(isBadProductImageValue(clean)) return;
+  let images = []
+    .concat(normalizeRawImages(p.images))
+    .concat(normalizeRawImages(p.imgs))
+    .concat(normalizeRawImages(p.image))
+    .concat(normalizeRawImages(p.img));
 
-    // إذا المخزن فقط اسم ملف مثل product_123_x.jpg، نحوله لرابط Supabase كامل
-    if(!/^https?:\/\//i.test(clean) && !clean.startsWith("/storage/v1/")){
-      const possibleFile = clean.replace(/^\/+/, "");
-      if(/\.(jpe?g|png|webp|gif)$/i.test(possibleFile)){
-        images.push(toCloudflareUrl(makeSupabasePublicUrl(possibleFile)));
-        return;
-      }
-    }
-
-    images.push(toCloudflareUrl(clean));
-  };
-
-  if(Array.isArray(p.images)) p.images.forEach(pushImage);
-  else if(typeof p.images === "object" && p.images) Object.values(p.images).forEach(pushImage);
-  else if(typeof p.images === "string") pushImage(p.images);
-
-  if(Array.isArray(p.imgs)) p.imgs.forEach(pushImage);
-  else if(typeof p.imgs === "object" && p.imgs) Object.values(p.imgs).forEach(pushImage);
-
-  pushImage(p.image);
-  pushImage(p.img);
-  pushImage(p.imageUrl);
-  pushImage(p.thumb);
-
-  // إذا الصور انمسحت وصارت "محدد شيء"، جرّب استرجاعها من Supabase حسب createdAt
-  if(!images.length && productStorageFilesReady){
-    images = findImagesForProductByStorage(p);
-  }
-
-  images = Array.from(new Set(images)).filter(Boolean);
+  // إزالة التكرار وتحويل الروابط عند العرض
+  images = Array.from(new Set(images)).map(toCloudflareUrl).filter(Boolean);
 
   let quantity = Number(p.quantity);
   if(!Number.isFinite(quantity)){
@@ -6363,7 +6366,7 @@ async function refreshAllProductImages(){
   const btn = document.getElementById("refreshAllImagesBtn");
   if(btn && btn.disabled) return;
 
-  if(!confirm("سيتم محاولة استرجاع روابط الصور من Supabase بدون حذف أي صورة. هل تريد المتابعة؟")) return;
+  if(!confirm("سيتم إعادة رفع كل صور المنتجات الحالية. هل تريد المتابعة؟")) return;
 
   const originalHtml = btn ? btn.innerHTML : "";
   const originalText = btn ? btn.textContent : "";
@@ -6371,10 +6374,8 @@ async function refreshAllProductImages(){
   try{
     if(btn){
       btn.disabled = true;
-      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> فحص Supabase...';
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري التحديث...';
     }
-
-    await loadProductStorageFiles();
 
     const snap = await db.ref("products").once("value");
     const products = snap.val() || {};
@@ -6389,14 +6390,48 @@ async function refreshAllProductImages(){
     let updatedProducts = 0;
 
     for(const [id, product] of entries){
-      const normalized = normalizeProduct(id, product || {});
-      const newImages = normalized.images || [];
+      const sourceImages =
+        Array.isArray(product?.images) ? product.images.filter(Boolean) :
+        (product?.images && typeof product.images === "object") ? Object.values(product.images).filter(Boolean) :
+        Array.isArray(product?.imgs) ? product.imgs.filter(Boolean) :
+        (typeof product?.image === "string" && product.image.trim()) ? [product.image.trim()] :
+        (typeof product?.img === "string" && product.img.trim()) ? [product.img.trim()] : [];
 
-      if(newImages.length){
-        await db.ref("products/" + id).update({
-          images: newImages,
-          image: newImages[0] || ""
-        });
+      if(!sourceImages.length){
+        done++;
+        if(btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> ' + done + ' / ' + entries.length;
+        continue;
+      }
+
+      const newImages = [];
+      let changed = false;
+
+      for(const imageUrl of sourceImages){
+        try{
+          const response = await fetch(imageUrl, { cache: "no-store" });
+          if(!response.ok) throw new Error("FETCH_FAILED");
+
+          const blob = await response.blob();
+          const extFromType = String(blob.type || "").split("/").pop().toLowerCase();
+          const safeExt = ["jpg","jpeg","png","webp","gif"].includes(extFromType) ? extFromType : "jpg";
+          const file = new File([blob], "product_" + Date.now() + "_" + Math.random().toString(36).slice(2,8) + "." + safeExt, {
+            type: blob.type || ("image/" + safeExt)
+          });
+
+          const newUrl = await uploadMedia(file, "product");
+          newImages.push(newUrl);
+          changed = true;
+        }catch(err){
+          console.error("REFRESH_PRODUCT_IMAGE_ERROR", id, imageUrl, err);
+          newImages.push(imageUrl);
+        }
+      }
+
+      if(changed){
+        const patch = { images: newImages, image: newImages[0] || "" };
+        if(Array.isArray(product?.imgs)) patch.imgs = newImages;
+        if(typeof product?.img === "string") patch.img = newImages[0] || "";
+        await db.ref("products/" + id).update(patch);
         updatedProducts++;
       }
 
@@ -6404,7 +6439,7 @@ async function refreshAllProductImages(){
       if(btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> ' + done + ' / ' + entries.length;
     }
 
-    alert("تم استرجاع روابط صور " + updatedProducts + " منتج");
+    alert("تم تحديث صور " + updatedProducts + " منتج");
   }catch(err){
     console.error("REFRESH_ALL_PRODUCT_IMAGES_ERROR", err);
     alert("تعذر تحديث الصور");
