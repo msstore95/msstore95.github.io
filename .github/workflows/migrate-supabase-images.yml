@@ -1,28 +1,37 @@
 name: Migrate Supabase Images to GitHub
 
-on:
-  workflow_dispatch:
-
 permissions:
   contents: write
+
+on:
+  workflow_dispatch:
 
 jobs:
   migrate:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Checkout repo
+        uses: actions/checkout@v3
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v3
         with:
-          node-version: 20
+          node-version: 18
 
-      - name: Migrate images and update Firebase
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          FIREBASE_DATABASE_URL: https://msstore-5c5f4-default-rtdb.firebaseio.com
-          DEFAULT_SUPABASE_URL: https://xibvtesonrdvptcjtdwf.supabase.co
-          SUPABASE_BUCKET: products
+      - name: Install dependencies
+        run: npm install axios fs path
+
+      - name: Run migration script
         run: node scripts/migrate-supabase-images-to-github.js
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
 
+      - name: Commit and push images
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git add images
+          git commit -m "Add migrated images" || echo "No changes"
+          git push
