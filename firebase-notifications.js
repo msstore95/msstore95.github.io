@@ -7,7 +7,7 @@ const firebaseConfig = {
   projectId: "msstore-5c5f4",
   storageBucket: "msstore-5c5f4.appspot.com",
   messagingSenderId: "25475613602",
-  appId: "1:25475613602:web:358250bb88c3dae8545dbb"
+  appId: "1:25475613602:web:98be2e7aec1bb125545dbb"
 };
 
 const app = initializeApp(firebaseConfig);
