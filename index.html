@@ -1030,6 +1030,18 @@ body.product-view .footer{display:none !important;}
 .related-modal-actions .btn{flex:1;min-width:140px;}
 </style>
   <!-- MS Store Firebase FCM version: fcm-final-1 -->
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script>
+window.OneSignalDeferred=window.OneSignalDeferred||[];
+OneSignalDeferred.push(async function(OneSignal){
+ await OneSignal.init({
+  appId:"2594a46a-bbca-47d6-b273-df8734d51ad7",
+  safari_web_id:"web.onesignal.auto.40e8587d-66e6-4615-b716-6bb570edb005",
+  notifyButton:{enable:true}
+ });
+});
+</script>
+
 </head>
 <body style="margin:0;color:#ffffff;background:#0b1220;overflow-x:hidden" class="dark-mode">
   <div id="product-view"></div>
